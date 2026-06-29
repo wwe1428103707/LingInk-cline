@@ -11,6 +11,7 @@ import {
 	getProviderAuthStorageId,
 	type PreparedRemoteConfigCoreIntegration,
 	resolveDefaultMcpSettingsPath,
+	resolveSkillsConfigSearchPaths,
 	type SessionHistoryRecord,
 	setTelemetryOptOutGlobally,
 	type UserInstructionConfigService,
@@ -672,7 +673,10 @@ export class Controller {
 			const service = createUserInstructionConfigService({
 				workflows: { workspacePath: workspaceRoot },
 				skills: {
-					workspacePath: workspaceRoot,
+					directories: [
+						...resolveSkillsConfigSearchPaths(workspaceRoot),
+						path.join(HostProvider.get().extensionFsPath, "bundled-skills", "lingink-ars"),
+					],
 					includePluginSkills: true,
 					cwd: workspaceRoot,
 				},

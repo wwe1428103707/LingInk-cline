@@ -31,6 +31,8 @@ const ClineCommands = {
 	JupyterGenerateCell: prefix + ".jupyterGenerateCell",
 	JupyterExplainCell: prefix + ".jupyterExplainCell",
 	JupyterImproveCell: prefix + ".jupyterImproveCell",
+	// LingInk ARS skill installer
+	InstallAcademicSkills: prefix + ".installAcademicSkills",
 }
 
 /**

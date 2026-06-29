@@ -55,6 +55,7 @@ import { telemetryService } from "./services/telemetry"
 import { LG_TASK_URI_PATH, SharedUriHandler, TASK_URI_PATH } from "./services/uri/SharedUriHandler"
 import { ShowMessageType } from "./shared/proto/host/window"
 import { fileExistsAtPath } from "./utils/fs"
+import { checkAndPromptSkillInstall, INSTALL_SKILLS_COMMAND } from "./services/skill-installer"
 
 // This method is called when the VS Code extension is activated.
 // NOTE: This is VS Code specific - services that should be registered
@@ -80,6 +81,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	// 4. Register services and perform common initialization
 	// IMPORTANT: Must be done after host provider is setup and migrations are complete
 	const webview = (await initialize(storageContext)) as VscodeWebviewProvider
+
+	// 4.5 Auto-detect ARS skills and prompt user to install if missing
+	checkAndPromptSkillInstall().catch((err) =>
+		Logger.warn("[Activate] Skill installer check failed:", err),
+	)
 
 	// 5. Register services and commands specific to VS Code
 	// Initialize hook discovery cache for performance optimization
@@ -134,6 +140,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 	context.subscriptions.push(vscode.commands.registerCommand(commands.SettingsButton, () => sendSettingsButtonClickedEvent()))
 	context.subscriptions.push(vscode.commands.registerCommand(commands.HistoryButton, () => sendHistoryButtonClickedEvent()))
+	context.subscriptions.push(vscode.commands.registerCommand(commands.InstallAcademicSkills, () => checkAndPromptSkillInstall()))
 	context.subscriptions.push(vscode.commands.registerCommand(commands.AccountButton, () => sendAccountButtonClickedEvent()))
 	context.subscriptions.push(vscode.commands.registerCommand(commands.WorktreesButton, () => sendWorktreesButtonClickedEvent()))
 
