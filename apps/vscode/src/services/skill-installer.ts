@@ -1,4 +1,5 @@
 import * as fs from "node:fs/promises"
+import * as fsSync from "node:fs"
 import * as path from "node:path"
 import * as vscode from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
@@ -229,18 +230,18 @@ export async function checkAndPromptSkillInstall(): Promise<void> {
  */
 function countFiles(dir: string): number {
 	try {
-		if (!fs.existsSync(dir)) {
+		if (!fsSync.existsSync(dir)) {
 			return -1
 		}
 		let count = 0
 		const walk = (d: string): void => {
-			const entries = fs.readdirSync(d, { withFileTypes: true })
+			const entries = fsSync.readdirSync(d, { withFileTypes: true })
 			for (const e of entries) {
 				const p = path.join(d, e.name)
 				if (e.isDirectory()) {
 					// Skip reparse points (junctions/symlinks) to avoid double-counting
 					try {
-						const stat = fs.lstatSync(p)
+						const stat = fsSync.lstatSync(p)
 						if (stat.isSymbolicLink()) continue
 					} catch {
 						continue

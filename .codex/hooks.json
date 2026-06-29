@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'E:\\develop\\LingInk-cline\\.codex\\hooks\\claude-code-for-web-setup.sh'"
+          }
+        ]
+      }
+    ]
+  }
+}
