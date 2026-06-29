@@ -284,11 +284,11 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 
 						{/* LingInk ARS Skills */}
 			<div>
-				<div class="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+				<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
 					灵砚 Academic Research Skills
 				</div>
-				<div class="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-2">
-					<p class="text-xs text-muted-foreground">
+				<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-2">
+					<p className="text-xs text-muted-foreground">
 						安装 deep-research、academic-paper、academic-paper-reviewer、academic-pipeline
 						四个学术研究 Skill，支持文献综述、论文写作、同行评审等完整科研流程。
 					</p>
