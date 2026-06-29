@@ -151,6 +151,7 @@ interface FeatureSettingsSectionProps {
 }
 
 const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionProps) => {
+	const [installingSkills, setInstallingSkills] = useState(false)
 	const {
 		enableCheckpointsSetting,
 		hooksEnabled,
@@ -283,9 +284,8 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 						</div>
 					</div>
 				</div>
-				</div>
 
-						{/* LingInk ARS Skills */}
+			{/* LingInk ARS Skills */}
 			<div>
 				<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
 					灵砚 Academic Research Skills

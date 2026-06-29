@@ -11,7 +11,7 @@ import { Controller } from ".."
  * Installs bundled Academic Research Skills into the current workspace.
  * Called from the Settings page in the webview.
  */
-export async function handleInstallBundledSkills(_controller: Controller, _request: EmptyRequest): Promise<Empty> {
+export async function installBundledSkills(_controller: Controller, _request: EmptyRequest): Promise<Empty> {
 	try {
 		const { paths } = await HostProvider.workspace.getWorkspacePaths({})
 		const workspaceRoot = paths?.[0]
