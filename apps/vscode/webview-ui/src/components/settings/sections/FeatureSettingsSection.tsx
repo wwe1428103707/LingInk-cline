@@ -280,6 +280,35 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 						</div>
 					</div>
 				</div>
+				</div>
+
+						{/* LingInk ARS Skills */}
+			<div>
+				<div class="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+					灵砚 Academic Research Skills
+				</div>
+				<div class="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-2">
+					<p class="text-xs text-muted-foreground">
+						安装 deep-research、academic-paper、academic-paper-reviewer、academic-pipeline
+						四个学术研究 Skill，支持文献综述、论文写作、同行评审等完整科研流程。
+					</p>
+					<VSCodeButton
+						appearance="primary"
+						disabled={installingSkills}
+						onClick={async () => {
+							setInstallingSkills(true)
+							try {
+								await StateServiceClient.installBundledSkills(EmptyRequest.create({}))
+							} catch (error) {
+								console.error("Failed to install skills:", error)
+							} finally {
+								setInstallingSkills(false)
+							}
+						}}>
+						{installingSkills ? "安装中..." : "📥 安装学术研究技能包"}
+					</VSCodeButton>
+				</div>
+			</div>
 			</Section>
 		</div>
 	)
