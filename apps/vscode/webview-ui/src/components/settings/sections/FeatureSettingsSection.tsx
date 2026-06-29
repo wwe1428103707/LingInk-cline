@@ -1,13 +1,11 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { EmptyRequest } from "@shared/proto/cline/common"
 import { UpdateSettingsRequest } from "@shared/proto/cline/state"
-import { memo, useState, type ReactNode } from "react"
+import { memo, useEffect, useState, type ReactNode } from "react"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { StateServiceClient } from "@/services/grpc-client"
 import Section from "../Section"
 import { updateSetting } from "../utils/settingsHandlers"
 
@@ -152,6 +150,15 @@ interface FeatureSettingsSectionProps {
 
 const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionProps) => {
 	const [installingSkills, setInstallingSkills] = useState(false)
+	useEffect(() => {
+		const handler = (event: MessageEvent) => {
+			if (event.data?.type === "installSkillsResult") {
+				setInstallingSkills(false)
+			}
+		}
+		window.addEventListener("message", handler)
+		return () => window.removeEventListener("message", handler)
+	}, [])
 	const {
 		enableCheckpointsSetting,
 		hooksEnabled,
@@ -295,21 +302,15 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 						安装 deep-research、academic-paper、academic-paper-reviewer、academic-pipeline
 						四个学术研究 Skill，支持文献综述、论文写作、同行评审等完整科研流程。
 					</p>
-					<VSCodeButton
-						appearance="primary"
-						disabled={installingSkills}
-						onClick={async () => {
-							setInstallingSkills(true)
-							try {
-								await StateServiceClient.installBundledSkills(EmptyRequest.create({}))
-							} catch (error) {
-								console.error("Failed to install skills:", error)
-							} finally {
-								setInstallingSkills(false)
-							}
-						}}>
-						{installingSkills ? "安装中..." : "📥 安装学术研究技能包"}
-					</VSCodeButton>
+						<VSCodeButton
+							appearance="primary"
+							disabled={installingSkills}
+							onClick={() => {
+								setInstallingSkills(true)
+								window.postMessage({ type: "installSkills" }, "*")
+							}}>
+							{installingSkills ? "安装中..." : "📥 安装学术研究技能包"}
+						</VSCodeButton>
 				</div>
 			</div>
 			</Section>

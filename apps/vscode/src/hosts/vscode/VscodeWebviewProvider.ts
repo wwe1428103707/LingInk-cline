@@ -162,6 +162,39 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 				}
 				break
 			}
+			case "installSkills": {
+				const { installBundledSkills } = await import("@/services/skill-installer")
+				try {
+					const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+					if (!workspaceRoot) {
+						throw new Error("No workspace folder open")
+					}
+					const dstDir = await installBundledSkills(workspaceRoot)
+					// Count files
+					const fs = await import("node:fs/promises")
+					const path = await import("node:path")
+					let count = 0
+					const walk = async (d: string): Promise<void> => {
+						const entries = await fs.readdir(d, { withFileTypes: true })
+						for (const e of entries) {
+							if (e.isDirectory()) await walk(path.join(d, e.name))
+							else if (e.isFile()) count++
+						}
+					}
+					await walk(dstDir)
+					this.postMessageToWebview({
+						type: "installSkillsResult",
+						installSkillsResult: { success: true, fileCount: count },
+					} as any)
+				} catch (error) {
+					const msg = error instanceof Error ? error.message : String(error)
+					this.postMessageToWebview({
+						type: "installSkillsResult",
+						installSkillsResult: { success: false, error: msg },
+					} as any)
+				}
+				break
+			}
 			default: {
 				Logger.error("Received unhandled WebviewMessage type:", JSON.stringify(message))
 			}
