@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { Mode } from "@shared/storage/types"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useDynamicProviderSelection } from "@/hooks/useDynamicProviderSelection"
@@ -40,7 +41,7 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 					placeholder={"Enter base URL..."}
 					style={{ width: "100%", marginBottom: 10 }}
 					type="text">
-					<span style={{ fontWeight: 500 }}>Base URL</span>
+					<span style={{ fontWeight: 500 }}>{t("apiConfig.baseUrl", "Base URL")}</span>
 				</DebouncedTextField>
 
 				<ApiKeyField

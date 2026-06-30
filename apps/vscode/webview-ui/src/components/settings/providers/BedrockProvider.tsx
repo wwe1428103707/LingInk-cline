@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { openAiModelInfoSafeDefaults } from "@shared/api"
 import BedrockData from "@shared/providers/bedrock.json"
 import type { Mode } from "@shared/storage/types"
@@ -578,7 +579,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 									}).catch((err) => console.error("Failed to commit Bedrock custom model selection:", err))
 								}}
 								placeholder="Enter custom model ID...">
-								<span className="font-medium">Model ID</span>
+								<span className="font-medium">{t("apiConfig.modelId", "Model ID")}</span>
 							</DebouncedTextField>
 							<label htmlFor="bedrock-base-model-dropdown">
 								<span className="font-medium">Base Inference Model</span>

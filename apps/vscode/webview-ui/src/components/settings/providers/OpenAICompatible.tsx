@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip"
 import {
 	azureOpenAiDefaultApiVersion,
@@ -224,7 +225,7 @@ export const OpenAICompatibleProvider = ({
 				<TooltipTrigger>
 					<div className="mb-2.5">
 						<div className="flex items-center gap-2 mb-1">
-							<span style={{ fontWeight: 500 }}>Base URL</span>
+							<span style={{ fontWeight: 500 }}>{t("apiConfig.baseUrl", "Base URL")}</span>
 							{remoteConfigSettings?.openAiBaseUrl !== undefined && (
 								<i className="codicon codicon-lock text-description text-sm" />
 							)}
@@ -265,7 +266,7 @@ export const OpenAICompatibleProvider = ({
 						marginBottom: 10,
 					}}>
 					<label htmlFor="openai-compatible-model-picker">
-						<span style={{ fontWeight: 500 }}>Model ID</span>
+						<span style={{ fontWeight: 500 }}>{t("apiConfig.modelId", "Model ID")}</span>
 					</label>
 					<select
 						aria-label="Model ID"
@@ -310,7 +311,7 @@ export const OpenAICompatibleProvider = ({
 					onChange={(value) => handleOpenAiModelSelection(value)}
 					placeholder={"Enter Model ID..."}
 					style={{ width: "100%", marginBottom: 10 }}>
-					<span style={{ fontWeight: 500 }}>Model ID</span>
+					<span style={{ fontWeight: 500 }}>{t("apiConfig.modelId", "Model ID")}</span>
 				</DebouncedTextField>
 			)}
 
@@ -502,7 +503,7 @@ export const OpenAICompatibleProvider = ({
 								handleOpenAiModelInfoChange(modelInfo)
 							}}
 							style={{ flex: 1 }}>
-							<span style={{ fontWeight: 500 }}>Context Window Size</span>
+							<span style={{ fontWeight: 500 }}>{t("apiConfig.contextWindowSize", "Context Window Size")}</span>
 						</DebouncedTextField>
 
 						<DebouncedTextField
@@ -534,7 +535,7 @@ export const OpenAICompatibleProvider = ({
 								handleOpenAiModelInfoChange(modelInfo)
 							}}
 							style={{ flex: 1 }}>
-							<span style={{ fontWeight: 500 }}>Input Price / 1M tokens</span>
+							<span style={{ fontWeight: 500 }}>{t("apiConfig.inputPrice", "Input Price / 1M tokens")}</span>
 						</DebouncedTextField>
 
 						<DebouncedTextField
@@ -549,7 +550,7 @@ export const OpenAICompatibleProvider = ({
 								handleOpenAiModelInfoChange(modelInfo)
 							}}
 							style={{ flex: 1 }}>
-							<span style={{ fontWeight: 500 }}>Output Price / 1M tokens</span>
+							<span style={{ fontWeight: 500 }}>{t("apiConfig.outputPrice", "Output Price / 1M tokens")}</span>
 						</DebouncedTextField>
 					</div>
 

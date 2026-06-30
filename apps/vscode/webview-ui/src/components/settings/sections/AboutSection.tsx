@@ -49,7 +49,7 @@ const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 					<p>
 						<VSCodeLink href="https://github.com/cline/cline">GitHub</VSCodeLink>
 						{" • "}
-						<VSCodeLink href="https://github.com/cline/cline/issues"> Issues</VSCodeLink>
+						<VSCodeLink href="https://github.com/cline/cline/issues"> {t("about.issues", "Issues")}</VSCodeLink>
 						{" • "}
 						<VSCodeLink href="https://github.com/cline/cline/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop">
 							{" "}
@@ -59,7 +59,7 @@ const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 
 					<h3 className="text-md font-semibold">{t("about.resources", "Resources")}</h3>
 					<p>
-						<VSCodeLink href="https://docs.cline.bot/">Documentation</VSCodeLink>
+						<VSCodeLink href="https://docs.cline.bot/">{t("about.documentation", "Documentation")}</VSCodeLink>
 						{" • "}
 						<VSCodeLink href="https://cline.bot/">https://cline.bot</VSCodeLink>
 					</p>

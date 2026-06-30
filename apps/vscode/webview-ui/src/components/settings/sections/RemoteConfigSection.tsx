@@ -5,6 +5,7 @@ import { RemoteConfigToggle } from "@/components/account/RemoteConfigToggle"
 import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
+import { t } from "@/i18n"
 import Section from "../Section"
 
 interface RemoteConfigSectionProps {
@@ -57,7 +58,7 @@ function RefreshButton() {
 			className={`w-full rounded-xs ${isLoading ? "animate-pulse" : ""}`}
 			disabled={isLoading || (retryIn !== null && retryIn > 0)}
 			onClick={() => onRefresh()}>
-			Refresh {retryIn && retryIn > 0 && <>(Retry in: {retryIn} seconds)</>}
+			Refresh {retryIn && retryIn > 0 && <>({t("settings.remoteConfig.retryIn", "Retry in: {retryIn} seconds")})</>}
 		</VSCodeButton>
 	)
 }
@@ -71,10 +72,10 @@ interface SettingRowProps {
 function SettingRow({ label, value, isSecret }: SettingRowProps) {
 	const displayValue = (() => {
 		if (value === undefined || value === null) {
-			return <span className="text-description italic">Not configured</span>
+			return <span className="text-description italic">{t("remoteConfig.notConfigured", "Not configured")}</span>
 		}
 		if (typeof value === "boolean") {
-			return value ? <span className="text-green-500">Enabled</span> : <span className="text-description">Disabled</span>
+			return value ? <span className="text-green-500">{t("common.enabled", "Enabled")}</span> : <span className="text-description">{t("common.disabled", "Disabled")}</span>
 		}
 		if (isSecret && typeof value === "string" && value.length > 0) {
 			return <span className="font-mono text-xs">{"•".repeat(Math.min(value.length, 20))}</span>
@@ -125,9 +126,9 @@ function TestButton({ label, onClick, disabled, successMessage }: TestButtonProp
 		setResult(null)
 		try {
 			await onClick()
-			setResult({ success: true, message: successMessage || "Success!" })
+			setResult({ success: true, message: successMessage || t("common.success", "Success!") })
 		} catch (error) {
-			setResult({ success: false, message: error instanceof Error ? error.message : "Failed" })
+			setResult({ success: false, message: error instanceof Error ? error.message : t("common.failed", "Failed") })
 		} finally {
 			setIsLoading(false)
 			timeoutRef.current = setTimeout(() => setResult(null), 5000)
@@ -141,7 +142,7 @@ function TestButton({ label, onClick, disabled, successMessage }: TestButtonProp
 				className={isLoading ? "animate-pulse" : ""}
 				disabled={disabled || isLoading}
 				onClick={handleClick}>
-				{isLoading ? "Testing..." : label}
+				{isLoading ? t("common.testing", "Testing...") : label}
 			</VSCodeButton>
 			{result && <span className={`text-xs ${result.success ? "text-green-500" : "text-red-500"}`}>{result.message}</span>}
 		</div>
@@ -165,7 +166,7 @@ function OtelSettingsSection() {
 	const handleTestOtel = async () => {
 		const response = await StateServiceClient.testOtelConnection(EmptyRequest.create({}))
 		if (!response.success) {
-			throw new Error(response.error || "Test failed")
+			throw new Error(response.error || t("common.testFailed", "Test failed"))
 		}
 	}
 
@@ -176,40 +177,40 @@ function OtelSettingsSection() {
 				OpenTelemetry Configuration
 			</h4>
 			<div className="bg-vscode-textBlockQuote-background rounded p-3 mb-2">
-				<SettingRow label="Enabled" value={otelEnabled} />
-				<SettingRow label="Metrics Exporter" value={remoteConfigSettings?.openTelemetryMetricsExporter} />
-				<SettingRow label="Logs Exporter" value={remoteConfigSettings?.openTelemetryLogsExporter} />
-				<SettingRow label="OTLP Protocol" value={remoteConfigSettings?.openTelemetryOtlpProtocol} />
-				<SettingRow label="OTLP Endpoint" value={remoteConfigSettings?.openTelemetryOtlpEndpoint} />
+				<SettingRow label={t("common.enabled", "Enabled")} value={otelEnabled} />
+				<SettingRow label={t("settings.remoteConfig.metricsExporter", "Metrics Exporter")} value={remoteConfigSettings?.openTelemetryMetricsExporter} />
+				<SettingRow label={t("settings.remoteConfig.logsExporter", "Logs Exporter")} value={remoteConfigSettings?.openTelemetryLogsExporter} />
+				<SettingRow label={t("settings.remoteConfig.otlpProtocol", "OTLP Protocol")} value={remoteConfigSettings?.openTelemetryOtlpProtocol} />
+				<SettingRow label={t("settings.remoteConfig.otlpEndpoint", "OTLP Endpoint")} value={remoteConfigSettings?.openTelemetryOtlpEndpoint} />
 				{remoteConfigSettings?.openTelemetryOtlpMetricsEndpoint && (
-					<SettingRow label="Metrics Endpoint" value={remoteConfigSettings?.openTelemetryOtlpMetricsEndpoint} />
+					<SettingRow label={t("settings.remoteConfig.metricsEndpoint", "Metrics Endpoint")} value={remoteConfigSettings?.openTelemetryOtlpMetricsEndpoint} />
 				)}
 				{remoteConfigSettings?.openTelemetryOtlpLogsEndpoint && (
-					<SettingRow label="Logs Endpoint" value={remoteConfigSettings?.openTelemetryOtlpLogsEndpoint} />
+					<SettingRow label={t("settings.remoteConfig.logsEndpoint", "Logs Endpoint")} value={remoteConfigSettings?.openTelemetryOtlpLogsEndpoint} />
 				)}
 				{remoteConfigSettings?.openTelemetryOtlpHeaders && (
 					<SettingRow
-						label="OTLP Headers"
+						label={t("settings.remoteConfig.otlpHeaders", "OTLP Headers")}
 						value={`${Object.keys(remoteConfigSettings.openTelemetryOtlpHeaders).length} header(s)`}
 					/>
 				)}
 				{remoteConfigSettings?.openTelemetryMetricExportInterval && (
 					<SettingRow
-						label="Metric Export Interval"
+						label={t("settings.remoteConfig.metricExportInterval", "Metric Export Interval")}
 						value={`${remoteConfigSettings.openTelemetryMetricExportInterval}ms`}
 					/>
 				)}
 				{remoteConfigSettings?.openTelemetryOtlpInsecure !== undefined && (
-					<SettingRow label="OTLP Insecure" value={remoteConfigSettings?.openTelemetryOtlpInsecure} />
+					<SettingRow label={t("settings.remoteConfig.otlpInsecure", "OTLP Insecure")} value={remoteConfigSettings?.openTelemetryOtlpInsecure} />
 				)}
 				{remoteConfigSettings?.openTelemetryLogBatchSize && (
-					<SettingRow label="Log Batch Size" value={remoteConfigSettings?.openTelemetryLogBatchSize} />
+					<SettingRow label={t("settings.remoteConfig.logBatchSize", "Log Batch Size")} value={remoteConfigSettings?.openTelemetryLogBatchSize} />
 				)}
 				{remoteConfigSettings?.openTelemetryLogBatchTimeout && (
-					<SettingRow label="Log Batch Timeout" value={`${remoteConfigSettings.openTelemetryLogBatchTimeout}ms`} />
+					<SettingRow label={t("settings.remoteConfig.logBatchTimeout", "Log Batch Timeout")} value={`${remoteConfigSettings.openTelemetryLogBatchTimeout}ms`} />
 				)}
 				{remoteConfigSettings?.openTelemetryLogMaxQueueSize && (
-					<SettingRow label="Log Max Queue Size" value={remoteConfigSettings?.openTelemetryLogMaxQueueSize} />
+					<SettingRow label={t("settings.remoteConfig.logMaxQueueSize", "Log Max Queue Size")} value={remoteConfigSettings?.openTelemetryLogMaxQueueSize} />
 				)}
 			</div>
 
@@ -276,7 +277,7 @@ export function RemoteConfigSection({ renderSectionHeader }: RemoteConfigSection
 		return (
 			<BaseRemoteConfigSection renderSectionHeader={renderSectionHeader}>
 				<div className="flex flex-col justify-center gap-4">
-					<h3>You have opted out of remote config. Opt back in to apply it and see it here.</h3>
+					<h3>{t("remoteConfig.optedOut", "You have opted out of remote config. Opt back in to apply it and see it here.")}</h3>
 
 					<RemoteConfigToggle activeOrganization={activeOrganization} />
 				</div>

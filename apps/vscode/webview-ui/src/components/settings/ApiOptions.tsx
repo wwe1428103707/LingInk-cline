@@ -6,6 +6,7 @@ import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState }
 import { useInterval } from "react-use"
 import styled from "styled-components"
 
+import { t } from "@/i18n"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { PLATFORM_CONFIG, PlatformType } from "@/config/platform.config"
 import { CLINE_PASS_FEATURE_FLAG } from "@/constants/featureFlags"
@@ -313,16 +314,16 @@ const ApiOptions = ({
 						<TooltipTrigger>
 							<div className="flex items-center gap-2 mb-1">
 								<label htmlFor="api-provider">
-									<span style={{ fontWeight: 500 }}>API Provider</span>
+									<span style={{ fontWeight: 500 }}>{t("apiConfig.provider", "API Provider")}</span>
 								</label>
 								<i className="codicon codicon-lock text-description text-sm" />
 							</div>
 						</TooltipTrigger>
-						<TooltipContent>Provider options are managed by your organization's remote configuration</TooltipContent>
+						<TooltipContent>{t("apiConfig.provider.remoteManaged", "Provider options are managed by your organization's remote configuration</TooltipContent>
 					</Tooltip>
 				) : (
 					<label htmlFor="api-provider">
-						<span style={{ fontWeight: 500 }}>API Provider</span>
+						<span style={{ fontWeight: 500 }}>{t("apiConfig.provider", "API Provider")}</span>
 					</label>
 				)}
 				<ProviderDropdownWrapper ref={dropdownRef}>

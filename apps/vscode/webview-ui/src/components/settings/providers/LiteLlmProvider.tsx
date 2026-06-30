@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { ModelInfo, openAiModelInfoSafeDefaults } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
@@ -83,7 +84,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 					style={{ width: "100%" }}
 					type="text">
 					<div className="flex items-center gap-2 mb-1">
-						<span style={{ fontWeight: 500 }}>Base URL (optional)</span>
+						<span style={{ fontWeight: 500 }}>{t("apiConfig.baseUrlOptional", "Base URL (optional)")}</span>
 						{remoteConfigSettings?.liteLlmBaseUrl !== undefined && <LockIcon />}
 					</div>
 				</DebouncedTextField>
@@ -97,7 +98,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 					style={{ width: "100%" }}
 					type="password">
 					<div className="flex items-center gap-2 mb-1">
-						<span style={{ fontWeight: 500 }}>API Key</span>
+						<span style={{ fontWeight: 500 }}>{t("apiConfig.apiKey", "API Key")}</span>
 						{remoteConfigSettings?.configuredApiKeys?.litellm && <LockIcon />}
 					</div>
 				</DebouncedTextField>

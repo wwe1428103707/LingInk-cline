@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { type ModelInfo, openAiModelInfoSafeDefaults } from "@shared/api"
 import type { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeLink, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
@@ -186,7 +187,7 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 				/>
 			)}
 
-			<div className="font-semibold">Context Window</div>
+			<div className="font-semibold">{t("apiConfig.contextWindow", "Context Window")}</div>
 			<VSCodeTextField
 				className="w-full pointer-events-none"
 				disabled={true}

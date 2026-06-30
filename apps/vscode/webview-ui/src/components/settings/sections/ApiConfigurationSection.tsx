@@ -79,10 +79,10 @@ const ApiConfigurationSection = ({ renderSectionHeader, initialModelTab }: ApiCo
 								console.error("Failed to update separate models setting:", error)
 							}
 						}}>
-						Use different models for Plan and Act modes
+						{t("apiConfig.planActSeparateModels", "Use different models for Plan and Act modes")}
 					</VSCodeCheckbox>
 					<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
-						Switching between Plan and Act mode will persist the API and model used in the previous mode. This may be
+						{t("apiConfig.planActSeparateModels.desc", "Switching between Plan and Act mode will persist the API and model used in the previous mode.")} This may be
 						helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on.
 					</p>
 				</div>
