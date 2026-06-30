@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
+import { t } from "@/i18n"
 import ViewHeader from "../../common/ViewHeader"
 import AddRemoteServerForm from "./tabs/add-server/AddRemoteServerForm"
 import ConfigureServersView from "./tabs/installed/ConfigureServersView"
@@ -54,7 +55,7 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 				display: "flex",
 				flexDirection: "column",
 			}}>
-			<ViewHeader environment={environment} onDone={onDone} title="MCP Servers" />
+			<ViewHeader environment={environment} onDone={onDone} title={t("mcp.title", "MCP Servers")} />
 
 			<div style={{ flex: 1, overflow: "auto" }}>
 				{/* Tabs container */}

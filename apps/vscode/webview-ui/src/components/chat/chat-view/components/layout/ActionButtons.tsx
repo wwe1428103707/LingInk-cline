@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useExtensionState } from "../../../../../context/ExtensionStateContext"
 import { ButtonActionType, getButtonConfigFromState } from "../../shared/buttonConfig"
 import type { ChatState, MessageHandlers } from "../../types/chatTypes"
+import { t } from "@/i18n"
 
 interface ActionButtonsProps {
 	task?: ClineMessage

@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { combineApiRequests } from "@shared/combineApiRequests"
 import { combineCommandSequences } from "@shared/combineCommandSequences"
 import { combineErrorRetryMessages } from "@shared/combineErrorRetryMessages"
@@ -362,8 +363,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	const scrollBehavior = useScrollBehavior(displayMessages, visibleMessages, groupedMessages, expandedRows, setExpandedRows)
 
 	const placeholderText = useMemo(() => {
-		const text = task ? "Type a message..." : "Type your task here..."
-		return text
+		return task ? t("chat.input.placeholder", "Type a message...") : t("chat.input.placeholder.empty", "Type your task here...")
 	}, [task])
 
 	return (

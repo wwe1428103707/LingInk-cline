@@ -3,6 +3,7 @@ import ChatTextArea from "@/components/chat/ChatTextArea"
 import QuotedMessagePreview from "@/components/chat/QuotedMessagePreview"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ChatState, MessageHandlers, ScrollBehavior } from "../../types/chatTypes"
+import { t } from "@/i18n"
 
 interface InputSectionProps {
 	chatState: ChatState

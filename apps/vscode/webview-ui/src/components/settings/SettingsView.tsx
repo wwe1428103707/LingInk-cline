@@ -4,16 +4,17 @@ import { ResetStateRequest } from "@shared/proto/cline/state"
 import type { UserOrganization } from "@shared/proto/index.cline"
 import {
 	CheckCheck,
+	Cog,
 	FlaskConical,
 	HardDriveDownload,
 	Info,
 	type LucideIcon,
 	SlidersHorizontal,
-	SquareTerminal,
 	Wrench,
 } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useEvent } from "react-use"
+import { useTranslation } from "@/i18n"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { type ClineUser, useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -24,17 +25,17 @@ import { Tab, TabContent, TabList, TabTrigger } from "../common/Tab"
 import ViewHeader from "../common/ViewHeader"
 import SectionHeader from "./SectionHeader"
 import AboutSection from "./sections/AboutSection"
+import AdvancedSettingsSection from "./sections/AdvancedSettingsSection"
 import ApiConfigurationSection from "./sections/ApiConfigurationSection"
 import DebugSection from "./sections/DebugSection"
 import FeatureSettingsSection from "./sections/FeatureSettingsSection"
 import GeneralSettingsSection from "./sections/GeneralSettingsSection"
 import { RemoteConfigSection } from "./sections/RemoteConfigSection"
-import TerminalSettingsSection from "./sections/TerminalSettingsSection"
 
 const IS_DEV = process.env.IS_DEV
 
 // Tab definitions
-type SettingsTabID = "api-config" | "features" | "terminal" | "general" | "about" | "debug" | "remote-config"
+type SettingsTabID = "api-config" | "features" | "advanced" | "general" | "about" | "debug" | "remote-config"
 interface SettingsTab {
 	id: SettingsTabID
 	name: string
@@ -44,98 +45,107 @@ interface SettingsTab {
 	hidden?: (params?: { user: ClineUser | null; activeOrganization: UserOrganization | null }) => boolean
 }
 
-const SETTINGS_TABS: SettingsTab[] = [
-	{
-		id: "api-config",
-		name: "API Configuration",
-		tooltipText: "API Configuration",
-		headerText: "API Configuration",
-		icon: SlidersHorizontal,
-	},
-	{
-		id: "features",
-		name: "Features",
-		tooltipText: "Feature Settings",
-		headerText: "Feature Settings",
-		icon: CheckCheck,
-	},
-	{
-		id: "terminal",
-		name: "Terminal",
-		tooltipText: "Terminal Settings",
-		headerText: "Terminal Settings",
-		icon: SquareTerminal,
-	},
-	{
-		id: "general",
-		name: "General",
-		tooltipText: "General Settings",
-		headerText: "General Settings",
-		icon: Wrench,
-	},
-	{
-		id: "remote-config",
-		name: "Remote Config",
-		tooltipText: "Remotely configured fields",
-		headerText: "Remote Config",
-		icon: HardDriveDownload,
-		hidden: ({ activeOrganization } = { user: null, activeOrganization: null }) =>
-			!activeOrganization || !isAdminOrOwner(activeOrganization),
-	},
-	{
-		id: "about",
-		name: "About",
-		tooltipText: "About Cline",
-		headerText: "About",
-		icon: Info,
-	},
-	// Only show in dev mode
-	{
-		id: "debug",
-		name: "Debug",
-		tooltipText: "Debug Tools",
-		headerText: "Debug",
-		icon: FlaskConical,
-		hidden: ({ user } = { user: null, activeOrganization: null }) => !IS_DEV && !isClineInternalTester(user?.email || ""),
-	},
-]
-
 type SettingsViewProps = {
 	onDone: () => void
 	targetSection?: string
 }
 
-// Helper to render section header - moved outside component for better performance
-const renderSectionHeader = (tabId: string) => {
-	const tab = SETTINGS_TABS.find((t) => t.id === tabId)
-	if (!tab) {
-		return null
-	}
-
-	return (
-		<SectionHeader>
-			<div className="flex items-center gap-2">
-				<tab.icon className="w-4" />
-				<div>{tab.headerText}</div>
-			</div>
-		</SectionHeader>
-	)
-}
-
 const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
+	const { t } = useTranslation()
+
 	// Memoize to avoid recreation
 	const TAB_CONTENT_MAP: Record<SettingsTabID, React.FC<any>> = useMemo(
 		() => ({
 			"api-config": ApiConfigurationSection,
 			general: GeneralSettingsSection,
 			features: FeatureSettingsSection,
-			terminal: TerminalSettingsSection,
+			advanced: AdvancedSettingsSection,
 			"remote-config": RemoteConfigSection,
 			about: AboutSection,
 			debug: DebugSection,
 		}),
 		[],
 	) // Empty deps - these imports never change
+
+	// Tab definitions - inside component so t() is reactive
+	const SETTINGS_TABS: SettingsTab[] = useMemo(
+		() => [
+			{
+				id: "api-config",
+				name: t("tab.apiConfig", "API Configuration"),
+				tooltipText: t("tab.tooltip.apiConfig", "API Configuration"),
+				headerText: t("tab.header.apiConfig", "API Configuration"),
+				icon: SlidersHorizontal,
+			},
+			{
+				id: "features",
+				name: t("tab.features", "Features"),
+				tooltipText: t("tab.tooltip.features", "Feature Settings"),
+				headerText: t("tab.header.features", "Feature Settings"),
+				icon: CheckCheck,
+			},
+			{
+				id: "advanced",
+				name: t("tab.advanced", "Advanced"),
+				tooltipText: t("tab.tooltip.advanced", "Advanced Settings"),
+				headerText: t("tab.header.advanced", "Advanced Settings"),
+				icon: Cog,
+			},
+			{
+				id: "general",
+				name: t("tab.general", "General"),
+				tooltipText: t("tab.tooltip.general", "General Settings"),
+				headerText: t("tab.header.general", "General Settings"),
+				icon: Wrench,
+			},
+			{
+				id: "remote-config",
+				name: t("tab.remoteConfig", "Remote Config"),
+				tooltipText: t("tab.tooltip.remoteConfig", "Remotely configured fields"),
+				headerText: t("tab.header.remoteConfig", "Remote Config"),
+				icon: HardDriveDownload,
+				hidden: ({ activeOrganization } = { user: null, activeOrganization: null }) =>
+					!activeOrganization || !isAdminOrOwner(activeOrganization),
+			},
+			{
+				id: "about",
+				name: t("tab.about", "About"),
+				tooltipText: t("tab.tooltip.about", "About Cline"),
+				headerText: t("tab.header.about", "About"),
+				icon: Info,
+			},
+			// Only show in dev mode
+			{
+				id: "debug",
+				name: t("tab.debug", "Debug"),
+				tooltipText: t("tab.tooltip.debug", "Debug Tools"),
+				headerText: t("tab.header.debug", "Debug"),
+				icon: FlaskConical,
+				hidden: ({ user } = { user: null, activeOrganization: null }) =>
+					!IS_DEV && !isClineInternalTester(user?.email || ""),
+			},
+		],
+		[t],
+	)
+
+	// Helper to render section header - uses reactive SETTINGS_TABS
+	const renderSectionHeader = useCallback(
+		(tabId: string) => {
+			const tab = SETTINGS_TABS.find((t) => t.id === tabId)
+			if (!tab) {
+				return null
+			}
+			return (
+				<SectionHeader>
+					<div className="flex items-center gap-2">
+						<tab.icon className="w-4" />
+						<div>{tab.headerText}</div>
+					</div>
+				</SectionHeader>
+			)
+		},
+		[SETTINGS_TABS],
+	)
 
 	const { version, environment, settingsInitialModelTab } = useExtensionState()
 	const { activeOrganization, clineUser } = useClineAuth()
@@ -249,7 +259,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 
 	return (
 		<Tab>
-			<ViewHeader environment={environment} onDone={onDone} title="Settings" />
+			<ViewHeader environment={environment} onDone={onDone} title={t("viewHeader.settings", "Settings")} />
 
 			<div className="flex flex-1 overflow-hidden">
 				<TabList

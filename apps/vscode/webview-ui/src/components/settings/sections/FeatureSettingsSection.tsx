@@ -1,8 +1,6 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { UpdateSettingsRequest } from "@shared/proto/cline/state"
 import { memo, useEffect, useState, type ReactNode } from "react"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -57,38 +55,10 @@ const editorFeatures: FeatureToggle[] = [
 	},
 	{
 		id: "checkpoints",
-		label: "Checkpoints",
+		label: "论文版本快照",
 		description: "Save progress at key points for easy rollback",
 		stateKey: "enableCheckpointsSetting",
 		settingKey: "enableCheckpointsSetting",
-	},
-	{
-		id: "worktrees",
-		label: "Worktrees",
-		description: "Enables git worktree management for running parallel Cline tasks.",
-		stateKey: "worktreesEnabled",
-		settingKey: "worktreesEnabled",
-	},
-]
-
-const experimentalFeatures: FeatureToggle[] = [
-	{
-		id: "yolo",
-		label: "Yolo Mode",
-		description:
-			"Execute tasks without user's confirmation. Auto-switches from Plan to Act mode and disables the ask question tool. Use with extreme caution.",
-		stateKey: "yoloModeToggled",
-		settingKey: "yoloModeToggled",
-	},
-]
-
-const advancedFeatures: FeatureToggle[] = [
-	{
-		id: "hooks",
-		label: "Hooks",
-		description: "Enable lifecycle and tool hooks during task execution.",
-		stateKey: "hooksEnabled",
-		settingKey: "hooksEnabled",
 	},
 ]
 
@@ -161,34 +131,17 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 	}, [])
 	const {
 		enableCheckpointsSetting,
-		hooksEnabled,
-		mcpDisplayMode,
-		yoloModeToggled,
 		useAutoCondense,
-		subagentsEnabled,
-		worktreesEnabled,
-		remoteConfigSettings,
 		backgroundEditEnabled,
 		showFeatureTips,
 	} = useExtensionState()
-
-	const isYoloRemoteLocked = remoteConfigSettings?.yoloModeToggled !== undefined
 
 	// State lookup for mapped features
 	const featureState: Record<string, boolean | undefined> = {
 		showFeatureTips,
 		enableCheckpointsSetting,
-		hooksEnabled,
 		useAutoCondense,
-		subagentsEnabled,
-		worktreesEnabled: worktreesEnabled?.user,
 		backgroundEditEnabled,
-		yoloModeToggled: isYoloRemoteLocked ? remoteConfigSettings?.yoloModeToggled : yoloModeToggled,
-	}
-
-	// Visibility lookup for features with feature flags
-	const featureVisibility: Record<string, boolean | undefined> = {
-		worktreesEnabled: worktreesEnabled?.featureFlag,
 	}
 
 	return (
@@ -206,7 +159,6 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								<FeatureRow
 									checked={featureState[feature.stateKey]}
 									description={feature.description}
-									isVisible={featureVisibility[feature.stateKey] ?? true}
 									key={feature.id}
 									label={feature.label}
 									onChange={(checked) => updateSetting(feature.settingKey, checked)}
@@ -225,69 +177,11 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								<FeatureRow
 									checked={featureState[feature.stateKey]}
 									description={feature.description}
-									isVisible={featureVisibility[feature.stateKey] ?? true}
 									key={feature.id}
 									label={feature.label}
 									onChange={(checked) => updateSetting(feature.settingKey, checked)}
 								/>
 							))}
-						</div>
-					</div>
-
-					{/* Experimental features */}
-					<div>
-						<div className="text-xs font-medium uppercase tracking-wider mb-3 text-warning/80">Experimental</div>
-						<div
-							className="relative p-3 pt-0 my-3 rounded-md border border-editor-widget-border/50 w-full"
-							id="experimental-features">
-							{experimentalFeatures.map((feature) => (
-								<FeatureRow
-									checked={featureState[feature.stateKey]}
-									description={feature.description}
-									disabled={feature.id === "yolo" && isYoloRemoteLocked}
-									isRemoteLocked={feature.id === "yolo" && isYoloRemoteLocked}
-									isVisible={featureVisibility[feature.stateKey] ?? true}
-									key={feature.id}
-									label={feature.label}
-									onChange={(checked) => updateSetting(feature.settingKey, checked)}
-									remoteTooltip="This setting is managed by your organization's remote configuration"
-								/>
-							))}
-						</div>
-					</div>
-				</div>
-
-				{/* Advanced */}
-				<div>
-					<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">Advanced</div>
-					<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50" id="advanced-features">
-						<div className="space-y-3">
-							{advancedFeatures.map((feature) => (
-								<FeatureRow
-									checked={featureState[feature.stateKey]}
-									description={feature.description}
-									isVisible={featureVisibility[feature.stateKey] ?? true}
-									key={feature.id}
-									label={feature.label}
-									onChange={(checked) => updateSetting(feature.settingKey, checked)}
-								/>
-							))}
-
-							{/* MCP Display Mode */}
-							<div className="space-y-2">
-								<Label className="text-sm font-medium text-foreground">MCP Display Mode</Label>
-								<p className="text-xs text-muted-foreground">Controls how MCP responses are displayed</p>
-								<Select onValueChange={(v) => updateSetting("mcpDisplayMode", v)} value={mcpDisplayMode}>
-									<SelectTrigger className="w-full">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="plain">Plain Text</SelectItem>
-										<SelectItem value="rich">Rich Display</SelectItem>
-										<SelectItem value="markdown">Markdown</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
 						</div>
 					</div>
 				</div>

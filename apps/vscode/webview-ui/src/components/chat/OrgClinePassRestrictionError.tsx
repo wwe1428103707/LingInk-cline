@@ -1,9 +1,10 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { useState } from "react";
 import { AccountServiceClient } from "@/services/grpc-client";
+import { t } from "@/i18n"
 
 const ORG_CLINE_PASS_RESTRICTION_MESSAGE =
-	"Organization accounts cannot use ClinePass subscriptions.";
+	t("orgRestriction.message", "Organization accounts cannot use ClinePass subscriptions.");
 
 const OrgClinePassRestrictionError = () => {
 	const [isSwitching, setIsSwitching] = useState(false);
@@ -19,7 +20,7 @@ const OrgClinePassRestrictionError = () => {
 		} catch (error) {
 			console.error("Failed to switch to personal Cline account:", error);
 			setError(
-				"Failed to switch account. Use /accounts to switch to your personal account.",
+				t("orgRestriction.failed", "Failed to switch account. Use /accounts to switch to your personal account."),
 			);
 		} finally {
 			setIsSwitching(false);

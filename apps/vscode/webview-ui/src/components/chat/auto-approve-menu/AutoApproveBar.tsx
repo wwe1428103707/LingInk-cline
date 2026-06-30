@@ -4,6 +4,7 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getAsVar, VSC_TITLEBAR_INACTIVE_FOREGROUND } from "@/utils/vscStyles"
 import AutoApproveModal from "./AutoApproveModal"
 import { ACTION_METADATA } from "./constants"
+import { t } from "@/i18n"
 
 interface AutoApproveBarProps {
 	style?: React.CSSProperties
@@ -47,7 +48,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 		})
 
 		if (actionsToShow.length === 0) {
-			return <span className={baseClasses}>None</span>
+			return <span className={baseClasses}>{t("autoApprove.none", "None")}</span>
 		}
 
 		return (
@@ -100,7 +101,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 				/>
 
 				<div className="pt-4 pb-3.5 px-3.5">
-					<div className="text-sm mb-1">Auto-approve: YOLO</div>
+					<div className="text-sm mb-1">{t("autoApprove.yolo", "Auto-approve: YOLO")}</div>
 					<div className="text-muted-foreground text-xs">
 						YOLO mode is enabled.{" "}
 						<span className="underline cursor-pointer hover:text-foreground" onClick={handleNavigateToFeatures}>
@@ -144,7 +145,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			/>
 
 			<div
-				aria-label={isModalVisible ? "Close auto-approve settings" : "Open auto-approve settings"}
+				aria-label={isModalVisible ? t("autoApprove.close", "Close auto-approve settings") : t("autoApprove.open", "Open auto-approve settings")}
 				className="group cursor-pointer pt-3 pb-3.5 pr-2 px-3.5 flex items-center justify-between gap-0"
 				onClick={() => {
 					setIsModalVisible((prev) => !prev)
@@ -159,7 +160,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 				ref={buttonRef}
 				tabIndex={0}>
 				<div className="flex flex-nowrap items-center gap-1 min-w-0 flex-1">
-					<span className="whitespace-nowrap">Auto-approve:</span>
+					<span className="whitespace-nowrap">{t("autoApprove.title", "Auto-approve:")}</span>
 					{getEnabledActionsText()}
 				</div>
 				{isModalVisible ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}

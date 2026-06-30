@@ -2,10 +2,12 @@ import { HistoryIcon, PlusIcon, PuzzleIcon, SettingsIcon, UserCircleIcon } from 
 import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useTranslation } from "@/i18n"
 import { TaskServiceClient } from "@/services/grpc-client"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 
 export const Navbar = () => {
+	const { t } = useTranslation()
 	const { navigateToHistory, navigateToSettings, navigateToAccount, navigateToMarketplace, navigateToChat } =
 		useExtensionState()
 
@@ -13,8 +15,8 @@ export const Navbar = () => {
 		() => [
 			{
 				id: "chat",
-				name: "Chat",
-				tooltip: "New Task",
+				name: t("navbar.chat", "Chat"),
+				tooltip: t("navbar.newTask", "New Task"),
 				icon: PlusIcon,
 				navigate: () => {
 					// Close the current task, then navigate to the chat view
@@ -27,34 +29,34 @@ export const Navbar = () => {
 			},
 			{
 				id: "customize",
-				name: "Customize",
-				tooltip: "Customize",
+				name: t("navbar.marketplace", "Customize"),
+				tooltip: t("navbar.marketplace", "Customize"),
 				icon: PuzzleIcon,
 				navigate: navigateToMarketplace,
 			},
 			{
 				id: "history",
-				name: "History",
-				tooltip: "History",
+				name: t("navbar.history", "History"),
+				tooltip: t("navbar.history", "History"),
 				icon: HistoryIcon,
 				navigate: navigateToHistory,
 			},
 			{
 				id: "account",
-				name: "Account",
-				tooltip: "Account",
+				name: t("navbar.account", "Account"),
+				tooltip: t("navbar.account", "Account"),
 				icon: UserCircleIcon,
 				navigate: navigateToAccount,
 			},
 			{
 				id: "settings",
-				name: "Settings",
-				tooltip: "Settings",
+				name: t("navbar.settings", "Settings"),
+				tooltip: t("navbar.settings", "Settings"),
 				icon: SettingsIcon,
 				navigate: navigateToSettings,
 			},
 		],
-		[navigateToAccount, navigateToChat, navigateToHistory, navigateToMarketplace, navigateToSettings],
+		[t, navigateToAccount, navigateToChat, navigateToHistory, navigateToMarketplace, navigateToSettings],
 	)
 
 	return (

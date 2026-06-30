@@ -9,6 +9,7 @@ import ApiOptions from "../ApiOptions"
 import Section from "../Section"
 import { syncModeConfigurations } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
+import { t } from "@/i18n"
 
 interface ApiConfigurationSectionProps {
 	renderSectionHeader?: (tabId: string) => JSX.Element | null

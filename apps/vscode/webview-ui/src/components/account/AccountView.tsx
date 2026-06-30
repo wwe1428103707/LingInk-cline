@@ -6,6 +6,7 @@ import { VSCodeButton, VSCodeDivider, VSCodeDropdown, VSCodeOption, VSCodeTag } 
 import deepEqual from "fast-deep-equal"
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useInterval } from "react-use"
+import { t } from "@/i18n"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { type ClineUser, handleSignOut } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -47,7 +48,7 @@ const AccountView = ({ onDone, clineUser, organizations, activeOrganization }: A
 
 	return (
 		<div className="fixed inset-0 flex flex-col overflow-hidden">
-			<ViewHeader environment={environment} onDone={onDone} showEnvironmentSuffix title="Account" />
+			<ViewHeader environment={environment} onDone={onDone} showEnvironmentSuffix title={t("viewHeader.account", "Account")} />
 			<div className="grow flex flex-col px-5 overflow-y-auto">
 				{clineUser?.uid ? (
 					<ClineAccountView

@@ -7,12 +7,14 @@ import { usePlatform } from "@/context/PlatformContext"
 import { StateServiceClient } from "../../../services/grpc-client"
 import Section from "../Section"
 import { updateSetting } from "../utils/settingsHandlers"
+import { t } from "@/i18n"
 
 interface TerminalSettingsSectionProps {
 	renderSectionHeader: (tabId: string) => JSX.Element | null
+	showHeader?: boolean
 }
 
-const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ renderSectionHeader }) => {
+const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ renderSectionHeader, showHeader = true }) => {
 	const {
 		shellIntegrationTimeout,
 		terminalReuseEnabled,
@@ -34,7 +36,7 @@ const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ rende
 
 		const seconds = Number.parseFloat(value)
 		if (Number.isNaN(seconds) || seconds <= 0) {
-			setInputError("Please enter a positive number")
+			setInputError(t("settings.shellIntegrationTimeout.error", "Please enter a positive number"))
 			return
 		}
 
@@ -87,7 +89,7 @@ const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ rende
 
 	return (
 		<div>
-			{renderSectionHeader("terminal")}
+			{showHeader && renderSectionHeader("terminal")}
 			<Section>
 				<div className="mb-5" id="terminal-settings-section">
 					<div className="mb-4">
@@ -118,7 +120,7 @@ const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ rende
 									className="w-full"
 									onBlur={handleInputBlur}
 									onChange={(event) => handleTimeoutChange(event as Event)}
-									placeholder="Enter timeout in seconds"
+									placeholder={t("settings.shellIntegrationTimeout.placeholder", "Enter timeout in seconds")}
 									value={inputValue}
 								/>
 							</div>

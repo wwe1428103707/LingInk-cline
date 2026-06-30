@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react"
 import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
 import { useClineAuth } from "@/context/ClineAuthContext"
 import { AccountServiceClient, TaskServiceClient } from "@/services/grpc-client"
+import { t } from "@/i18n"
 
 interface CreditLimitErrorProps {
 	currentBalance: number
@@ -19,7 +20,7 @@ const DEFAULT_BUY_CREDITS_URL = {
 }
 
 const CreditLimitError: React.FC<CreditLimitErrorProps> = ({
-	message = "You have run out of credits.",
+	message = t("creditLimit.outOfCredits", "You have run out of credits."),
 	buyCreditsUrl,
 	currentBalance,
 	totalPromotions,
@@ -59,9 +60,9 @@ const CreditLimitError: React.FC<CreditLimitErrorProps> = ({
 							Current Balance: <span className="font-bold">{currentBalance.toFixed(2)}</span>
 						</div>
 					) : null}
-					{totalSpent ? <div className="text-foreground">Total Spent: {totalSpent.toFixed(2)}</div> : null}
+					{totalSpent ? <div className="text-foreground">{t("creditLimit.totalSpent", "Total Spent:")} {totalSpent.toFixed(2)}</div> : null}
 					{totalPromotions ? (
-						<div className="text-foreground">Total Promotions: {totalPromotions.toFixed(2)}</div>
+						<div className="text-foreground">{t("creditLimit.totalPromotions", "Total Promotions:")} {totalPromotions.toFixed(2)}</div>
 					) : null}
 				</div>
 			</div>

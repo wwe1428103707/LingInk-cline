@@ -4,6 +4,7 @@ import React from "react"
 import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
 import { useClineAuth } from "@/context/ClineAuthContext"
 import { TaskServiceClient } from "@/services/grpc-client"
+import { t } from "@/i18n"
 
 interface EntitlementErrorProps {
 	message?: string
@@ -12,7 +13,7 @@ interface EntitlementErrorProps {
 // Relative (no leading slash) so it appends to path-prefixed app URLs (e.g. self-hosted/proxy) instead of resetting to origin.
 const CLINE_PASS_SUBSCRIBE_PATH = "dashboard/subscription"
 
-const HEADLINE = "This model requires a ClinePass subscription."
+const HEADLINE = t("entitlementError.headline", "This model requires a ClinePass subscription.")
 
 function buildSubscribeUrl(appBaseUrl?: string): string | undefined {
 	if (!appBaseUrl) {

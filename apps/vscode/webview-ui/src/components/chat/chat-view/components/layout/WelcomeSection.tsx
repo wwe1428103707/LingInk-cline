@@ -18,6 +18,7 @@ import { AccountServiceClient, StateServiceClient, UiServiceClient, WorktreeServ
 import { convertBannerData } from "@/utils/bannerUtils"
 import { getCurrentPlatform } from "@/utils/platformUtils"
 import { WelcomeSectionProps } from "../../types/chatTypes"
+import { t } from "@/i18n"
 
 /**
  * Welcome section shown when there's no active task
