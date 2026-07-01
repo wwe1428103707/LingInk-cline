@@ -48,7 +48,7 @@ export const OpenAINativeProvider = ({ showModelOptions, isPopup, currentMode }:
 						models={models}
 						onChange={(e: any) =>
 							handleModeFieldChange(
-								{ plan: "planModeApiModelId", act: "actModeApiModelId" },
+								{ plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
 								e.target.value,
 								currentMode,
 							)

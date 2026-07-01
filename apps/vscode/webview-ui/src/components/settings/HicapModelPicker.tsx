@@ -45,8 +45,8 @@ const HicapModelPicker: React.FC<HicapModelPickerProps> = ({ isPopup, currentMod
 
 		handleModeFieldsChange(
 			{
-				hicapModelId: { plan: "planModeHicapModelId", act: "actModeHicapModelId" },
-				hicapModelInfo: { plan: "planModeHicapModelInfo", act: "actModeHicapModelInfo" },
+				hicapModelId: { plan: "planModeHicapModelId", act: "actModeHicapModelId", academic: "academicModeHicapModelId" },
+				hicapModelInfo: { plan: "planModeHicapModelInfo", act: "actModeHicapModelInfo", academic: "academicModeHicapModelInfo" },
 			},
 			{
 				hicapModelId: newModelId,

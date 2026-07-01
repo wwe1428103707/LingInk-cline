@@ -6,7 +6,15 @@ import type { ApiConfiguration, ApiProvider } from "@/shared/api"
 import { getProviderModelIdKey } from "@/shared/storage/provider-keys"
 
 type ProviderSwitchConfig = Partial<
-	Pick<ApiConfiguration, "planModeApiProvider" | "actModeApiProvider" | "planModeApiModelId" | "actModeApiModelId">
+	Pick<
+		ApiConfiguration,
+		| "planModeApiProvider"
+		| "actModeApiProvider"
+		| "academicModeApiProvider"
+		| "planModeApiModelId"
+		| "actModeApiModelId"
+		| "academicModeApiModelId"
+	>
 >
 
 const modeFields = {
@@ -19,8 +27,8 @@ const modeFields = {
 		modelId: "actModeApiModelId",
 	},
 	academic: {
-		provider: "actModeApiProvider",
-		modelId: "actModeApiModelId",
+		provider: "academicModeApiProvider",
+		modelId: "academicModeApiModelId",
 	},
 } as const
 

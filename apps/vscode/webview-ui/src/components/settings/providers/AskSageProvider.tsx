@@ -101,7 +101,7 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 						models={availableModels}
 						onChange={(e) =>
 							handleModeFieldChange(
-								{ plan: "planModeApiModelId", act: "actModeApiModelId" },
+								{ plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
 								e.target.value,
 								currentMode,
 							)

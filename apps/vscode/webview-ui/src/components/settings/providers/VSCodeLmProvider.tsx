@@ -58,6 +58,7 @@ export const VSCodeLmProvider = ({ currentMode }: VSCodeLmProviderProps) => {
 			{
 				plan: "planModeVsCodeLmModelSelector",
 				act: "actModeVsCodeLmModelSelector",
+				academic: "academicModeVsCodeLmModelSelector",
 			},
 			selector,
 			currentMode,

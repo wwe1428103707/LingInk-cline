@@ -67,8 +67,8 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 
 		handleModeFieldsChange(
 			{
-				openRouterModelId: { plan: "planModeOpenRouterModelId", act: "actModeOpenRouterModelId" },
-				openRouterModelInfo: { plan: "planModeOpenRouterModelInfo", act: "actModeOpenRouterModelInfo" },
+				openRouterModelId: { plan: "planModeOpenRouterModelId", act: "actModeOpenRouterModelId", academic: "academicModeOpenRouterModelId" },
+				openRouterModelInfo: { plan: "planModeOpenRouterModelInfo", act: "actModeOpenRouterModelInfo", academic: "academicModeOpenRouterModelInfo" },
 			},
 			{
 				openRouterModelId: newModelId,

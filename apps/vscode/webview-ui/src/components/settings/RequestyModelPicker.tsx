@@ -44,10 +44,12 @@ const RequestyModelPicker: React.FC<RequestyModelPickerProps> = ({ isPopup, base
 				requestyModelId: {
 					plan: "planModeRequestyModelId",
 					act: "actModeRequestyModelId",
+					academic: "academicModeRequestyModelId",
 				},
 				requestyModelInfo: {
 					plan: "planModeRequestyModelInfo",
 					act: "actModeRequestyModelInfo",
+					academic: "academicModeRequestyModelInfo",
 				},
 			},
 			{

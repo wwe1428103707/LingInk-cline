@@ -553,7 +553,7 @@ export class Controller {
 			}
 
 			const apiConfig = this.stateManager.getApiConfiguration()
-			const activeProvider = mode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider
+			const activeProvider = mode === "plan" ? apiConfig.planModeApiProvider : mode === "academic" ? apiConfig.academicModeApiProvider : apiConfig.actModeApiProvider
 			return activeProvider === event.providerId.toString()
 		} catch {
 			return false
@@ -814,7 +814,7 @@ export class Controller {
 		try {
 			const apiConfig = this.stateManager.getApiConfiguration()
 			const mode = normalizeMode(this.stateManager.getGlobalSettingsKey("mode"))
-			return mode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider
+			return mode === "plan" ? apiConfig.planModeApiProvider : mode === "academic" ? apiConfig.academicModeApiProvider : apiConfig.actModeApiProvider
 		} catch {
 			return undefined
 		}

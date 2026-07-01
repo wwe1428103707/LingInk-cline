@@ -508,9 +508,15 @@ async function getWorkspacePath(): Promise<string | undefined> {
 }
 
 function getActiveProviderAndModel(controller: Controller): { providerId?: string; modelId?: string } {
-	const mode = controller.stateManager.getGlobalSettingsKey("mode") === "plan" ? "plan" : "act"
+	const rawMode = controller.stateManager.getGlobalSettingsKey("mode")
+	const mode = rawMode === "plan" ? "plan" : rawMode === "academic" ? "academic" : "act"
 	const apiConfiguration = controller.stateManager.getApiConfiguration()
-	const providerId = mode === "plan" ? apiConfiguration.planModeApiProvider : apiConfiguration.actModeApiProvider
+	const providerId =
+		mode === "plan"
+			? apiConfiguration.planModeApiProvider
+			: mode === "academic"
+				? apiConfiguration.academicModeApiProvider
+				: apiConfiguration.actModeApiProvider
 	const modelId = resolveActiveModelIdFromApiConfiguration(apiConfiguration, mode)
 	return { providerId, modelId }
 }

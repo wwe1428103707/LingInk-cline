@@ -113,9 +113,6 @@ message Secrets {
 // in src/shared/storage/state-keys.ts and use the scripts/generate-state-proto.mjs
 // script to regenerate this list.
 message Settings {
-  reserved 144, 154, 176;
-  reserved "cline_web_tools_enabled", "enable_parallel_tool_calling", "double_check_completion_enabled";
-
   optional string lite_llm_base_url = 1;
   optional bool lite_llm_use_prompt_cache = 2;
   optional string anthropic_base_url = 4;
@@ -285,6 +282,55 @@ message Settings {
   optional string act_mode_cline_model_id = 180;
   optional OpenRouterModelInfo act_mode_cline_model_info = 181;
   optional bool show_feature_tips = 182;
+  optional string plan_mode_cline_pass_model_id = 183;
+  optional OpenRouterModelInfo plan_mode_cline_pass_model_info = 184;
+  optional string act_mode_cline_pass_model_id = 185;
+  optional OpenRouterModelInfo act_mode_cline_pass_model_info = 186;
+  optional string academic_mode_api_model_id = 187;
+  optional int32 academic_mode_thinking_budget_tokens = 188;
+  optional string gemini_academic_mode_thinking_level = 189;
+  optional string academic_mode_reasoning_effort = 190;
+  optional string academic_mode_verbosity = 191;
+  optional LanguageModelChatSelector academic_mode_vs_code_lm_model_selector = 192;
+  optional bool academic_mode_aws_bedrock_custom_selected = 193;
+  optional string academic_mode_aws_bedrock_custom_model_base_id = 194;
+  optional string academic_mode_open_router_model_id = 195;
+  optional OpenRouterModelInfo academic_mode_open_router_model_info = 196;
+  optional string academic_mode_cline_model_id = 197;
+  optional OpenRouterModelInfo academic_mode_cline_model_info = 198;
+  optional string academic_mode_cline_pass_model_id = 199;
+  optional OpenRouterModelInfo academic_mode_cline_pass_model_info = 200;
+  optional string academic_mode_open_ai_model_id = 201;
+  optional OpenAiCompatibleModelInfo academic_mode_open_ai_model_info = 202;
+  optional string academic_mode_ollama_model_id = 203;
+  optional string academic_mode_lm_studio_model_id = 204;
+  optional string academic_mode_lite_llm_model_id = 205;
+  optional LiteLLMModelInfo academic_mode_lite_llm_model_info = 206;
+  optional string academic_mode_requesty_model_id = 207;
+  optional OpenRouterModelInfo academic_mode_requesty_model_info = 208;
+  optional string academic_mode_together_model_id = 209;
+  optional string academic_mode_fireworks_model_id = 210;
+  optional string academic_mode_sap_ai_core_model_id = 211;
+  optional string academic_mode_sap_ai_core_deployment_id = 212;
+  optional string academic_mode_groq_model_id = 213;
+  optional OpenRouterModelInfo academic_mode_groq_model_info = 214;
+  optional string academic_mode_baseten_model_id = 215;
+  optional OpenRouterModelInfo academic_mode_baseten_model_info = 216;
+  optional string academic_mode_hugging_face_model_id = 217;
+  optional OpenRouterModelInfo academic_mode_hugging_face_model_info = 218;
+  optional string academic_mode_huawei_cloud_maas_model_id = 219;
+  optional OpenRouterModelInfo academic_mode_huawei_cloud_maas_model_info = 220;
+  optional string academic_mode_oca_model_id = 221;
+  optional OcaModelInfo academic_mode_oca_model_info = 222;
+  optional string academic_mode_oca_reasoning_effort = 223;
+  optional string academic_mode_aihubmix_model_id = 224;
+  optional OpenAiCompatibleModelInfo academic_mode_aihubmix_model_info = 225;
+  optional string academic_mode_hicap_model_id = 226;
+  optional OpenRouterModelInfo academic_mode_hicap_model_info = 227;
+  optional string academic_mode_nous_research_model_id = 228;
+  optional string academic_mode_vercel_ai_gateway_model_id = 229;
+  optional OpenRouterModelInfo academic_mode_vercel_ai_gateway_model_info = 230;
+  optional string academic_mode_api_provider = 231;
 }
 
 message State {

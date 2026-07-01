@@ -226,10 +226,12 @@ const ClineModelPicker: React.FC<ClineModelPickerProps> = ({ isPopup, currentMod
 				clineModelId: {
 					plan: "planModeClineModelId",
 					act: "actModeClineModelId",
+					academic: "academicModeClineModelId",
 				},
 				clineModelInfo: {
 					plan: "planModeClineModelInfo",
 					act: "actModeClineModelInfo",
+					academic: "academicModeClineModelInfo",
 				},
 			},
 			{

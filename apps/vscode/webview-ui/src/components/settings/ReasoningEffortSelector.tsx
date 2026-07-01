@@ -37,7 +37,7 @@ const ReasoningEffortSelector = ({
 			<Label className="text-xs font-medium">{label}</Label>
 			<Select
 				onValueChange={(value) => {
-					handleModeFieldChange({ plan: "planModeReasoningEffort", act: "actModeReasoningEffort" }, value, currentMode)
+					handleModeFieldChange({ plan: "planModeReasoningEffort", act: "actModeReasoningEffort", academic: "academicModeReasoningEffort" }, value, currentMode)
 					if (onEffortChange && isOpenaiReasoningEffort(value)) {
 						onEffortChange(value)
 					}

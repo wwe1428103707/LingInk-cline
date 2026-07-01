@@ -121,8 +121,8 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 			// Update both model ID and deployment ID atomically
 			handleModeFieldsChange(
 				{
-					modelId: { plan: "planModeApiModelId", act: "actModeApiModelId" },
-					deploymentId: { plan: "planModeSapAiCoreDeploymentId", act: "actModeSapAiCoreDeploymentId" },
+					modelId: { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
+					deploymentId: { plan: "planModeSapAiCoreDeploymentId", act: "actModeSapAiCoreDeploymentId", academic: "academicModeSapAiCoreDeploymentId" },
 				},
 				{ modelId, deploymentId },
 				currentMode,

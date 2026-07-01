@@ -38,8 +38,8 @@ const VercelModelPicker: React.FC<VercelModelPickerProps> = ({ isPopup, currentM
 		// Vercel AI Gateway uses its own model fields
 		handleModeFieldsChange(
 			{
-				vercelAiGatewayModelId: { plan: "planModeVercelAiGatewayModelId", act: "actModeVercelAiGatewayModelId" },
-				vercelAiGatewayModelInfo: { plan: "planModeVercelAiGatewayModelInfo", act: "actModeVercelAiGatewayModelInfo" },
+				vercelAiGatewayModelId: { plan: "planModeVercelAiGatewayModelId", act: "actModeVercelAiGatewayModelId", academic: "academicModeVercelAiGatewayModelId" },
+				vercelAiGatewayModelInfo: { plan: "planModeVercelAiGatewayModelInfo", act: "actModeVercelAiGatewayModelInfo", academic: "academicModeVercelAiGatewayModelInfo" },
 			},
 			{
 				vercelAiGatewayModelId: newModelId,

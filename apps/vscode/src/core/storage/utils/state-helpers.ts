@@ -93,6 +93,7 @@ async function handleComputedProperties(result: any, stateValues: Map<string, an
 	const defaultApiProvider: ApiProvider = "openrouter"
 	result.planModeApiProvider = result.planModeApiProvider || defaultApiProvider
 	result.actModeApiProvider = result.actModeApiProvider || defaultApiProvider
+	result.academicModeApiProvider = result.academicModeApiProvider || defaultApiProvider
 
 	// 2. Plan/Act separate models setting with special logic
 	const planActSeparateModelsSettingRaw = stateValues.get("planActSeparateModelsSetting")

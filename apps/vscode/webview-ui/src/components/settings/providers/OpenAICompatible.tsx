@@ -116,7 +116,7 @@ export const OpenAICompatibleProvider = ({
 	const handleOpenAiModelInfoChange = useCallback(
 		(modelInfo: typeof openAiModelInfoSafeDefaults) => {
 			if (isOpenAiProvider) {
-				handleModeFieldChange({ plan: "planModeOpenAiModelInfo", act: "actModeOpenAiModelInfo" }, modelInfo, currentMode)
+				handleModeFieldChange({ plan: "planModeOpenAiModelInfo", act: "actModeOpenAiModelInfo", academic: "academicModeOpenAiModelInfo" }, modelInfo, currentMode)
 			}
 			commitOpenAiSelection(selectedModelId || "", modelInfo)
 		},
@@ -201,7 +201,7 @@ export const OpenAICompatibleProvider = ({
 	const handleOpenAiModelSelection = useCallback(
 		(modelId: string, modelInfo = toOpenAiModelInfo(modelId)) => {
 			if (isOpenAiProvider) {
-				handleModeFieldChange({ plan: "planModeOpenAiModelId", act: "actModeOpenAiModelId" }, modelId, currentMode)
+				handleModeFieldChange({ plan: "planModeOpenAiModelId", act: "actModeOpenAiModelId", academic: "academicModeOpenAiModelId" }, modelId, currentMode)
 			}
 			commitOpenAiSelection(modelId, modelInfo)
 		},

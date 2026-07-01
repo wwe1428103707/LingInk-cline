@@ -36,8 +36,18 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 
 				if (planActSeparateModelsSetting) {
 					// Separate models: update only current mode
-					const modelIdField = currentMode === "plan" ? "planModeOpenRouterModelId" : "actModeOpenRouterModelId"
-					const modelInfoField = currentMode === "plan" ? "planModeOpenRouterModelInfo" : "actModeOpenRouterModelInfo"
+					const modelIdField =
+						currentMode === "plan"
+							? "planModeOpenRouterModelId"
+							: currentMode === "academic"
+								? "academicModeOpenRouterModelId"
+								: "actModeOpenRouterModelId"
+					const modelInfoField =
+						currentMode === "plan"
+							? "planModeOpenRouterModelInfo"
+							: currentMode === "academic"
+								? "academicModeOpenRouterModelInfo"
+								: "actModeOpenRouterModelInfo"
 					const modelId = apiConfiguration[modelIdField]
 
 					if (modelId && models[modelId]) {
@@ -45,10 +55,11 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 						await controller.postStateToWebview()
 					}
 				} else {
-					// Shared models: update both plan and act modes
+					// Shared models: update plan, act, and academic modes
 					const planModelId = apiConfiguration.planModeOpenRouterModelId
 					const actModelId = apiConfiguration.actModeOpenRouterModelId
 					const updates: Partial<GlobalStateAndSettings> = {}
+					const academicModelId = apiConfiguration.academicModeOpenRouterModelId
 
 					// Update plan mode model info if we have a model ID
 					if (planModelId && models[planModelId]) {
@@ -58,6 +69,11 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 					// Update act mode model info if we have a model ID
 					if (actModelId && models[actModelId]) {
 						updates.actModeOpenRouterModelInfo = models[actModelId]
+					}
+
+					// Update academic mode model info if we have a model ID
+					if (academicModelId && models[academicModelId]) {
+						updates.academicModeOpenRouterModelInfo = models[academicModelId]
 					}
 
 					// Post state update if we updated any model info
@@ -78,8 +94,18 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 
 				if (planActSeparateModelsSetting) {
 					// Separate models: update only current mode
-					const modelIdField = currentMode === "plan" ? "planModeGroqModelId" : "actModeGroqModelId"
-					const modelInfoField = currentMode === "plan" ? "planModeGroqModelInfo" : "actModeGroqModelInfo"
+					const modelIdField =
+						currentMode === "plan"
+							? "planModeGroqModelId"
+							: currentMode === "academic"
+								? "academicModeGroqModelId"
+								: "actModeGroqModelId"
+					const modelInfoField =
+						currentMode === "plan"
+							? "planModeGroqModelInfo"
+							: currentMode === "academic"
+								? "academicModeGroqModelInfo"
+								: "actModeGroqModelInfo"
 					const modelId = apiConfiguration[modelIdField]
 
 					if (modelId && models[modelId]) {
@@ -87,10 +113,11 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 						await controller.postStateToWebview()
 					}
 				} else {
-					// Shared models: update both plan and act modes
+					// Shared models: update plan, act, and academic modes
 					const planModelId = apiConfiguration.planModeGroqModelId
 					const actModelId = apiConfiguration.actModeGroqModelId
 					const updates: Partial<GlobalStateAndSettings> = {}
+					const academicModelId = apiConfiguration.academicModeGroqModelId
 
 					// Update plan mode model info if we have a model ID
 					if (planModelId && models[planModelId]) {
@@ -100,6 +127,11 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 					// Update act mode model info if we have a model ID
 					if (actModelId && models[actModelId]) {
 						updates.actModeGroqModelInfo = models[actModelId]
+					}
+
+					// Update academic mode model info if we have a model ID
+					if (academicModelId && models[academicModelId]) {
+						updates.academicModeGroqModelInfo = models[academicModelId]
 					}
 
 					// Post state update if we updated any model info
@@ -121,8 +153,18 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 
 				if (planActSeparateModelsSetting) {
 					// Separate models: update only current mode
-					const modelIdField = currentMode === "plan" ? "planModeBasetenModelId" : "actModeBasetenModelId"
-					const modelInfoField = currentMode === "plan" ? "planModeBasetenModelInfo" : "actModeBasetenModelInfo"
+					const modelIdField =
+						currentMode === "plan"
+							? "planModeBasetenModelId"
+							: currentMode === "academic"
+								? "academicModeBasetenModelId"
+								: "actModeBasetenModelId"
+					const modelInfoField =
+						currentMode === "plan"
+							? "planModeBasetenModelInfo"
+							: currentMode === "academic"
+								? "academicModeBasetenModelInfo"
+								: "actModeBasetenModelInfo"
 					const modelId = apiConfiguration[modelIdField]
 
 					if (modelId && models[modelId]) {
@@ -130,9 +172,10 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 						await controller.postStateToWebview()
 					}
 				} else {
-					// Shared models: update both plan and act modes
+					// Shared models: update plan, act, and academic modes
 					const planModelId = apiConfiguration.planModeBasetenModelId
 					const actModelId = apiConfiguration.actModeBasetenModelId
+					const academicModelId = apiConfiguration.academicModeBasetenModelId
 
 					// Update plan mode model info if we have a model ID
 					if (planModelId && models[planModelId]) {
@@ -144,8 +187,17 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 						controller.stateManager.setGlobalState("actModeBasetenModelInfo", models[actModelId])
 					}
 
+					// Update academic mode model info if we have a model ID
+					if (academicModelId && models[academicModelId]) {
+						controller.stateManager.setGlobalState("academicModeBasetenModelInfo", models[academicModelId])
+					}
+
 					// Post state update if we updated any model info
-					if ((planModelId && models[planModelId]) || (actModelId && models[actModelId])) {
+					if (
+						(planModelId && models[planModelId]) ||
+						(actModelId && models[actModelId]) ||
+						(academicModelId && models[academicModelId])
+					) {
 						await controller.postStateToWebview()
 					}
 				}
@@ -162,8 +214,18 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 
 				if (planActSeparateModelsSetting) {
 					// Separate models: update only current mode
-					const modelIdField = currentMode === "plan" ? "planModeHicapModelId" : "actModeHicapModelId"
-					const modelInfoField = currentMode === "plan" ? "planModeHicapModelInfo" : "actModeHicapModelInfo"
+					const modelIdField =
+						currentMode === "plan"
+							? "planModeHicapModelId"
+							: currentMode === "academic"
+								? "academicModeHicapModelId"
+								: "actModeHicapModelId"
+					const modelInfoField =
+						currentMode === "plan"
+							? "planModeHicapModelInfo"
+							: currentMode === "academic"
+								? "academicModeHicapModelInfo"
+								: "actModeHicapModelInfo"
 					const modelId = apiConfiguration[modelIdField]
 
 					if (modelId && response.models[modelId]) {
@@ -171,10 +233,11 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 						await controller.postStateToWebview()
 					}
 				} else {
-					// Shared models: update both plan and act modes
+					// Shared models: update plan, act, and academic modes
 					const planModelId = apiConfiguration.planModeHicapModelId
 					const actModelId = apiConfiguration.actModeHicapModelId
 					const updates: Partial<GlobalStateAndSettings> = {}
+					const academicModelId = apiConfiguration.academicModeHicapModelId
 
 					// Update plan mode model info if we have a model ID
 					if (planModelId && response.models[planModelId]) {
@@ -186,8 +249,17 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 						updates.actModeHicapModelInfo = response.models[actModelId]
 					}
 
+					// Update academic mode model info if we have a model ID
+					if (academicModelId && response.models[academicModelId]) {
+						updates.academicModeHicapModelInfo = response.models[academicModelId]
+					}
+
 					// Post state update if we updated any model info
-					if ((planModelId && response.models[planModelId]) || (actModelId && response.models[actModelId])) {
+					if (
+						(planModelId && response.models[planModelId]) ||
+						(actModelId && response.models[actModelId]) ||
+						(academicModelId && response.models[academicModelId])
+					) {
 						controller.stateManager.setGlobalStateBatch(updates)
 						await controller.postStateToWebview()
 					}

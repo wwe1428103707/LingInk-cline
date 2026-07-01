@@ -85,14 +85,14 @@ export const XaiProvider = ({ showModelOptions, isPopup, currentMode }: XaiProvi
 		void write({ reasoning: { enabled: true, effort } }).catch((err) =>
 			console.error("Failed to update X AI reasoning effort:", err),
 		)
-		handleModeFieldChange({ plan: "planModeReasoningEffort", act: "actModeReasoningEffort" }, effort, currentMode)
+		handleModeFieldChange({ plan: "planModeReasoningEffort", act: "actModeReasoningEffort", academic: "academicModeReasoningEffort" }, effort, currentMode)
 	}
 
 	const handleReasoningEffortDisabled = () => {
 		void write({ reasoning: { enabled: false, effort: "none" } }).catch((err) =>
 			console.error("Failed to disable X AI reasoning effort:", err),
 		)
-		handleModeFieldChange({ plan: "planModeReasoningEffort", act: "actModeReasoningEffort" }, "", currentMode)
+		handleModeFieldChange({ plan: "planModeReasoningEffort", act: "actModeReasoningEffort", academic: "academicModeReasoningEffort" }, "", currentMode)
 	}
 
 	return (

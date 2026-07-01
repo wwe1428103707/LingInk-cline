@@ -42,8 +42,8 @@ const GroqModelPicker: React.FC<GroqModelPickerProps> = ({ isPopup, currentMode 
 
 		handleModeFieldsChange(
 			{
-				groqModelId: { plan: "planModeGroqModelId", act: "actModeGroqModelId" },
-				groqModelInfo: { plan: "planModeGroqModelInfo", act: "actModeGroqModelInfo" },
+				groqModelId: { plan: "planModeGroqModelId", act: "actModeGroqModelId", academic: "academicModeGroqModelId" },
+				groqModelInfo: { plan: "planModeGroqModelInfo", act: "actModeGroqModelInfo", academic: "academicModeGroqModelInfo" },
 			},
 			{
 				groqModelId: newModelId,

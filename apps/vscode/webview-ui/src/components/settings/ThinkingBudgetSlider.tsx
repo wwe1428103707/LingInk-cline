@@ -84,7 +84,7 @@ const ThinkingBudgetSlider = ({ currentMode, maxBudget, showEnableToggle = true 
 		setLocalValue(newThinkingBudgetValue)
 
 		handleModeFieldChange(
-			{ plan: "planModeThinkingBudgetTokens", act: "actModeThinkingBudgetTokens" },
+			{ plan: "planModeThinkingBudgetTokens", act: "actModeThinkingBudgetTokens", academic: "academicModeThinkingBudgetTokens" },
 			newThinkingBudgetValue,
 			currentMode,
 		)
@@ -121,7 +121,7 @@ const ThinkingBudgetSlider = ({ currentMode, maxBudget, showEnableToggle = true 
 
 	const handleSliderComplete = () => {
 		handleModeFieldChange(
-			{ plan: "planModeThinkingBudgetTokens", act: "actModeThinkingBudgetTokens" },
+			{ plan: "planModeThinkingBudgetTokens", act: "actModeThinkingBudgetTokens", academic: "academicModeThinkingBudgetTokens" },
 			localValue,
 			currentMode,
 		)

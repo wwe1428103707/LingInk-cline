@@ -26,6 +26,7 @@ type ProviderSettingsPatchKey = "apiKey" | "baseUrl" | "apiLine" | "headers" | "
 type ModelInfoKeys = {
 	readonly plan: keyof ApiConfiguration & SettingsKey
 	readonly act: keyof ApiConfiguration & SettingsKey
+	readonly academic: keyof ApiConfiguration & SettingsKey
 }
 
 const providerConfigStateKeys: Record<ProviderSettingsPatchKey, Partial<Record<string, SecretKey | SettingsKey>>> = {
@@ -90,21 +91,20 @@ const providerConfigStateKeys: Record<ProviderSettingsPatchKey, Partial<Record<s
 	aws: {},
 	gcp: {},
 }
-
 const modelInfoKeysByProvider: Partial<Record<string, ModelInfoKeys>> = {
-	openrouter: { plan: "planModeOpenRouterModelInfo", act: "actModeOpenRouterModelInfo" },
-	cline: { plan: "planModeClineModelInfo", act: "actModeClineModelInfo" },
-	openai: { plan: "planModeOpenAiModelInfo", act: "actModeOpenAiModelInfo" },
-	litellm: { plan: "planModeLiteLlmModelInfo", act: "actModeLiteLlmModelInfo" },
-	requesty: { plan: "planModeRequestyModelInfo", act: "actModeRequestyModelInfo" },
-	groq: { plan: "planModeGroqModelInfo", act: "actModeGroqModelInfo" },
-	baseten: { plan: "planModeBasetenModelInfo", act: "actModeBasetenModelInfo" },
-	huggingface: { plan: "planModeHuggingFaceModelInfo", act: "actModeHuggingFaceModelInfo" },
-	"huawei-cloud-maas": { plan: "planModeHuaweiCloudMaasModelInfo", act: "actModeHuaweiCloudMaasModelInfo" },
-	oca: { plan: "planModeOcaModelInfo", act: "actModeOcaModelInfo" },
-	aihubmix: { plan: "planModeAihubmixModelInfo", act: "actModeAihubmixModelInfo" },
-	hicap: { plan: "planModeHicapModelInfo", act: "actModeHicapModelInfo" },
-	"vercel-ai-gateway": { plan: "planModeVercelAiGatewayModelInfo", act: "actModeVercelAiGatewayModelInfo" },
+	openrouter: { plan: "planModeOpenRouterModelInfo", act: "actModeOpenRouterModelInfo", academic: "academicModeOpenRouterModelInfo" },
+	cline: { plan: "planModeClineModelInfo", act: "actModeClineModelInfo", academic: "academicModeClineModelInfo" },
+	openai: { plan: "planModeOpenAiModelInfo", act: "actModeOpenAiModelInfo", academic: "academicModeOpenAiModelInfo" },
+	litellm: { plan: "planModeLiteLlmModelInfo", act: "actModeLiteLlmModelInfo", academic: "academicModeLiteLlmModelInfo" },
+	requesty: { plan: "planModeRequestyModelInfo", act: "actModeRequestyModelInfo", academic: "academicModeRequestyModelInfo" },
+	groq: { plan: "planModeGroqModelInfo", act: "actModeGroqModelInfo", academic: "academicModeGroqModelInfo" },
+	baseten: { plan: "planModeBasetenModelInfo", act: "actModeBasetenModelInfo", academic: "academicModeBasetenModelInfo" },
+	huggingface: { plan: "planModeHuggingFaceModelInfo", act: "actModeHuggingFaceModelInfo", academic: "academicModeHuggingFaceModelInfo" },
+	"huawei-cloud-maas": { plan: "planModeHuaweiCloudMaasModelInfo", act: "actModeHuaweiCloudMaasModelInfo", academic: "academicModeHuaweiCloudMaasModelInfo" },
+	oca: { plan: "planModeOcaModelInfo", act: "actModeOcaModelInfo", academic: "academicModeOcaModelInfo" },
+	aihubmix: { plan: "planModeAihubmixModelInfo", act: "actModeAihubmixModelInfo", academic: "academicModeAihubmixModelInfo" },
+	hicap: { plan: "planModeHicapModelInfo", act: "actModeHicapModelInfo", academic: "academicModeHicapModelInfo" },
+	"vercel-ai-gateway": { plan: "planModeVercelAiGatewayModelInfo", act: "actModeVercelAiGatewayModelInfo", academic: "academicModeVercelAiGatewayModelInfo" },
 }
 
 // In-memory selection envelope for providers that have a mode-specific model

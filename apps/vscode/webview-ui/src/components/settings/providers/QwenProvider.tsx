@@ -97,7 +97,7 @@ export const QwenProvider = ({ showModelOptions, isPopup, currentMode }: QwenPro
 						models={models}
 						onChange={(e: any) =>
 							handleModeFieldChange(
-								{ plan: "planModeApiModelId", act: "actModeApiModelId" },
+								{ plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
 								e.target.value,
 								currentMode,
 							)

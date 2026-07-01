@@ -42,9 +42,9 @@ const OcaModelPicker: React.FC<OcaModelPickerProps> = ({
 			} else {
 				await handleModeFieldsChange(
 					{
-						ocaModelId: { plan: "planModeOcaModelId", act: "actModeOcaModelId" },
-						ocaModelInfo: { plan: "planModeOcaModelInfo", act: "actModeOcaModelInfo" },
-						ocaReasoningEffort: { plan: "planModeOcaReasoningEffort", act: "actModeOcaReasoningEffort" },
+						ocaModelId: { plan: "planModeOcaModelId", act: "actModeOcaModelId", academic: "academicModeOcaModelId" },
+						ocaModelInfo: { plan: "planModeOcaModelInfo", act: "actModeOcaModelInfo", academic: "academicModeOcaModelInfo" },
+						ocaReasoningEffort: { plan: "planModeOcaReasoningEffort", act: "actModeOcaReasoningEffort", academic: "academicModeOcaReasoningEffort" },
 					},
 					{
 						ocaModelId: newModelId,
@@ -63,7 +63,7 @@ const OcaModelPicker: React.FC<OcaModelPickerProps> = ({
 	const handleReasoningEffortChange = async (newValue: string) => {
 		await handleModeFieldsChange(
 			{
-				ocaReasoningEffort: { plan: "planModeOcaReasoningEffort", act: "actModeOcaReasoningEffort" },
+				ocaReasoningEffort: { plan: "planModeOcaReasoningEffort", act: "actModeOcaReasoningEffort", academic: "academicModeOcaReasoningEffort" },
 			},
 			{
 				ocaReasoningEffort: newValue,
@@ -76,9 +76,9 @@ const OcaModelPicker: React.FC<OcaModelPickerProps> = ({
 		if (pendingModelId && ocaModels) {
 			await handleModeFieldsChange(
 				{
-					ocaModelId: { plan: "planModeOcaModelId", act: "actModeOcaModelId" },
-					ocaModelInfo: { plan: "planModeOcaModelInfo", act: "actModeOcaModelInfo" },
-					ocaReasoningEffort: { plan: "planModeOcaReasoningEffort", act: "actModeOcaReasoningEffort" },
+					ocaModelId: { plan: "planModeOcaModelId", act: "actModeOcaModelId", academic: "academicModeOcaModelId" },
+					ocaModelInfo: { plan: "planModeOcaModelInfo", act: "actModeOcaModelInfo", academic: "academicModeOcaModelInfo" },
+					ocaReasoningEffort: { plan: "planModeOcaReasoningEffort", act: "actModeOcaReasoningEffort", academic: "academicModeOcaReasoningEffort" },
 				},
 				{
 					ocaModelId: pendingModelId,

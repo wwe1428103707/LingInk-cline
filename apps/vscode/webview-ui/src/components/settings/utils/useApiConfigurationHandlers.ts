@@ -55,19 +55,19 @@ export const useApiConfigurationHandlers = () => {
 		)
 	}
 
-	const handleModeFieldChange = async <PlanK extends keyof ApiConfiguration, ActK extends keyof ApiConfiguration>(
-		fieldPair: { plan: PlanK; act: ActK },
-		value: ApiConfiguration[PlanK] & ApiConfiguration[ActK], // Intersection ensures value is compatible with both field types
+	const handleModeFieldChange = async <K extends keyof ApiConfiguration>(
+		fieldMap: { plan: K; act: K; academic: K },
+		value: ApiConfiguration[K],
 		currentMode: Mode,
 	) => {
 		if (planActSeparateModelsSetting) {
-			const normalizedMode: "plan" | "act" = currentMode === "plan" ? "plan" : "act"
-			const targetField = fieldPair[normalizedMode]
+			const targetField = fieldMap[currentMode]
 			await handleFieldChange(targetField, value)
 		} else {
 			await handleFieldsChange({
-				[fieldPair.plan]: value,
-				[fieldPair.act]: value,
+				[fieldMap.plan]: value,
+				[fieldMap.act]: value,
+				[fieldMap.academic]: value,
 			})
 		}
 	}
@@ -83,24 +83,24 @@ export const useApiConfigurationHandlers = () => {
 	 * @param currentMode - The current mode being targeted
 	 */
 	const handleModeFieldsChange = async <T extends Record<string, any>>(
-		fieldPairs: { [K in keyof T]: { plan: keyof ApiConfiguration; act: keyof ApiConfiguration } },
+		fieldMap: { [K in keyof T]: { plan: keyof ApiConfiguration; act: keyof ApiConfiguration; academic: keyof ApiConfiguration } },
 		values: T,
 		currentMode: Mode,
 	) => {
 		if (planActSeparateModelsSetting) {
 			// Update only the current mode's fields
 			const updates: Partial<ApiConfiguration> = {}
-			Object.entries(fieldPairs).forEach(([key, { plan, act }]) => {
-				const targetField = currentMode === "plan" ? plan : act
-				updates[targetField] = values[key]
+			Object.entries(fieldMap).forEach(([key, fields]) => {
+				updates[fields[currentMode]] = values[key]
 			})
 			await handleFieldsChange(updates)
 		} else {
-			// Update both modes' fields
+			// Update all modes' fields
 			const updates: Partial<ApiConfiguration> = {}
-			Object.entries(fieldPairs).forEach(([key, { plan, act }]) => {
+			Object.entries(fieldMap).forEach(([key, { plan, act, academic }]) => {
 				updates[plan] = values[key]
 				updates[act] = values[key]
+				updates[academic] = values[key]
 			})
 			await handleFieldsChange(updates)
 		}

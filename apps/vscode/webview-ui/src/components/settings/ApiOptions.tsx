@@ -100,7 +100,11 @@ const ApiOptions = ({
 	const isClinePassEnabled = useHasFeatureFlag(CLINE_PASS_FEATURE_FLAG)
 
 	const selectedProviderRaw =
-		(currentMode === "plan" ? apiConfiguration?.planModeApiProvider : apiConfiguration?.actModeApiProvider) || "anthropic"
+		(currentMode === "plan"
+			? apiConfiguration?.planModeApiProvider
+			: currentMode === "academic"
+				? apiConfiguration?.academicModeApiProvider
+				: apiConfiguration?.actModeApiProvider) || "anthropic"
 	// Fall back from cline-pass to cline when the feature flag is off.
 	const selectedProvider = selectedProviderRaw === "cline-pass" && !isClinePassEnabled ? "cline" : selectedProviderRaw
 	const { providers: catalogProviderListings } = useProviderListings()
@@ -217,7 +221,7 @@ const ApiOptions = ({
 	}, [searchableItems, searchTerm, fuse, currentProviderLabel])
 
 	const handleProviderChange = (newProvider: string) => {
-		handleModeFieldChange({ plan: "planModeApiProvider", act: "actModeApiProvider" }, newProvider as any, currentMode)
+		handleModeFieldChange({ plan: "planModeApiProvider", act: "actModeApiProvider", academic: "academicModeApiProvider" }, newProvider as any, currentMode)
 		setIsDropdownVisible(false)
 		setSelectedIndex(-1)
 	}

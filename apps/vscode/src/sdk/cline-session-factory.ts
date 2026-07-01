@@ -283,33 +283,33 @@ const PROVIDER_API_KEY_MAP: Record<string, keyof ApiConfiguration> = {
  * Maps a provider ID to the mode-specific model ID field name in ApiConfiguration.
  * For providers that have dedicated model ID fields per mode.
  */
-const PROVIDER_MODEL_ID_MAP: Record<string, { plan: keyof ApiConfiguration; act: keyof ApiConfiguration }> = {
-	anthropic: { plan: "planModeApiModelId", act: "actModeApiModelId" },
-	openrouter: { plan: "planModeOpenRouterModelId", act: "actModeOpenRouterModelId" },
-	openai: { plan: "planModeOpenAiModelId", act: "actModeOpenAiModelId" },
-	"openai-native": { plan: "planModeApiModelId", act: "actModeApiModelId" },
-	"openai-codex": { plan: "planModeApiModelId", act: "actModeApiModelId" },
-	ollama: { plan: "planModeOllamaModelId", act: "actModeOllamaModelId" },
-	lmstudio: { plan: "planModeLmStudioModelId", act: "actModeLmStudioModelId" },
-	gemini: { plan: "planModeApiModelId", act: "actModeApiModelId" },
-	bedrock: { plan: "planModeApiModelId", act: "actModeApiModelId" },
-	vertex: { plan: "planModeApiModelId", act: "actModeApiModelId" },
-	deepseek: { plan: "planModeApiModelId", act: "actModeApiModelId" },
-	cline: { plan: "planModeClineModelId", act: "actModeClineModelId" },
-	"cline-pass": { plan: "planModeClinePassModelId", act: "actModeClinePassModelId" },
-	litellm: { plan: "planModeLiteLlmModelId", act: "actModeLiteLlmModelId" },
-	requesty: { plan: "planModeRequestyModelId", act: "actModeRequestyModelId" },
-	together: { plan: "planModeTogetherModelId", act: "actModeTogetherModelId" },
-	fireworks: { plan: "planModeFireworksModelId", act: "actModeFireworksModelId" },
-	groq: { plan: "planModeGroqModelId", act: "actModeGroqModelId" },
-	baseten: { plan: "planModeBasetenModelId", act: "actModeBasetenModelId" },
-	huggingface: { plan: "planModeHuggingFaceModelId", act: "actModeHuggingFaceModelId" },
-	"huawei-cloud-maas": { plan: "planModeHuaweiCloudMaasModelId", act: "actModeHuaweiCloudMaasModelId" },
-	oca: { plan: "planModeOcaModelId", act: "actModeOcaModelId" },
-	aihubmix: { plan: "planModeAihubmixModelId", act: "actModeAihubmixModelId" },
-	hicap: { plan: "planModeHicapModelId", act: "actModeHicapModelId" },
-	nousResearch: { plan: "planModeNousResearchModelId", act: "actModeNousResearchModelId" },
-	"vercel-ai-gateway": { plan: "planModeVercelAiGatewayModelId", act: "actModeVercelAiGatewayModelId" },
+const PROVIDER_MODEL_ID_MAP: Record<string, { plan: keyof ApiConfiguration; act: keyof ApiConfiguration; academic: keyof ApiConfiguration }> = {
+	anthropic: { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
+	openrouter: { plan: "planModeOpenRouterModelId", act: "actModeOpenRouterModelId", academic: "academicModeOpenRouterModelId" },
+	openai: { plan: "planModeOpenAiModelId", act: "actModeOpenAiModelId", academic: "academicModeOpenAiModelId" },
+	"openai-native": { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
+	"openai-codex": { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
+	ollama: { plan: "planModeOllamaModelId", act: "actModeOllamaModelId", academic: "academicModeOllamaModelId" },
+	lmstudio: { plan: "planModeLmStudioModelId", act: "actModeLmStudioModelId", academic: "academicModeLmStudioModelId" },
+	gemini: { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
+	bedrock: { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
+	vertex: { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
+	deepseek: { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
+	cline: { plan: "planModeClineModelId", act: "actModeClineModelId", academic: "academicModeClineModelId" },
+	"cline-pass": { plan: "planModeClinePassModelId", act: "actModeClinePassModelId", academic: "academicModeClinePassModelId" },
+	litellm: { plan: "planModeLiteLlmModelId", act: "actModeLiteLlmModelId", academic: "academicModeLiteLlmModelId" },
+	requesty: { plan: "planModeRequestyModelId", act: "actModeRequestyModelId", academic: "academicModeRequestyModelId" },
+	together: { plan: "planModeTogetherModelId", act: "actModeTogetherModelId", academic: "academicModeTogetherModelId" },
+	fireworks: { plan: "planModeFireworksModelId", act: "actModeFireworksModelId", academic: "academicModeFireworksModelId" },
+	groq: { plan: "planModeGroqModelId", act: "actModeGroqModelId", academic: "academicModeGroqModelId" },
+	baseten: { plan: "planModeBasetenModelId", act: "actModeBasetenModelId", academic: "academicModeBasetenModelId" },
+	huggingface: { plan: "planModeHuggingFaceModelId", act: "actModeHuggingFaceModelId", academic: "academicModeHuggingFaceModelId" },
+	"huawei-cloud-maas": { plan: "planModeHuaweiCloudMaasModelId", act: "actModeHuaweiCloudMaasModelId", academic: "academicModeHuaweiCloudMaasModelId" },
+	oca: { plan: "planModeOcaModelId", act: "actModeOcaModelId", academic: "academicModeOcaModelId" },
+	aihubmix: { plan: "planModeAihubmixModelId", act: "actModeAihubmixModelId", academic: "academicModeAihubmixModelId" },
+	hicap: { plan: "planModeHicapModelId", act: "actModeHicapModelId", academic: "academicModeHicapModelId" },
+	nousResearch: { plan: "planModeNousResearchModelId", act: "actModeNousResearchModelId", academic: "academicModeNousResearchModelId" },
+	"vercel-ai-gateway": { plan: "planModeVercelAiGatewayModelId", act: "actModeVercelAiGatewayModelId", academic: "academicModeVercelAiGatewayModelId" },
 }
 
 // ---------------------------------------------------------------------------
@@ -412,8 +412,8 @@ export function resolveModelId(providerId: string, mode: Mode, config: ApiConfig
 	}
 
 	if (providerId === "sapaicore") {
-		const genericField = mode === "plan" ? "planModeApiModelId" : "actModeApiModelId"
-		const legacyField = mode === "plan" ? "planModeSapAiCoreModelId" : "actModeSapAiCoreModelId"
+		const genericField = mode === "plan" ? "planModeApiModelId" : mode === "academic" ? "academicModeApiModelId" : "actModeApiModelId"
+		const legacyField = mode === "plan" ? "planModeSapAiCoreModelId" : mode === "academic" ? "academicModeSapAiCoreModelId" : "actModeSapAiCoreModelId"
 		return (
 			(config[genericField] as string | undefined)?.trim() ||
 			(config[legacyField] as string | undefined)?.trim() ||
@@ -428,13 +428,13 @@ export function resolveModelId(providerId: string, mode: Mode, config: ApiConfig
 	// session use a different model than the Cline provider UI shows.
 	const modelFields = PROVIDER_MODEL_ID_MAP[providerId]
 	if (modelFields) {
-		const field = mode === "plan" ? modelFields.plan : modelFields.act
+		const field = mode === "plan" ? modelFields.plan : mode === "academic" ? modelFields.academic : modelFields.act
 		return (config[field] as string | undefined)?.trim() || undefined
 	}
 
 	// Fallback to generic mode model ID fields only for providers without a
 	// dedicated model field.
-	const genericField = mode === "plan" ? "planModeApiModelId" : "actModeApiModelId"
+	const genericField = mode === "plan" ? "planModeApiModelId" : mode === "academic" ? "academicModeApiModelId" : "actModeApiModelId"
 	return (config[genericField] as string | undefined)?.trim() || undefined
 }
 
@@ -556,10 +556,14 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 		const stateManager = StateManager.get()
 		apiConfig = stateManager.getApiConfiguration()
 
-		// Resolve the provider for the current mode. Academic mode shares act-mode
-		// model/provider settings while adding academic-specific prompt guidance.
-		const isPlan = mode === "plan"
-		const modeProvider = isPlan ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider
+		// Resolve the provider and model for the current mode. Academic mode
+		// has its own provider setting (academicModeApiProvider) so users can
+		// configure a distinct model/provider pair for academic vs act work.
+		const modeProvider = mode === "plan"
+			? apiConfig.planModeApiProvider
+			: mode === "academic"
+				? apiConfig.academicModeApiProvider
+				: apiConfig.actModeApiProvider
 		providerId = modeProvider
 
 		if (providerId) {
@@ -645,7 +649,7 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 			ide: "VS Code",
 			workspaceRoot,
 			workspaceName,
-			mode: mode === "plan" ? "plan" : "act",
+			mode: mode === "plan" ? "plan" : mode === "academic" ? "academic" : "act",
 			providerId,
 			platform: process.platform,
 		})
@@ -729,7 +733,7 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 				}
 			: {}),
 		disableMcpSettingsTools: true,
-		mode: mode === "plan" ? "plan" : "act",
+		mode: mode === "plan" ? "plan" : mode === "academic" ? "academic" : "act",
 		...reasoningConfig,
 		...(maxTokensPerTurn !== undefined ? { maxTokensPerTurn } : {}),
 		maxIterations: undefined,
@@ -746,7 +750,7 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 				workspaceName: resolveWorkspaceName(workspaceRoot),
 				ide: "VS Code",
 				platform: process.platform,
-				mode: mode === "plan" ? "plan" : "act",
+				mode: mode === "plan" ? "plan" : mode === "academic" ? "academic" : "act",
 			},
 			logger: sdkLogger,
 		},
