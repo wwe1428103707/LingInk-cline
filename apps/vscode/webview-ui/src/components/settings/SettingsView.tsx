@@ -1,7 +1,5 @@
 import type { ExtensionMessage } from "@shared/ExtensionMessage"
-import { isClineInternalTester } from "@shared/internal/account"
 import { ResetStateRequest } from "@shared/proto/cline/state"
-import type { UserOrganization } from "@shared/proto/index.cline"
 import {
 	CheckCheck,
 	Cog,
@@ -16,11 +14,9 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useEvent } from "react-use"
 import { useTranslation } from "@/i18n"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { type ClineUser, useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { cn } from "@/lib/utils"
 import { StateServiceClient } from "@/services/grpc-client"
-import { isAdminOrOwner } from "../account/helpers"
 import { Tab, TabContent, TabList, TabTrigger } from "../common/Tab"
 import ViewHeader from "../common/ViewHeader"
 import SectionHeader from "./SectionHeader"
@@ -42,7 +38,7 @@ interface SettingsTab {
 	tooltipText: string
 	headerText: string
 	icon: LucideIcon
-	hidden?: (params?: { user: ClineUser | null; activeOrganization: UserOrganization | null }) => boolean
+	hidden?: () => boolean
 }
 
 type SettingsViewProps = {
@@ -104,8 +100,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 				tooltipText: t("tab.tooltip.remoteConfig", "Remotely configured fields"),
 				headerText: t("tab.header.remoteConfig", "Remote Config"),
 				icon: HardDriveDownload,
-				hidden: ({ activeOrganization } = { user: null, activeOrganization: null }) =>
-					!activeOrganization || !isAdminOrOwner(activeOrganization),
+				hidden: () => true,
 			},
 			{
 				id: "about",
@@ -121,8 +116,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 				tooltipText: t("tab.tooltip.debug", "Debug Tools"),
 				headerText: t("tab.header.debug", "Debug"),
 				icon: FlaskConical,
-				hidden: ({ user } = { user: null, activeOrganization: null }) =>
-					!IS_DEV && !isClineInternalTester(user?.email || ""),
+				hidden: () => !IS_DEV,
 			},
 		],
 		[t],
@@ -148,7 +142,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 	)
 
 	const { version, environment, settingsInitialModelTab } = useExtensionState()
-	const { activeOrganization, clineUser } = useClineAuth()
+
 
 	const [activeTab, setActiveTab] = useState<string>(targetSection || SETTINGS_TABS[0].id)
 
@@ -266,7 +260,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 					className="shrink-0 flex flex-col overflow-y-auto border-r border-sidebar-background"
 					onValueChange={setActiveTab}
 					value={activeTab}>
-					{SETTINGS_TABS.filter((tab) => !tab.hidden?.({ user: clineUser, activeOrganization })).map(renderTabItem)}
+					{SETTINGS_TABS.filter((tab) => !tab.hidden?.()).map(renderTabItem)}
 				</TabList>
 
 				<TabContent className="flex-1 overflow-auto">{ActiveContent}</TabContent>

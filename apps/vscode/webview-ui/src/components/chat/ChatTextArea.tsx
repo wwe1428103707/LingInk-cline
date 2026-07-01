@@ -1,7 +1,7 @@
 import { mentionRegex, mentionRegexGlobal } from "@shared/context-mentions"
 import { StringRequest } from "@shared/proto/cline/common"
 import { FileSearchRequest, FileSearchType, RelativePathsRequest } from "@shared/proto/cline/file"
-import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/cline/state"
+import { PlanActMode, TogglePlanActModeRequest, UpdateSettingsRequest } from "@shared/proto/cline/state"
 import { type SlashCommand } from "@shared/slashCommands"
 import { Mode } from "@shared/storage/types"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
@@ -94,32 +94,57 @@ interface GitCommit {
 
 const PLAN_MODE_COLOR = "var(--vscode-activityWarningBadge-background)"
 const ACT_MODE_COLOR = "var(--vscode-focusBorder)"
+const ACADEMIC_MODE_COLOR = "var(--vscode-charts-green)"
 
-const SwitchContainer = styled.div<{ disabled: boolean }>`
+const ModeSwitchContainer = styled.div`
+	display: inline-flex;
+	align-items: center;
+	border: 1px solid var(--vscode-input-border);
+	border-radius: 10px;
+	overflow: hidden;
+	height: 22px;
+`
+
+const ModeSwitchOption = styled.button<{ active: boolean; mode: Mode }>`
 	display: flex;
 	align-items: center;
-	background-color: transparent;
-	border: 1px solid var(--vscode-input-border);
-	border-radius: 12px;
-	overflow: hidden;
-	cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-	opacity: ${(props) => (props.disabled ? 0.5 : 1)};
-	transform: scale(1);
-	transform-origin: right center;
-	margin-left: 0;
-	user-select: none; // Prevent text selection
+	justify-content: center;
+	gap: 4px;
+	position: relative;
+	box-sizing: border-box;
+	flex: 0 0 ${(props) => (props.mode === "academic" ? "78px" : "44px")};
+	height: 100%;
+	min-width: 0;
+	padding: 0 7px;
+	border: none;
+	border-right: 1px solid var(--vscode-input-border);
+	background-color: ${(props) => (props.active ? modeDotColor(props.mode) : "transparent")};
+	color: ${(props) => (props.active ? "var(--vscode-button-foreground)" : "var(--vscode-foreground)")};
+	font-size: 11px;
+	line-height: 1;
+	cursor: pointer;
+	white-space: nowrap;
+	user-select: none;
+
+	&:hover {
+		background-color: ${(props) => (props.active ? modeDotColor(props.mode) : "var(--vscode-list-hoverBackground)")};
+	}
+
+	&:last-child {
+		border-right: none;
+	}
 `
 
-const Slider = styled.div.withConfig({
-	shouldForwardProp: (prop) => !["isAct", "isPlan"].includes(prop),
-})<{ isAct: boolean; isPlan?: boolean }>`
-	position: absolute;
-	height: 100%;
-	width: 50%;
-	background-color: ${(props) => (props.isPlan ? PLAN_MODE_COLOR : ACT_MODE_COLOR)};
-	transition: transform 0.2s ease;
-	transform: translateX(${(props) => (props.isAct ? "100%" : "0%")});
-`
+const modeDotColor = (m: Mode) => {
+	switch (m) {
+		case "plan":
+			return PLAN_MODE_COLOR
+		case "academic":
+			return ACADEMIC_MODE_COLOR
+		case "act":
+			return ACT_MODE_COLOR
+	}
+}
 
 const ButtonGroup = styled.div`
 	display: flex;
@@ -142,7 +167,7 @@ const ButtonContainer = styled.div`
 const ModelContainer = styled.div`
 	position: relative;
 	display: flex;
-	flex: 1;
+	flex: none;
 	min-width: 0;
 `
 
@@ -155,7 +180,7 @@ const ModelButtonWrapper = styled.div`
 const ModelDisplayButton = styled.a<{ isActive?: boolean; disabled?: boolean }>`
 	padding: 0px 0px;
 	height: 20px;
-	width: 100%;
+	width: auto;
 	min-width: 0;
 	cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
 	text-decoration: ${(props) => (props.isActive ? "underline" : "none")};
@@ -166,6 +191,7 @@ const ModelDisplayButton = styled.a<{ isActive?: boolean; disabled?: boolean }>`
 	outline: none;
 	user-select: none;
 	opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+	max-width: 200px;
 	pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
 
 	&:hover,
@@ -187,7 +213,7 @@ const ModelDisplayButton = styled.a<{ isActive?: boolean; disabled?: boolean }>`
 `
 
 const ModelButtonContent = styled.div`
-	width: 100%;
+	width: auto;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -248,7 +274,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [intendedCursorPosition, setIntendedCursorPosition] = useState<number | null>(null)
 		const contextMenuContainerRef = useRef<HTMLDivElement>(null)
 
-		const [shownTooltipMode, setShownTooltipMode] = useState<Mode | null>(null)
 		const [pendingInsertions, setPendingInsertions] = useState<string[]>([])
 		const _shiftHoldTimerRef = useRef<NodeJS.Timeout | null>(null)
 		const [showUnsupportedFileError, setShowUnsupportedFileError] = useState(false)
@@ -1018,41 +1043,86 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			[updateCursorPosition],
 		)
 
-		const onModeToggle = useCallback(() => {
-			void (async () => {
-				const convertedProtoMode = mode === "plan" ? PlanActMode.ACT : PlanActMode.PLAN
-				const submittedText = inputValue
-				const submittedImages = selectedImages
-				const submittedFiles = selectedFiles
-				const response = await StateServiceClient.togglePlanActModeProto(
-					TogglePlanActModeRequest.create({
-						mode: convertedProtoMode,
-						chatContent: {
-							message: submittedText.trim() ? submittedText : undefined,
-							images: submittedImages,
-							files: submittedFiles,
-						},
-					}),
-				)
-				// Focus the textarea after mode toggle with slight delay
-				setTimeout(() => {
-					if (response.value) {
-						// The toggle consumed the composer content as the continuation
-						// message. Clear only what was submitted: the rebuild can take a
-						// moment and the user may have typed or attached new content in
-						// the meantime, which must not be wiped.
-						if ((textAreaRef.current?.value ?? "") === submittedText) {
-							setInputValue("")
+		const onModeToggle = useCallback(
+			(targetMode?: Mode) => {
+				void (async () => {
+					// Cycle: plan -> academic -> act -> plan
+					const nextMode: Mode = targetMode || (mode === "plan" ? "academic" : mode === "academic" ? "act" : "plan")
+					const convertedProtoMode =
+						nextMode === "plan" ? PlanActMode.PLAN : nextMode === "academic" ? PlanActMode.ACADEMIC : PlanActMode.ACT
+					const submittedText = inputValue
+					const submittedImages = selectedImages
+					const submittedFiles = selectedFiles
+					const response = await StateServiceClient.togglePlanActModeProto(
+						TogglePlanActModeRequest.create({
+							mode: convertedProtoMode,
+							chatContent: {
+								message: submittedText.trim() ? submittedText : undefined,
+								images: submittedImages,
+								files: submittedFiles,
+							},
+						}),
+					)
+					await StateServiceClient.updateSettings(
+						UpdateSettingsRequest.create({
+							mode: convertedProtoMode,
+						}),
+					)
+					// Focus the textarea after mode toggle with slight delay
+					setTimeout(() => {
+						if (response.value) {
+							// The toggle consumed the composer content as the continuation
+							// message. Clear only what was submitted: the rebuild can take a
+							// moment and the user may have typed or attached new content in
+							// the meantime, which must not be wiped.
+							if ((textAreaRef.current?.value ?? "") === submittedText) {
+								setInputValue("")
+							}
+							setSelectedImages((current) => (current === submittedImages ? [] : current))
+							setSelectedFiles((current) => (current === submittedFiles ? [] : current))
 						}
-						setSelectedImages((current) => (current === submittedImages ? [] : current))
-						setSelectedFiles((current) => (current === submittedFiles ? [] : current))
-					}
-					textAreaRef.current?.focus()
-				}, 100)
-			})()
-		}, [mode, inputValue, selectedImages, selectedFiles, setInputValue, setSelectedImages, setSelectedFiles])
+						textAreaRef.current?.focus()
+					}, 100)
+				})()
+			},
+			[mode, inputValue, selectedImages, selectedFiles, setInputValue, setSelectedImages, setSelectedFiles],
+		)
 
-		useShortcut(usePlatform().togglePlanActKeys, onModeToggle, { disableTextInputs: false }) // important that we don't disable the text input here
+		const handleModeButtonPress = useCallback(
+			(event: React.MouseEvent<HTMLButtonElement>) => {
+				const targetMode = event.currentTarget.dataset.mode as Mode | undefined
+				if (!targetMode || targetMode === mode) {
+					return
+				}
+				onModeToggle(targetMode)
+			},
+			[mode, onModeToggle],
+		)
+
+		const handleModeButtonMouseDown = useCallback(
+			(event: React.MouseEvent<HTMLButtonElement>) => {
+				event.preventDefault()
+				handleModeButtonPress(event)
+			},
+			[handleModeButtonPress],
+		)
+
+		const handleModeButtonKeyDown = useCallback(
+			(event: React.KeyboardEvent<HTMLButtonElement>) => {
+				if (event.key !== "Enter" && event.key !== " ") {
+					return
+				}
+				event.preventDefault()
+				const targetMode = event.currentTarget.dataset.mode as Mode | undefined
+				if (!targetMode || targetMode === mode) {
+					return
+				}
+				onModeToggle(targetMode)
+			},
+			[mode, onModeToggle],
+		)
+
+		useShortcut(usePlatform().togglePlanActKeys, () => onModeToggle(), { disableTextInputs: false }) // important that we don't disable the text input here
 
 		const handleContextButtonClick = useCallback(() => {
 			// Focus the textarea first
@@ -1563,7 +1633,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				</div>
 				<div className="flex justify-between items-center -mt-[2px] px-3 pb-2">
 					{/* Always render both components, but control visibility with CSS */}
-					<div className="relative flex-1 min-w-0 h-5">
+					<div className="relative flex-1 min-w-0 h-5 overflow-hidden">
 						{/* ButtonGroup - always in DOM but visibility controlled */}
 						<ButtonGroup className="absolute top-0 left-0 right-0 ease-in-out w-full h-5 z-10 flex items-center">
 							<Tooltip>
@@ -1621,36 +1691,22 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							</ModelContainer>
 						</ButtonGroup>
 					</div>
-					{/* Tooltip for Plan/Act toggle remains outside the conditional rendering */}
-					<Tooltip>
-						<TooltipContent
-							className="text-xs px-2 flex flex-col gap-1"
-							hidden={shownTooltipMode === null}
-							side="top">
-							{`In ${shownTooltipMode === "act" ? "Act" : "Plan"}  mode, Cline will ${shownTooltipMode === "act" ? "complete the task immediately" : "gather information to architect a plan"}`}
-							<p className="text-description/80 text-xs mb-0">
-								Toggle w/ <kbd className="text-muted-foreground mx-1">{togglePlanActKeys}</kbd>
-							</p>
-						</TooltipContent>
-						<TooltipTrigger>
-							<SwitchContainer data-testid="mode-switch" disabled={false} onClick={onModeToggle}>
-								<Slider isAct={mode === "act"} isPlan={mode === "plan"} />
-								{["Plan", "Act"].map((m) => (
-									<div
-										aria-checked={mode === m.toLowerCase()}
-										className={cn(
-											"pt-0.5 pb-px px-2 z-10 text-xs w-1/2 text-center bg-transparent",
-											mode === m.toLowerCase() ? "text-white" : "text-input-foreground",
-										)}
-										onMouseLeave={() => setShownTooltipMode(null)}
-										onMouseOver={() => setShownTooltipMode(m.toLowerCase() === "plan" ? "plan" : "act")}
-										role="switch">
-										{m}
-									</div>
-								))}
-							</SwitchContainer>
-						</TooltipTrigger>
-					</Tooltip>
+					<ModeSwitchContainer data-testid="mode-switch" title={`Toggle w/ ${togglePlanActKeys}`}>
+						{(["plan", "academic", "act"] as Mode[]).map((m) => (
+							<ModeSwitchOption
+								active={mode === m}
+								aria-label={`${m === "plan" ? "Plan" : m === "academic" ? "Academic" : "Act"} mode${mode === m ? " selected" : ""}`}
+								aria-pressed={mode === m}
+								data-mode={m}
+								key={m}
+								mode={m}
+								onKeyDown={handleModeButtonKeyDown}
+								onMouseDown={handleModeButtonMouseDown}
+								type="button">
+								{m === "plan" ? "Plan" : m === "academic" ? "Academic" : "Act"}
+							</ModeSwitchOption>
+						))}
+					</ModeSwitchContainer>
 				</div>
 			</div>
 		)

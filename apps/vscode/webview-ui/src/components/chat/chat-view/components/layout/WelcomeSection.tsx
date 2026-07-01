@@ -9,6 +9,7 @@ import WhatsNewModal from "@/components/common/WhatsNewModal"
 import HistoryPreview from "@/components/history/HistoryPreview"
 import { useApiConfigurationHandlers } from "@/components/settings/utils/useApiConfigurationHandlers"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import AcademicQuickTasks from "@/components/welcome/AcademicQuickTasks"
 import HomeHeader from "@/components/welcome/HomeHeader"
 import { SuggestedTasks } from "@/components/welcome/SuggestedTasks"
 import CreateWorktreeModal from "@/components/worktrees/CreateWorktreeModal"
@@ -315,6 +316,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 					</>
 				)}
 			</div>
+			<AcademicQuickTasks />
 			<SuggestedTasks shouldShowQuickWins={shouldShowQuickWins} />
 
 			{/* Quick launch worktree modal */}

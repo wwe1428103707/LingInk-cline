@@ -66,7 +66,9 @@ const NON_SDK_PROVIDER_DEFAULTS: Partial<Record<ApiProvider, string>> = {
  * Get the provider-specific model ID key for a given provider and mode.
  * Different providers store their model IDs in different state keys.
  */
-export function getProviderModelIdKey(provider: ApiProvider | string, mode: "act" | "plan"): SettingsKey {
+export function getProviderModelIdKey(provider: ApiProvider | string, mode: "act" | "plan" | "academic"): SettingsKey {
+	// Academic mode uses the same model configuration as act mode
+	if (mode === "academic") { mode = "act" }
 	const legacyProvider = toLegacyApiProvider(provider)
 	const keySuffix = ProviderKeyMap[legacyProvider]
 	if (keySuffix) {

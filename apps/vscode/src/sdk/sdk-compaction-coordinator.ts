@@ -16,7 +16,7 @@
 
 import type { Message as SdkMessage } from "@cline/llms"
 import type { ClineMessage } from "@shared/ExtensionMessage"
-import type { Mode } from "@shared/storage/types"
+import { type Mode, normalizeMode } from "@shared/storage/types"
 import type { StateManager } from "@/core/storage/StateManager"
 import { Logger } from "@/shared/services/Logger"
 import { compactSessionMessages } from "./sdk-compaction"
@@ -156,8 +156,7 @@ export class SdkCompactionCoordinator {
 	}
 
 	private getCurrentMode(): Mode {
-		const m = this.options.stateManager.getGlobalSettingsKey("mode")
-		return m === "plan" ? m : "act"
+		return normalizeMode(this.options.stateManager.getGlobalSettingsKey("mode"))
 	}
 
 	private formatCompactionStatus(messagesBefore: number, messagesAfter: number): string {

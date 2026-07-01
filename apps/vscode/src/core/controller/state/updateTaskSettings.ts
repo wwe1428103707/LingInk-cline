@@ -13,7 +13,16 @@ import { normalizeOpenaiReasoningEffort } from "./reasoningEffort"
  */
 export async function updateTaskSettings(controller: Controller, request: UpdateTaskSettingsRequest): Promise<Empty> {
 	const convertPlanActMode = (mode: PlanActMode): Mode => {
-		return mode === PlanActMode.PLAN ? "plan" : "act"
+		if (mode === PlanActMode.PLAN) {
+			return "plan"
+		}
+		if (mode === PlanActMode.ACT) {
+			return "act"
+		}
+		if (mode === PlanActMode.ACADEMIC) {
+			return "academic"
+		}
+		throw new Error(`Invalid mode value: ${mode}`)
 	}
 
 	try {

@@ -11,7 +11,11 @@ export function normalizeOpenaiReasoningEffort(effort?: string): OpenaiReasoning
 	return isOpenaiReasoningEffort(value) ? value : "medium"
 }
 
-export type Mode = "plan" | "act"
+export type Mode = "plan" | "act" | "academic"
+
+export function normalizeMode(mode: unknown): Mode {
+	return mode === "plan" || mode === "act" || mode === "academic" ? mode : "act"
+}
 
 export interface BlobStoreSettings {
 	bucket: string

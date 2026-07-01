@@ -10,7 +10,7 @@ interface UseProviderModelSelectionOptions {
 	models: Record<string, ModelInfo>
 	defaultModelId?: string
 	config?: ProviderConfigResponse
-	commitSelection: (mode: "plan" | "act", selection: ProviderModelSelection) => Promise<unknown>
+	commitSelection: (mode: Mode, selection: ProviderModelSelection) => Promise<unknown>
 	fallbackModelInfo?: ModelInfo
 	customModelInfo?: (modelId: string) => ModelInfo
 }

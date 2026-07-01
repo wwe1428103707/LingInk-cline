@@ -1,5 +1,5 @@
 import type { ApiConfiguration } from "@shared/api"
-import type { Mode } from "@shared/storage/types"
+import { type Mode, normalizeMode } from "@shared/storage/types"
 import type { StateManager } from "@/core/storage/StateManager"
 import { Logger } from "@/shared/services/Logger"
 import type { SdkMessageCoordinator } from "./sdk-message-coordinator"
@@ -190,6 +190,6 @@ export class SdkProviderChangeCoordinator {
 	}
 
 	private getCurrentMode(): Mode {
-		return this.options.stateManager.getGlobalSettingsKey("mode") === "plan" ? "plan" : "act"
+		return normalizeMode(this.options.stateManager.getGlobalSettingsKey("mode"))
 	}
 }

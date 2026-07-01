@@ -4,7 +4,7 @@ import { CLINE_ACCOUNT_AUTH_ERROR_MESSAGE } from "@shared/ClineAccount"
 import type { ClineMessage } from "@shared/ExtensionMessage"
 import type { HistoryItem } from "@shared/HistoryItem"
 import type { Settings } from "@shared/storage/state-keys"
-import type { Mode } from "@shared/storage/types"
+import { type Mode, normalizeMode } from "@shared/storage/types"
 import type { StateManager } from "@/core/storage/StateManager"
 import { Logger } from "@/shared/services/Logger"
 import type { SdkMessageCoordinator } from "./sdk-message-coordinator"
@@ -186,8 +186,7 @@ export class SdkTaskStartCoordinator {
 	}
 
 	private getCurrentMode(): Mode {
-		const m = this.options.stateManager.getGlobalSettingsKey("mode")
-		return m === "plan" ? m : "act"
+		return normalizeMode(this.options.stateManager.getGlobalSettingsKey("mode"))
 	}
 
 	private createAndSetTask(sessionId: string): TaskProxy {

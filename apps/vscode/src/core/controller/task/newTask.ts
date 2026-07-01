@@ -2,6 +2,7 @@ import { String } from "@shared/proto/cline/common"
 import { PlanActMode } from "@shared/proto/cline/state"
 import { NewTaskRequest } from "@shared/proto/cline/task"
 import { Settings } from "@shared/storage/state-keys"
+import { Mode } from "@shared/storage/types"
 import { convertProtoToApiProvider } from "@/shared/proto-conversions/models/api-configuration-conversion"
 import { DEFAULT_BROWSER_SETTINGS } from "../../../shared/BrowserSettings"
 import { Controller } from ".."
@@ -14,8 +15,17 @@ import { normalizeOpenaiReasoningEffort } from "../state/reasoningEffort"
  * @returns Empty response
  */
 export async function newTask(controller: Controller, request: NewTaskRequest): Promise<String> {
-	const convertPlanActMode = (mode: PlanActMode): string => {
-		return mode === PlanActMode.PLAN ? "plan" : "act"
+	const convertPlanActMode = (mode: PlanActMode): Mode => {
+		if (mode === PlanActMode.PLAN) {
+			return "plan"
+		}
+		if (mode === PlanActMode.ACT) {
+			return "act"
+		}
+		if (mode === PlanActMode.ACADEMIC) {
+			return "academic"
+		}
+		throw new Error(`Invalid mode value: ${mode}`)
 	}
 
 	const filteredTaskSettings: Partial<Settings> = Object.fromEntries(

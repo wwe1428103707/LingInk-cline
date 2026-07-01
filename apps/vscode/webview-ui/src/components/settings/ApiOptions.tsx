@@ -319,7 +319,7 @@ const ApiOptions = ({
 								<i className="codicon codicon-lock text-description text-sm" />
 							</div>
 						</TooltipTrigger>
-						<TooltipContent>{t("apiConfig.provider.remoteManaged", "Provider options are managed by your organization's remote configuration</TooltipContent>
+						<TooltipContent>{t("apiConfig.provider.remoteManaged", "Provider options are managed by your organization's remote configuration")}</TooltipContent>
 					</Tooltip>
 				) : (
 					<label htmlFor="api-provider">

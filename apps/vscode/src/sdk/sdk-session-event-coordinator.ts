@@ -4,6 +4,7 @@ import type { StateManager } from "@/core/storage/StateManager"
 import { CLINE_RECOMMENDED_MODELS_FALLBACK } from "@/shared/cline/recommended-models"
 import type { ClineApiReqInfo, TurnPhase } from "@/shared/ExtensionMessage"
 import { Logger } from "@/shared/services/Logger"
+import { normalizeMode } from "@/shared/storage/types"
 import type { MessageTranslatorState, TranslationResult } from "./message-translator"
 import { translateSessionEvent } from "./message-translator"
 import type { SdkMcpCoordinator } from "./sdk-mcp-coordinator"
@@ -206,7 +207,7 @@ export class SdkSessionEventCoordinator {
 
 		try {
 			const apiConfig = stateManager.getApiConfiguration()
-			const mode = stateManager.getGlobalSettingsKey("mode") === "plan" ? "plan" : "act"
+			const mode = normalizeMode(stateManager.getGlobalSettingsKey("mode"))
 			const provider = mode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider
 			if (provider !== "cline") {
 				return false
@@ -240,7 +241,7 @@ export class SdkSessionEventCoordinator {
 			return undefined
 		}
 		const apiConfig = stateManager.getApiConfiguration()
-		const mode = stateManager.getGlobalSettingsKey("mode") === "plan" ? "plan" : "act"
+		const mode = normalizeMode(stateManager.getGlobalSettingsKey("mode"))
 		return mode === "plan" ? apiConfig.planModeClineModelId : apiConfig.actModeClineModelId
 	}
 

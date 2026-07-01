@@ -39,8 +39,7 @@ export const zhCN: Record<string, string> = {
 	"viewHeader.settings": "设置",
 	"viewHeader.marketplace": "市场",
 	"viewHeader.history": "项目记录",
-	"viewHeader.account": "账户",
-	"viewHeader.mcp": "MCP 服务器",
+		"viewHeader.mcp": "MCP 服务器",
 	"viewHeader.worktrees": "工作树",
 	"viewHeader.chat": "聊天",
 
@@ -161,19 +160,7 @@ export const zhCN: Record<string, string> = {
 	"apiConfig.planActSeparateModels.desc": "启用后，您可以为计划和执行模式分别配置不同的模型。",
 
 	// ===== Account =====
-	"account.signIn": "登录",
-	"account.signOut": "退出登录",
-	"account.signInRequired": "需要登录",
-	"account.signInRequired.desc": "登录后即可查看您的账户详情和信用额度。",
-	"account.credits": "信用额度",
-	"account.usage": "使用量",
-	"account.planType": "套餐类型",
-	"account.planType.free": "免费",
-	"account.planType.pro": "专业版",
-	"account.planType.team": "团队版",
-	"account.planType.enterprise": "企业版",
-	"account.organization": "组织",
-	"account.switchOrganization": "切换组织",
+
 
 	// ===== Chat =====
 	"chat.input.placeholder": "输入消息...",
@@ -324,8 +311,7 @@ export const zhCN: Record<string, string> = {
 	"navbar.chat": "聊天",
 	"navbar.history": "项目记录",
 	"navbar.settings": "设置",
-	"navbar.account": "账户",
-	"navbar.marketplace": "市场",
+		"navbar.marketplace": "市场",
 	"navbar.mcp": "MCP",
 
 	// ===== Common Actions =====
@@ -494,12 +480,7 @@ export const zhCN: Record<string, string> = {
 		// ===== Terminal Settings =====
 
 		// ===== API Config =====
-		"account.welcome.description": "注册账户即可获取最新模型、查看使用量和信用额度的账单仪表盘，以及更多即将推出的功能。",
-		"account.welcome.signUp": "使用 Cline 注册",
-		"account.welcome.agreement": "继续即表示您同意",
-		"account.welcome.tos": "服务条款",
-		"account.welcome.privacy": "隐私政策",
-		"common.and": "和",
+												"common.and": "和",
 		"marketplace.skills.singular": "技能",
 		"marketplace.skills.plural": "技能",
 		"marketplace.skills.desc": "Cline 按需加载的可重用指令集，用于特定任务而不会在无关工作中占用上下文。",

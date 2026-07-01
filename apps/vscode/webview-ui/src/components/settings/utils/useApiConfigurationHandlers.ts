@@ -61,7 +61,8 @@ export const useApiConfigurationHandlers = () => {
 		currentMode: Mode,
 	) => {
 		if (planActSeparateModelsSetting) {
-			const targetField = fieldPair[currentMode]
+			const normalizedMode: "plan" | "act" = currentMode === "plan" ? "plan" : "act"
+			const targetField = fieldPair[normalizedMode]
 			await handleFieldChange(targetField, value)
 		} else {
 			await handleFieldsChange({

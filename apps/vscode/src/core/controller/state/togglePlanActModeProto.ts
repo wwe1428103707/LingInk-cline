@@ -4,6 +4,19 @@ import { Mode } from "@shared/storage/types"
 import { Logger } from "@/shared/services/Logger"
 import { Controller } from ".."
 
+function convertPlanActMode(mode: TogglePlanActModeRequest["mode"] | keyof typeof PlanActMode): Mode {
+	if (mode === PlanActMode.PLAN || mode === "PLAN") {
+		return "plan"
+	}
+	if (mode === PlanActMode.ACT || mode === "ACT") {
+		return "act"
+	}
+	if (mode === PlanActMode.ACADEMIC || mode === "ACADEMIC") {
+		return "academic"
+	}
+	throw new Error(`Invalid mode value: ${mode}`)
+}
+
 /**
  * Toggles between Plan and Act modes
  * @param controller The controller instance
@@ -12,14 +25,7 @@ import { Controller } from ".."
  */
 export async function togglePlanActModeProto(controller: Controller, request: TogglePlanActModeRequest): Promise<Boolean> {
 	try {
-		let mode: Mode
-		if (request.mode === PlanActMode.PLAN) {
-			mode = "plan"
-		} else if (request.mode === PlanActMode.ACT) {
-			mode = "act"
-		} else {
-			throw new Error(`Invalid mode value: ${request.mode}`)
-		}
+		const mode = convertPlanActMode(request.mode)
 		const chatContent = request.chatContent
 
 		// Call the existing controller implementation

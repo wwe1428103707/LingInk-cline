@@ -20,7 +20,7 @@ import { normalizeOpenaiReasoningEffort } from "./reasoningEffort"
  */
 export async function updateSettingsCli(controller: Controller, request: UpdateSettingsRequestCli): Promise<Empty> {
 	const convertPlanActMode = (mode: PlanActMode): Mode => {
-		return mode === PlanActMode.PLAN ? "plan" : "act"
+		return mode === PlanActMode.PLAN ? "plan" : mode === PlanActMode.ACADEMIC ? "academic" : "act"
 	}
 
 	if (request.environment !== undefined) {

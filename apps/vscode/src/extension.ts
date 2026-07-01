@@ -22,10 +22,14 @@ import { vscodeHostBridgeClient } from "@/hosts/vscode/hostbridge/client/host-gr
 import { createStorageContext } from "@/shared/storage/storage-context"
 import { readTextFromClipboard, writeTextToClipboard } from "@/utils/env"
 import { initialize, tearDown } from "./common"
+import { addCitationsWithCline } from "./core/controller/commands/addCitationsWithCline"
 import { addToCline } from "./core/controller/commands/addToCline"
+import { checkArgumentWithCline } from "./core/controller/commands/checkArgumentWithCline"
 import { explainWithCline } from "./core/controller/commands/explainWithCline"
 import { fixWithCline } from "./core/controller/commands/fixWithCline"
+import { generateReviewResponseWithCline } from "./core/controller/commands/generateReviewResponseWithCline"
 import { improveWithCline } from "./core/controller/commands/improveWithCline"
+import { polishWithCline } from "./core/controller/commands/polishWithCline"
 import { sendAddToInputEvent } from "./core/controller/ui/subscribeToAddToInput"
 import { sendShowWebviewEvent } from "./core/controller/ui/subscribeToShowWebview"
 import { HookDiscoveryCache } from "./core/hooks/HookDiscoveryCache"
@@ -386,6 +390,43 @@ export async function activate(context: vscode.ExtensionContext) {
 				return
 			}
 			await improveWithCline(context.controller, context.commandContext)
+		}),
+	)
+	// Academic research context menu commands
+	context.subscriptions.push(
+		vscode.commands.registerCommand(commands.PolishText, async (range: vscode.Range) => {
+			const context = await getContextForCommand(range)
+			if (!context) {
+				return
+			}
+			await polishWithCline(context.controller, context.commandContext)
+		}),
+	)
+	context.subscriptions.push(
+		vscode.commands.registerCommand(commands.CheckArgument, async (range: vscode.Range) => {
+			const context = await getContextForCommand(range)
+			if (!context) {
+				return
+			}
+			await checkArgumentWithCline(context.controller, context.commandContext)
+		}),
+	)
+	context.subscriptions.push(
+		vscode.commands.registerCommand(commands.AddCitations, async (range: vscode.Range) => {
+			const context = await getContextForCommand(range)
+			if (!context) {
+				return
+			}
+			await addCitationsWithCline(context.controller, context.commandContext)
+		}),
+	)
+	context.subscriptions.push(
+		vscode.commands.registerCommand(commands.GenerateReviewResponse, async (range: vscode.Range) => {
+			const context = await getContextForCommand(range)
+			if (!context) {
+				return
+			}
+			await generateReviewResponseWithCline(context.controller, context.commandContext)
 		}),
 	)
 

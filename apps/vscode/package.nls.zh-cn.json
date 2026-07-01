@@ -36,7 +36,11 @@
 	"command.cline.jupyterGenerateCell": "使用 Cline 生成 Jupyter 单元格",
 	"command.cline.jupyterExplainCell": "使用 Cline 解释 Jupyter 单元格",
 	"command.cline.jupyterImproveCell": "使用 Cline 改进 Jupyter 单元格",
-	"command.cline.openWalkthrough": "打开入门指南",
+		"command.cline.polishText": "润色选中文本",
+		"command.cline.checkArgument": "检查论证逻辑",
+		"command.cline.addCitations": "补充引用来源",
+		"command.cline.generateReviewResponse": "生成审稿回应",
+"command.cline.openWalkthrough": "打开入门指南",
 	"command.cline.reconstructTaskHistory": "重建任务历史",
 	"command.cate.cline": "Cline",
 

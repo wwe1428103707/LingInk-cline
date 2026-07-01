@@ -25,7 +25,7 @@ import type { ClineApiReqInfo, ClineMessage, ExtensionState } from "@shared/Exte
 import type { HistoryItem } from "@shared/HistoryItem"
 import { DeleteAllTaskHistoryCount, type GetTaskHistoryRequest, TaskHistoryArray, TaskResponse } from "@shared/proto/cline/task"
 import type { Settings } from "@shared/storage/state-keys"
-import type { Mode } from "@shared/storage/types"
+import { type Mode, normalizeMode } from "@shared/storage/types"
 import type { TelemetrySetting } from "@shared/TelemetrySetting"
 import type { ClineCheckpointRestore } from "@shared/WebviewMessage"
 import { parseMentions } from "@/core/mentions"
@@ -547,8 +547,7 @@ export class Controller {
 
 	private isSelectionForActiveModeProvider(event: Extract<ProviderConfigChange, { kind: "selection" }>): boolean {
 		try {
-			const modeValue = this.stateManager.getGlobalSettingsKey("mode")
-			const mode = modeValue === "plan" ? "plan" : "act"
+			const mode = normalizeMode(this.stateManager.getGlobalSettingsKey("mode"))
 			if (event.mode !== mode) {
 				return false
 			}
@@ -814,8 +813,7 @@ export class Controller {
 	private getActiveProviderId(): string | undefined {
 		try {
 			const apiConfig = this.stateManager.getApiConfiguration()
-			const modeValue = this.stateManager.getGlobalSettingsKey("mode")
-			const mode = modeValue === "plan" ? "plan" : "act"
+			const mode = normalizeMode(this.stateManager.getGlobalSettingsKey("mode"))
 			return mode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider
 		} catch {
 			return undefined
@@ -1141,7 +1139,7 @@ export class Controller {
 				sessionRecord?.workspaceRoot?.trim() ||
 				historyItem?.cwdOnTaskInitialization?.trim() ||
 				fallbackCwd
-			const mode = this.stateManager.getGlobalSettingsKey("mode") === "plan" ? "plan" : "act"
+			const mode = normalizeMode(this.stateManager.getGlobalSettingsKey("mode"))
 			const config = await this.sessionConfigBuilder.build({ cwd, mode, prompt: historyTitle })
 			if (usesClineAccountAuth(config.providerId) && !config.apiKey) {
 				this.emitClineAuthError(editedText)
@@ -1240,7 +1238,7 @@ export class Controller {
 		}
 
 		const cwd = await this.getWorkspaceRoot()
-		const mode = this.stateManager.getGlobalSettingsKey("mode") === "plan" ? "plan" : "act"
+		const mode = normalizeMode(this.stateManager.getGlobalSettingsKey("mode"))
 		const firstUserMessage = currentMessages.find(isVisibleCheckpointUserMessage)
 		const restoredText = target?.message.text ?? ""
 		const historyTitle = checkpointRunCount === 1 ? restoredText : firstUserMessage?.text || restoredText

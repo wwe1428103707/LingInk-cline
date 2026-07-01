@@ -102,7 +102,7 @@ export class SdkModeCoordinator {
 		if (currentMode === "act") {
 			return false
 		}
-		await this.options.stateManager.setGlobalState("mode", "act")
+		this.setModeSetting("act")
 		await this.options.postStateToWebview()
 		return true
 	}
@@ -115,6 +115,8 @@ export class SdkModeCoordinator {
 
 		const activeSession = this.options.sessions.getActiveSession()
 		if (activeSession) {
+			this.setModeSetting(modeToSwitchTo)
+			await this.postStateToWebviewBestEffort()
 			// A plan -> act toggle while the agent is idle after presenting its plan
 			// (awaiting_followup) is the user acting on that plan, so continue
 			// automatically. Any other state only updates the session configuration
@@ -137,7 +139,7 @@ export class SdkModeCoordinator {
 			return continuationSent && hasUserContent
 		}
 
-		this.options.stateManager.setGlobalState("mode", modeToSwitchTo)
+		this.setModeSetting(modeToSwitchTo)
 		await this.options.postStateToWebview()
 		return false
 	}
@@ -177,7 +179,10 @@ export class SdkModeCoordinator {
 		},
 	): Promise<boolean> {
 		const previousMode = this.options.stateManager.getGlobalSettingsKey("mode")
-		this.options.stateManager.setGlobalState("mode", newMode)
+		if (previousMode !== newMode) {
+			this.setModeSetting(newMode)
+			await this.postStateToWebviewBestEffort()
+		}
 
 		const activeSession = this.options.sessions.getActiveSession()
 		if (!activeSession) {
@@ -196,7 +201,6 @@ export class SdkModeCoordinator {
 
 		let autoContinueStarted = false
 		let continuationSent = false
-		let sessionReplaced = false
 		try {
 			const initialMessages = await this.options.loadInitialMessages(oldManager, oldSessionId)
 			const cwd = await this.options.getWorkspaceRoot()
@@ -213,9 +217,6 @@ export class SdkModeCoordinator {
 				Logger.warn(
 					`[SdkController] Mode rebuild: new mode '${newMode}' provider is '${config.providerId}' but no Cline auth token - emitting auth error`,
 				)
-				// The session still runs with the old mode's tools, so roll the
-				// setting back to keep the UI toggle coherent with it.
-				this.options.stateManager.setGlobalState("mode", previousMode)
 				this.options.emitClineAuthError()
 				await this.options.postStateToWebview()
 				return false
@@ -234,7 +235,6 @@ export class SdkModeCoordinator {
 				return false
 			}
 
-			sessionReplaced = true
 			const { sdkHost, startResult } = rebuildResult
 			const task = this.options.getTask()
 			if (task && task.taskId !== startResult.sessionId) {
@@ -284,12 +284,6 @@ export class SdkModeCoordinator {
 			Logger.log(`[SdkController] Session rebuilt for mode ${newMode}: ${oldSessionId} -> ${startResult.sessionId}`)
 		} catch (error) {
 			Logger.error("[SdkController] Failed to rebuild session for mode change:", error)
-			if (!sessionReplaced) {
-				// The old session is still the active one and still has the old
-				// mode's tools; leaving the setting flipped would show a toggle
-				// that disagrees with what the agent can actually do.
-				this.options.stateManager.setGlobalState("mode", previousMode)
-			}
 			if (continuationSent) {
 				// The continuation is already running on the rebuilt session; the
 				// only thing that can throw past the send is the post-rebuild state
@@ -319,6 +313,22 @@ export class SdkModeCoordinator {
 			await this.options.postStateToWebview()
 		}
 		return continuationSent
+	}
+
+	private setModeSetting(mode: Mode): void {
+		this.options.stateManager.setGlobalState("mode", mode)
+		const taskId = this.options.getTask()?.taskId
+		if (taskId) {
+			this.options.stateManager.setTaskSettings(taskId, "mode", mode)
+		}
+	}
+
+	private async postStateToWebviewBestEffort(): Promise<void> {
+		try {
+			await this.options.postStateToWebview()
+		} catch (error) {
+			Logger.warn("[SdkController] Failed to post optimistic mode state:", error)
+		}
 	}
 
 	private async cancelRunningTurnForModeChange(oldManager: SdkSessionHost, oldSessionId: string): Promise<void> {

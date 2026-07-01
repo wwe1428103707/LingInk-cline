@@ -1,4 +1,5 @@
 import type { ClineMessage } from "@shared/ExtensionMessage"
+import type { Mode } from "@shared/storage/types"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { StateManager } from "@/core/storage/StateManager"
 import { SdkModeCoordinator, type SdkModeCoordinatorOptions } from "./sdk-mode-coordinator"
@@ -41,7 +42,7 @@ describe("SdkModeCoordinator", () => {
 			undefined,
 			undefined,
 		)
-		expect(options.postStateToWebview).toHaveBeenCalledOnce()
+		expect(options.postStateToWebview).toHaveBeenCalledTimes(2)
 	})
 
 	it("preserves pending input by returning false when toggling mode without an active session", async () => {
@@ -50,6 +51,19 @@ describe("SdkModeCoordinator", () => {
 		await expect(coordinator.togglePlanActMode("plan")).resolves.toBe(false)
 
 		expect(state.mode).toBe("plan")
+		expect(options.postStateToWebview).toHaveBeenCalledOnce()
+	})
+
+	it("updates the active task mode when toggling to academic without an active session", async () => {
+		const task = makeTask("task-1")
+		const { coordinator, state, options } = makeCoordinator({ mode: "plan", task })
+
+		await expect(coordinator.togglePlanActMode("academic")).resolves.toBe(false)
+
+		expect(state.mode).toBe("academic")
+		expect(state.taskMode).toBe("academic")
+		expect(options.stateManager.setGlobalState).toHaveBeenCalledWith("mode", "academic")
+		expect(options.stateManager.setTaskSettings).toHaveBeenCalledWith("task-1", "mode", "academic")
 		expect(options.postStateToWebview).toHaveBeenCalledOnce()
 	})
 
@@ -87,6 +101,22 @@ describe("SdkModeCoordinator", () => {
 		expect(options.resetMessageTranslator).toHaveBeenCalledOnce()
 		expect(options.sessions.fireAndForgetSend).not.toHaveBeenCalled()
 		expect(options.postStateToWebview).toHaveBeenCalledOnce()
+	})
+
+	it("updates the active task mode when rebuilding an active session for academic mode", async () => {
+		const activeSession = makeActiveSession()
+		const task = makeTask("old-session")
+		const { coordinator, state, options } = makeCoordinator({ activeSession, task, mode: "plan" })
+
+		await coordinator.rebuildSessionForMode("academic")
+
+		expect(state.mode).toBe("academic")
+		expect(state.taskMode).toBe("academic")
+		expect(options.sessionConfigBuilder.build).toHaveBeenCalledWith({
+			cwd: "/workspace",
+			mode: "academic",
+		})
+		expect(options.stateManager.setTaskSettings).toHaveBeenCalledWith("old-session", "mode", "academic")
 	})
 
 	it("auto-continues a plan -> act toggle when the agent is idle after presenting its plan", async () => {
@@ -404,11 +434,11 @@ describe("SdkModeCoordinator", () => {
 		expect(options.emitClineAuthError).toHaveBeenCalledOnce()
 		expect(options.sessions.fireAndForgetSend).not.toHaveBeenCalled()
 		expect(options.messages.appendAndEmit).not.toHaveBeenCalled()
-		// The old plan session is still active, so the mode setting rolls back.
-		expect(state.mode).toBe("plan")
+		// Keep the user's selected mode visible even if the session cannot be rebuilt.
+		expect(state.mode).toBe("act")
 	})
 
-	it("rolls back the mode when the rebuild fails before the session is replaced", async () => {
+	it("keeps the selected mode when the rebuild fails before the session is replaced", async () => {
 		const activeSession = makeActiveSession()
 		const task = makeTask("old-session")
 		const { coordinator, options, state } = makeCoordinator({
@@ -427,7 +457,7 @@ describe("SdkModeCoordinator", () => {
 			}),
 		).resolves.toBe(false)
 
-		expect(state.mode).toBe("plan")
+		expect(state.mode).toBe("act")
 		expect(options.sessions.fireAndForgetSend).not.toHaveBeenCalled()
 		expect(options.onAutoContinueFailed).not.toHaveBeenCalled()
 		expect(options.messages.appendAndEmit).toHaveBeenCalledWith(
@@ -451,8 +481,8 @@ describe("SdkModeCoordinator", () => {
 
 		expect(options.emitClineAuthError).toHaveBeenCalledOnce()
 		expect(options.sessions.replaceActiveSession).not.toHaveBeenCalled()
-		expect(options.postStateToWebview).toHaveBeenCalledOnce()
-		expect(state.mode).toBe("plan")
+		expect(options.postStateToWebview).toHaveBeenCalledTimes(2)
+		expect(state.mode).toBe("act")
 	})
 
 	it("cancels and finalizes a running turn before rebuilding for mode change", async () => {
@@ -472,7 +502,10 @@ describe("SdkModeCoordinator", () => {
 })
 
 function makeCoordinator(input: Partial<MakeCoordinatorInput> = {}) {
-	const state = { mode: input.mode ?? "plan" }
+	const state: { mode: Mode; taskMode?: Mode } = {
+		mode: input.mode ?? "plan",
+		taskMode: input.taskMode,
+	}
 	const activeSession = input.activeSession
 	const config = {
 		providerId: "anthropic",
@@ -482,9 +515,19 @@ function makeCoordinator(input: Partial<MakeCoordinatorInput> = {}) {
 	}
 	const options = {
 		stateManager: {
-			getGlobalSettingsKey: vi.fn((key: string) => state[key as "mode"]),
-			setGlobalState: vi.fn(async (key: string, value: string) => {
-				state[key as "mode"] = value as "act" | "plan"
+			getGlobalSettingsKey: vi.fn((key: string) => {
+				if (key === "mode") {
+					return state.taskMode ?? state.mode
+				}
+				return state[key as keyof typeof state]
+			}),
+			setGlobalState: vi.fn((key: string, value: Mode) => {
+				state[key as "mode"] = value
+			}),
+			setTaskSettings: vi.fn((_taskId: string, key: string, value: Mode) => {
+				if (key === "mode") {
+					state.taskMode = value
+				}
 			}),
 		} as unknown as StateManager,
 		sessions: {
@@ -523,6 +566,7 @@ function makeCoordinator(input: Partial<MakeCoordinatorInput> = {}) {
 		stateManager: StateManager & {
 			getGlobalSettingsKey: ReturnType<typeof vi.fn>
 			setGlobalState: ReturnType<typeof vi.fn>
+			setTaskSettings: ReturnType<typeof vi.fn>
 		}
 		sessions: SdkModeCoordinatorOptions["sessions"] & {
 			getActiveSession: ReturnType<typeof vi.fn>
@@ -563,7 +607,8 @@ function makeCoordinator(input: Partial<MakeCoordinatorInput> = {}) {
 }
 
 interface MakeCoordinatorInput {
-	mode: "act" | "plan"
+	mode: Mode
+	taskMode: Mode
 	activeSession: ReturnType<typeof makeActiveSession>
 	config: {
 		providerId: string

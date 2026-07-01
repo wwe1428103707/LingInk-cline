@@ -36,7 +36,11 @@
 	"command.cline.jupyterGenerateCell": "Generate Jupyter Cell with Cline",
 	"command.cline.jupyterExplainCell": "Explain Jupyter Cell with Cline",
 	"command.cline.jupyterImproveCell": "Improve Jupyter Cell with Cline",
-	"command.cline.openWalkthrough": "Open Walkthrough",
+		"command.cline.polishText": "Polish Selected Text",
+		"command.cline.checkArgument": "Check Argument Logic",
+		"command.cline.addCitations": "Suggest Citations",
+		"command.cline.generateReviewResponse": "Generate Review Response",
+"command.cline.openWalkthrough": "Open Walkthrough",
 	"command.cline.reconstructTaskHistory": "Reconstruct Task History",
 	"command.cate.cline": "Cline",
 

@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react"
 import type { ProviderId } from "@/context/ExtensionStateContext"
 import { ModelsServiceClient } from "@/services/grpc-client"
 import type { ModelInfo } from "../../../src/shared/api"
+import type { Mode } from "@shared/storage/types"
 
 export type ProviderConfigWritePatch = Partial<Omit<WriteProviderConfigPatch, "headers" | "aws" | "gcp">> & {
 	headers?: Record<string, string>
@@ -64,7 +65,7 @@ export function useProviderConfig(providerId: ProviderId) {
 	)
 
 	const commitSelection = useCallback(
-		async (mode: "plan" | "act", selection: ProviderModelSelection) => {
+		async (mode: Mode, selection: ProviderModelSelection) => {
 			if (selection.providerId !== providerId) {
 				throw new Error(`selection providerId ${selection.providerId} does not match hook providerId ${providerId}`)
 			}

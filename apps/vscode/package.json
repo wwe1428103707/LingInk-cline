@@ -238,6 +238,26 @@
 				"command": "cline.reconstructTaskHistory",
 				"title": "%command.cline.reconstructTaskHistory%",
 				"category": "Cline"
+			},
+			{
+				"command": "cline.polishText",
+				"title": "%command.cline.polishText%",
+				"category": "Cline"
+			},
+			{
+				"command": "cline.checkArgument",
+				"title": "%command.cline.checkArgument%",
+				"category": "Cline"
+			},
+			{
+				"command": "cline.addCitations",
+				"title": "%command.cline.addCitations%",
+				"category": "Cline"
+			},
+			{
+				"command": "cline.generateReviewResponse",
+				"title": "%command.cline.generateReviewResponse%",
+				"category": "Cline"
 			}
 		],
 		"keybindings": [
@@ -294,6 +314,26 @@
 				{
 					"command": "cline.addToChat",
 					"group": "navigation",
+					"when": "editorHasSelection"
+				},
+				{
+					"command": "cline.polishText",
+					"group": "3_academic",
+					"when": "editorHasSelection"
+				},
+				{
+					"command": "cline.checkArgument",
+					"group": "3_academic",
+					"when": "editorHasSelection"
+				},
+				{
+					"command": "cline.addCitations",
+					"group": "3_academic",
+					"when": "editorHasSelection"
+				},
+				{
+					"command": "cline.generateReviewResponse",
+					"group": "3_academic",
 					"when": "editorHasSelection"
 				}
 			],

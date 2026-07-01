@@ -317,6 +317,7 @@ message TogglePlanActModeRequest {
 enum PlanActMode {
   PLAN = 0;
   ACT = 1;
+  ACADEMIC = 2;
 }
 
 enum OpenaiReasoningEffort {

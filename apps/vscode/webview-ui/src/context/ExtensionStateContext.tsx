@@ -122,7 +122,6 @@ export interface ExtensionStateContextType extends ExtensionState {
 	navigateToSettings: (targetSection?: string) => void
 	navigateToSettingsModelPicker: (opts: { targetSection?: string; initialModelTab?: "recommended" | "free" }) => void
 	navigateToHistory: () => void
-	navigateToAccount: () => void
 	navigateToWorktrees: () => void
 	navigateToChat: () => void
 
@@ -238,14 +237,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		setShowHistory(true)
 	}, [closeMarketplaceView, setShowSettings, closeMcpView, setShowAccount, setShowWorktrees, setShowHistory])
 
-	const navigateToAccount = useCallback(() => {
-		closeMarketplaceView()
-		setShowSettings(false)
-		closeMcpView()
-		setShowHistory(false)
-		setShowWorktrees(false)
-		setShowAccount(true)
-	}, [closeMarketplaceView, setShowSettings, closeMcpView, setShowHistory, setShowWorktrees, setShowAccount])
 
 	const navigateToWorktrees = useCallback(() => {
 		closeMarketplaceView()
@@ -274,7 +265,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		autoApprovalSettings: DEFAULT_AUTO_APPROVAL_SETTINGS,
 		browserSettings: DEFAULT_BROWSER_SETTINGS,
 		preferredLanguage: "English",
-		mode: "act",
+		mode: "academic",
 		platform: DEFAULT_PLATFORM,
 		environment: Environment.production,
 		telemetrySetting: "unset",
@@ -300,7 +291,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		mcpResponsesCollapsed: false, // Default value (expanded), will be overwritten by extension state
 		yoloModeToggled: false,
 		customPrompt: undefined,
-		useAutoCondense: false,
+		useAutoCondense: true,
 		subagentsEnabled: false,
 		worktreesEnabled: { user: true, featureFlag: false },
 		favoritedModelIds: [],
@@ -311,7 +302,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		backgroundCommandRunning: false,
 		backgroundCommandTaskId: undefined,
 		lastDismissedCliBannerVersion: 0,
-		backgroundEditEnabled: false,
+		backgroundEditEnabled: true,
 		showFeatureTips: true,
 		globalSkillsToggles: {},
 		localSkillsToggles: {},
@@ -696,11 +687,7 @@ export const ExtensionStateContextProvider: React.FC<{
 
 		// Set up account button clicked subscription
 		accountButtonClickedSubscriptionRef.current = UiServiceClient.subscribeToAccountButtonClicked(EmptyRequest.create(), {
-			onResponse: () => {
-				// When account button is clicked, navigate to account view
-				console.log("[DEBUG] Received account button clicked event from gRPC stream")
-				navigateToAccount()
-			},
+			onResponse: () => {},
 			onError: (error: any) => {
 				console.error("Error in account button clicked subscription:", error)
 			},
@@ -915,7 +902,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		navigateToSettings,
 		navigateToSettingsModelPicker,
 		navigateToHistory,
-		navigateToAccount,
 		navigateToWorktrees,
 		navigateToChat,
 

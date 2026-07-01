@@ -1,7 +1,7 @@
 // Integration-style tests for the plan/act mode toggle flow.
 //
 // These tests verify the Controller → gRPC handler boundary for mode toggling:
-// 1. togglePlanActModeProto correctly decodes the PlanActMode enum to "plan"/"act"
+// 1. togglePlanActModeProto correctly decodes the PlanActMode enum to "plan"/"act"/"academic"
 // 2. The boolean return value semantics match the classic extension:
 //    - `false` when no chatContent was consumed (webview preserves input)
 //    - `false` when mode is unchanged (no-op)
@@ -53,6 +53,24 @@ describe("togglePlanActModeProto", () => {
 		await togglePlanActModeProto(mockController, request)
 
 		expect(toggleSpy).toHaveBeenCalledWith("act", undefined)
+	})
+
+	it("decodes ACADEMIC mode and passes it to the controller", async () => {
+		toggleSpy.mockResolvedValue(false)
+		const request = TogglePlanActModeRequest.create({ mode: PlanActMode.ACADEMIC })
+
+		await togglePlanActModeProto(mockController, request)
+
+		expect(toggleSpy).toHaveBeenCalledWith("academic", undefined)
+	})
+
+	it("decodes JSON enum strings from the webview transport", async () => {
+		toggleSpy.mockResolvedValue(false)
+		const request = { mode: "ACADEMIC" } as unknown as TogglePlanActModeRequest
+
+		await togglePlanActModeProto(mockController, request)
+
+		expect(toggleSpy).toHaveBeenCalledWith("academic", undefined)
 	})
 
 	it("passes chatContent through to the controller", async () => {

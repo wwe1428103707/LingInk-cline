@@ -33,6 +33,11 @@ const ClineCommands = {
 	JupyterImproveCell: prefix + ".jupyterImproveCell",
 	// LingInk ARS skill installer
 	InstallAcademicSkills: prefix + ".installAcademicSkills",
+		// Academic research context menu commands
+		PolishText: prefix + ".polishText",
+		CheckArgument: prefix + ".checkArgument",
+		AddCitations: prefix + ".addCitations",
+		GenerateReviewResponse: prefix + ".generateReviewResponse",
 }
 
 /**

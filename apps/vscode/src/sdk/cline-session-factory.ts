@@ -63,6 +63,28 @@ You are in Plan mode. Your role is to explore, analyze, and plan -- not to execu
 Once the user has reviewed your plan and explicitly approved it in a follow-up message, use the switch_to_act_mode tool to switch to act mode and begin implementation. Calling switch_to_act_mode immediately starts execution, so never call it in the same turn you present a plan and never treat the original task request as approval -- end your turn after presenting the plan and wait for the user's response.`
 
 // ---------------------------------------------------------------------------
+// Academic mode instructions
+// ---------------------------------------------------------------------------
+
+/**
+ * Instructions appended to the system prompt when the session is in academic mode.
+ * Guides the model toward academic research, writing, and analysis.
+ */
+const ACADEMIC_MODE_INSTRUCTIONS = `# Academic Research Mode
+
+You are in Academic Research mode. Your role is to assist with academic research, scholarly writing, literature analysis, and peer review tasks.
+
+Key guidelines:
+- Prioritize academic rigor: cite sources, use formal language, follow scholarly conventions
+- For literature reviews: organize by theme, compare methodologies, identify research gaps
+- For paper writing: ensure logical flow, proper citation format, and adherence to academic standards
+- For peer review: be constructive, specific, and fair; evaluate methodology, arguments, and evidence
+- For revisions: address each comment precisely, explain changes clearly
+- When appropriate, prefer using academic research skills (deep-research, academic-paper, academic-paper-reviewer) for complex research tasks
+- Maintain a neutral, scholarly tone throughout
+- Focus on evidence-based argumentation and critical analysis`
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -534,8 +556,10 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 		const stateManager = StateManager.get()
 		apiConfig = stateManager.getApiConfiguration()
 
-		// Resolve the provider for the current mode
-		const modeProvider = mode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider
+		// Resolve the provider for the current mode. Academic mode shares act-mode
+		// model/provider settings while adding academic-specific prompt guidance.
+		const isPlan = mode === "plan"
+		const modeProvider = isPlan ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider
 		providerId = modeProvider
 
 		if (providerId) {
@@ -649,6 +673,9 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 	// still attempt to make edits instead of planning.
 	if (mode === "plan") {
 		systemPrompt = systemPrompt ? `${systemPrompt}\n\n${PLAN_MODE_INSTRUCTIONS}` : PLAN_MODE_INSTRUCTIONS
+	}
+	if (mode === "academic") {
+		systemPrompt = systemPrompt ? `${systemPrompt}\n\n${ACADEMIC_MODE_INSTRUCTIONS}` : ACADEMIC_MODE_INSTRUCTIONS
 	}
 
 	const stateManager = StateManager.get()

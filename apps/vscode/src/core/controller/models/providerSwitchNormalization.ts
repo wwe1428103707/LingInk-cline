@@ -18,6 +18,10 @@ const modeFields = {
 		provider: "actModeApiProvider",
 		modelId: "actModeApiModelId",
 	},
+	academic: {
+		provider: "actModeApiProvider",
+		modelId: "actModeApiModelId",
+	},
 } as const
 
 function toProviderId(provider: ApiProvider | string | undefined): ProviderId | undefined {
