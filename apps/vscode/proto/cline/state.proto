@@ -32,6 +32,8 @@ service StateService {
   rpc trackBannerEvent(TrackBannerEventRequest) returns (Empty);
   rpc installClineCli(EmptyRequest) returns (Empty);
   rpc installBundledSkills(EmptyRequest) returns (Empty);
+  rpc checkAcademicSkillsUpdate(EmptyRequest) returns (AcademicSkillsUpdateInfo);
+  rpc updateAcademicSkills(EmptyRequest) returns (Empty);
   rpc checkCliInstallation(EmptyRequest) returns (Boolean);
   rpc getProcessInfo(EmptyRequest) returns (ProcessInfo);
   rpc flushPendingState(EmptyRequest) returns (Empty);
@@ -530,4 +532,13 @@ message TestConnectionResult {
   bool success = 1;
   optional string message = 2;
   optional string error = 3;
+}
+
+// Result of checking for academic skills updates
+message AcademicSkillsUpdateInfo {
+  bool has_update = 1;
+  string current_version = 2;
+  string latest_version = 3;
+  string release_url = 4;
+  optional string release_notes = 5;
 }

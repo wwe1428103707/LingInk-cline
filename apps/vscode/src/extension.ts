@@ -59,7 +59,7 @@ import { telemetryService } from "./services/telemetry"
 import { LG_TASK_URI_PATH, SharedUriHandler, TASK_URI_PATH } from "./services/uri/SharedUriHandler"
 import { ShowMessageType } from "./shared/proto/host/window"
 import { fileExistsAtPath } from "./utils/fs"
-import { checkAndPromptSkillInstall, INSTALL_SKILLS_COMMAND } from "./services/skill-installer"
+import { checkAndPromptSkillInstall, checkAndPromptARSUpdate, INSTALL_SKILLS_COMMAND } from "./services/skill-installer"
 
 // This method is called when the VS Code extension is activated.
 // NOTE: This is VS Code specific - services that should be registered
@@ -90,6 +90,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	checkAndPromptSkillInstall().catch((err) =>
 		Logger.warn("[Activate] Skill installer check failed:", err),
 	)
+	// 4.6 Auto-check ARS skills update (non-blocking, with delay)
+	setTimeout(() => {
+		checkAndPromptARSUpdate().catch((err) =>
+			Logger.warn("[Activate] ARS update check failed:", err),
+		)
+	}, 10_000)
 
 	// 5. Register services and commands specific to VS Code
 	// Initialize hook discovery cache for performance optimization

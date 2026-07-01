@@ -2,8 +2,8 @@ import * as fs from "node:fs/promises"
 import * as fsSync from "node:fs"
 import * as path from "node:path"
 import * as vscode from "vscode"
+import type { Logger } from "@/shared/services/Logger"
 import { HostProvider } from "@/hosts/host-provider"
-import { Logger } from "@/shared/services/Logger"
 
 /**
  * Name of the marker file placed in the workspace skills dir after installation.
@@ -21,10 +21,126 @@ const BUNDLED_SKILLS_DIR = "bundled-skills"
 const ARS_SKILLS_RELATIVE = path.join(BUNDLED_SKILLS_DIR, "lingink-ars")
 
 /**
+ * Plugin manifest filename inside the ARS bundle.
+ */
+const PLUGIN_MANIFEST = "_plugin-manifest.json"
+
+/**
+ * GitHub API URL to check the latest release of ARS.
+ */
+const ARS_GITHUB_REPO = "Imbad0202/academic-research-skills"
+const GITHUB_API_LATEST_RELEASE = `https://api.github.com/repos/${ARS_GITHUB_REPO}/releases/latest`
+const GITHUB_RELEASES_URL = `https://github.com/${ARS_GITHUB_REPO}/releases`
+
+/**
  * Message shown when ARS skills are not installed.
  */
 const INSTALL_PROMPT_MSG =
 	"灵砚学术研究技能包 (Academic Research Skills) 未在当前工作区安装。是否立即安装？"
+
+export interface UpdateCheckResult {
+	hasUpdate: boolean
+	currentVersion: string
+	latestVersion: string
+	releaseUrl: string
+	releaseNotes?: string
+}
+
+/**
+ * Read the current bundled ARS version from _plugin-manifest.json.
+ */
+export function getBundledVersion(): string {
+	const extensionFsPath = HostProvider.get().extensionFsPath
+	const manifestPath = path.join(extensionFsPath, ARS_SKILLS_RELATIVE, PLUGIN_MANIFEST)
+	try {
+		const raw = fsSync.readFileSync(manifestPath, "utf-8")
+		const manifest = JSON.parse(raw)
+		return manifest.version ?? "0.0.0"
+	} catch {
+		return "0.0.0"
+	}
+}
+
+/**
+ * Read the installed version from the marker file in the workspace.
+ */
+async function getInstalledVersion(workspaceRoot: string): Promise<string | null> {
+	const markerPath = path.join(workspaceRoot, ".clinerules", "skills", INSTALL_MARKER)
+	try {
+		const raw = await fs.readFile(markerPath, "utf-8")
+		const data = JSON.parse(raw)
+		return data.version ?? null
+	} catch {
+		return null
+	}
+}
+
+/**
+ * Fetch the latest release version from GitHub API.
+ */
+async function fetchLatestRelease(): Promise<{ tag_name: string; html_url: string; body?: string } | null> {
+	try {
+		const response = await fetch(GITHUB_API_LATEST_RELEASE, {
+			headers: {
+				Accept: "application/vnd.github.v3+json",
+				"User-Agent": "LingInk-VSCode-Extension",
+			},
+		})
+		if (!response.ok) {
+			return null
+		}
+		const data = await response.json()
+		return {
+			tag_name: data.tag_name ?? "",
+			html_url: data.html_url ?? "",
+			body: data.body ?? undefined,
+		}
+	} catch {
+		return null
+	}
+}
+
+/**
+ * Check whether a newer version of ARS skills is available.
+ */
+export async function checkForARSUpdate(workspaceRoot: string): Promise<UpdateCheckResult> {
+	const currentVersion = getBundledVersion()
+	const latestInfo = await fetchLatestRelease()
+
+	if (!latestInfo || !latestInfo.tag_name) {
+		return {
+			hasUpdate: false,
+			currentVersion,
+			latestVersion: currentVersion,
+			releaseUrl: GITHUB_RELEASES_URL,
+		}
+	}
+
+	const latestTag = latestInfo.tag_name.replace(/^v/, "")
+	const hasUpdate = compareVersions(latestTag, currentVersion) > 0
+
+	return {
+		hasUpdate,
+		currentVersion,
+		latestVersion: latestTag,
+		releaseUrl: latestInfo.html_url,
+		releaseNotes: latestInfo.body,
+	}
+}
+
+/**
+ * Simple semver comparison. Returns >0 if a > b, 0 if equal, <0 if a < b.
+ */
+function compareVersions(a: string, b: string): number {
+	const aParts = a.split(".").map(Number)
+	const bParts = b.split(".").map(Number)
+	for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+		const aNum = aParts[i] ?? 0
+		const bNum = bParts[i] ?? 0
+		if (aNum !== bNum) return aNum - bNum
+	}
+	return 0
+}
 
 /**
  * Check whether ARS skills are already installed in the given workspace root.
@@ -63,7 +179,7 @@ async function writeInstallMarker(workspaceRoot: string): Promise<void> {
 				{
 					installedAt: new Date().toISOString(),
 					source: "lingink-ars",
-					version: "3.13.0",
+					version: getBundledVersion(),
 				},
 				null,
 				2,
@@ -77,13 +193,7 @@ async function writeInstallMarker(workspaceRoot: string): Promise<void> {
 
 /**
  * Install bundled ARS skills into the current workspace.
- *
- * 1. Resolves the extension's bundled skills directory.
- * 2. Creates `.clinerules/skills/` in the workspace root.
- * 3. Copies all bundled content (skills, agents, shared, scripts, etc.).
- * 4. Writes a marker file.
- *
- * @returns The target directory path on success, or throws.
+ * Copies from the extension's bundled directory to the workspace .clinerules/skills/.
  */
 export async function installBundledSkills(workspaceRoot: string): Promise<string> {
 	const extensionFsPath = HostProvider.get().extensionFsPath
@@ -103,11 +213,9 @@ export async function installBundledSkills(workspaceRoot: string): Promise<strin
 
 	// Copy bundled skills recursively
 	const result = await copyRecursive(srcDir, dstDir, [
-		// Skip the plugin entry and its TypeScript variant — they are only needed
-		// for Cline's plugin-runtime discovery, not for the workspace skills dir.
 		"plugin.js",
 		"plugin.ts",
-		"skills", // skip the junction dir inside the bundle (would be circular)
+		"skills",
 	])
 
 	// Write marker
@@ -123,41 +231,126 @@ export async function installBundledSkills(workspaceRoot: string): Promise<strin
 }
 
 /**
+ * Download and install the latest ARS release from GitHub.
+ */
+export async function downloadAndInstallUpdate(workspaceRoot: string): Promise<string> {
+	// Get latest release info
+	const latestInfo = await fetchLatestRelease()
+	if (!latestInfo || !latestInfo.tag_name) {
+		throw new Error("无法获取最新版本信息，请检查网络连接")
+	}
+
+	const tag = latestInfo.tag_name
+	const downloadUrl = `https://github.com/${ARS_GITHUB_REPO}/archive/refs/tags/${tag}.tar.gz`
+
+	Logger.log(`[SkillInstaller] Downloading ARS update ${tag} from ${downloadUrl}`)
+
+	// Download the tarball using fetch
+	const response = await fetch(downloadUrl)
+	if (!response.ok) {
+		throw new Error(`下载失败: HTTP ${response.status}`)
+	}
+
+	const buffer = Buffer.from(await response.arrayBuffer())
+
+	// Extract to a temp directory using tar + gzip (Node.js built-in zlib)
+	const { execSync } = await import("node:child_process")
+	const tmpDir = path.join(workspaceRoot, ".clinerules", ".ars-update-tmp")
+	const extractDir = path.join(tmpDir, tag.replace(/^v/, ""))
+
+	try {
+		// Clean any previous temp
+		await fs.rm(tmpDir, { recursive: true, force: true })
+		await fs.mkdir(tmpDir, { recursive: true })
+
+		// Write tarball to temp
+		const tarballPath = path.join(tmpDir, "release.tar.gz")
+		await fs.writeFile(tarballPath, buffer)
+
+		// Extract using tar (available on all platforms via git-bash or system)
+		execSync(`tar -xzf "${tarballPath}" -C "${tmpDir}"`, { stdio: "pipe" })
+
+		// The extracted dir name is typically academic-research-skills-{tag}
+		const extractedName = `academic-research-skills-${tag.replace(/^v/, "")}`
+		const extractedPath = path.join(tmpDir, extractedName)
+		const skillsPath = path.join(extractedPath, "skills")
+
+		// Verify the extracted skills directory exists; if not, try the root
+		let sourceDir: string
+		try {
+			await fs.access(skillsPath)
+			sourceDir = skillsPath
+		} catch {
+			// Fallback: the whole repo might be the skills directory
+			sourceDir = extractedPath
+		}
+
+		// Remove old installed skills
+		const dstDir = path.join(workspaceRoot, ".clinerules", "skills")
+		await fs.rm(dstDir, { recursive: true, force: true })
+		await fs.mkdir(dstDir, { recursive: true })
+
+		// Copy new version
+		const result = await copyRecursive(sourceDir, dstDir, ["node_modules", ".git", ".github"])
+
+		// Write marker with updated version
+		const markerPath = path.join(dstDir, INSTALL_MARKER)
+		await fs.writeFile(
+			markerPath,
+			JSON.stringify(
+				{
+					installedAt: new Date().toISOString(),
+					source: "lingink-ars",
+					version: tag.replace(/^v/, ""),
+					updatedFrom: "github",
+				},
+				null,
+				2,
+			),
+			"utf-8",
+		)
+
+		Logger.log(`[SkillInstaller] Updated ARS skills to ${tag} (${result.copied} files)`)
+
+		// Cleanup temp
+		await fs.rm(tmpDir, { recursive: true, force: true })
+
+		return dstDir
+	} catch (error) {
+		// Cleanup on failure
+		await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {})
+		throw error
+	}
+}
+
+/**
  * Recursively copy files from `src` to `dst`, excluding paths in `skipNames`.
  */
 async function copyRecursive(src: string, dst: string, skipNames: string[] = []): Promise<{ copied: number; skipped: number }> {
-	const entries = await fs.readdir(src, { withFileTypes: true })
 	let copied = 0
 	let skipped = 0
+
+	const entries = await fs.readdir(src, { withFileTypes: true })
 	for (const entry of entries) {
 		if (skipNames.includes(entry.name)) {
 			skipped++
 			continue
 		}
+
 		const srcPath = path.join(src, entry.name)
 		const dstPath = path.join(dst, entry.name)
+
 		if (entry.isDirectory()) {
-			// Check if it's a symbolic link or directory junction — skip those
-			const stat = await fs.lstat(srcPath)
-			if (stat.isSymbolicLink() || stat.isDirectory() === false) {
-				Logger.log(`[SkillInstaller] Skipping non-regular directory: ${entry.name}`)
-				skipped++
-				continue
-			}
 			await fs.mkdir(dstPath, { recursive: true })
-			const result = await copyRecursive(srcPath, dstPath, skipNames)
-			copied += result.copied
-			skipped += result.skipped
-		} else {
-			try {
-				await fs.copyFile(srcPath, dstPath)
-				copied++
-			} catch (error) {
-				Logger.warn(`[SkillInstaller] Failed to copy ${entry.name}:`, error)
-				skipped++
-			}
+			const sub = await copyRecursive(srcPath, dstPath, skipNames)
+			copied += sub.copied
+			skipped += sub.skipped
+		} else if (entry.isFile()) {
+			await fs.copyFile(srcPath, dstPath)
+			copied++
 		}
 	}
+
 	return { copied, skipped }
 }
 
@@ -219,8 +412,50 @@ export async function checkAndPromptSkillInstall(): Promise<void> {
 		}
 	} else if (action === "📖 了解更多") {
 		vscode.env.openExternal(
-			vscode.Uri.parse("https://github.com/Imbad0202/academic-research-skills"),
+			vscode.Uri.parse(GITHUB_RELEASES_URL),
 		)
+	}
+}
+
+/**
+ * Check for ARS updates and prompt the user.
+ */
+export async function checkAndPromptARSUpdate(): Promise<void> {
+	const wsFolders = vscode.workspace.workspaceFolders
+	if (!wsFolders || wsFolders.length === 0) return
+
+	const workspaceRoot = wsFolders[0].uri.fsPath
+	if (!workspaceRoot) return
+
+	const result = await checkForARSUpdate(workspaceRoot)
+	if (!result.hasUpdate) {
+		vscode.window.showInformationMessage(
+			`✅ 学术研究技能包已是最新版本 (v${result.currentVersion})`,
+			{ modal: false },
+		)
+		return
+	}
+
+	const action = await vscode.window.showInformationMessage(
+		`📦 学术研究技能包有新版本可用: v${result.currentVersion} → v${result.latestVersion}\n${result.releaseNotes ? result.releaseNotes.slice(0, 200) + "…" : ""}`,
+		{ modal: false },
+		"⬆️ 立即升级",
+		"📖 查看发布说明",
+	)
+
+	if (action === "⬆️ 立即升级") {
+		try {
+			await downloadAndInstallUpdate(workspaceRoot)
+			vscode.window.showInformationMessage(
+				`✅ 学术研究技能包已升级到 v${result.latestVersion}！重启 Cline 会话后生效。`,
+			)
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : String(error)
+			Logger.error(`[SkillInstaller] Update failed: ${msg}`)
+			vscode.window.showErrorMessage(`❌ 升级失败: ${msg}`)
+		}
+	} else if (action === "📖 查看发布说明") {
+		vscode.env.openExternal(vscode.Uri.parse(result.releaseUrl))
 	}
 }
 
@@ -230,32 +465,21 @@ export async function checkAndPromptSkillInstall(): Promise<void> {
  */
 function countFiles(dir: string): number {
 	try {
-		if (!fsSync.existsSync(dir)) {
-			return -1
-		}
 		let count = 0
 		const walk = (d: string): void => {
 			const entries = fsSync.readdirSync(d, { withFileTypes: true })
-			for (const e of entries) {
-				const p = path.join(d, e.name)
-				if (e.isDirectory()) {
-					// Skip reparse points (junctions/symlinks) to avoid double-counting
-					try {
-						const stat = fsSync.lstatSync(p)
-						if (stat.isSymbolicLink()) continue
-					} catch {
-						continue
-					}
+			for (const entry of entries) {
+				const p = path.join(d, entry.name)
+				if (entry.isDirectory()) {
 					walk(p)
-				} else if (e.isFile()) {
+				} else if (entry.isFile()) {
 					count++
 				}
 			}
 		}
 		walk(dir)
 		return count
-	} catch (error) {
-		Logger.warn(`[SkillInstaller] countFiles failed for ${dir}:`, error)
+	} catch {
 		return -1
 	}
 }

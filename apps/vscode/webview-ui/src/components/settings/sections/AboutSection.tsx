@@ -4,6 +4,7 @@ import { t } from "@/i18n"
 import Section from "../Section"
 import { StateServiceClient } from "@/services/grpc-client"
 import { EmptyRequest } from "@shared/proto/cline/common"
+import type { AcademicSkillsUpdateInfo } from "@shared/proto/cline/state"
 
 interface AboutSectionProps {
 	version: string
@@ -12,6 +13,9 @@ interface AboutSectionProps {
 
 const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 	const [installing, setInstalling] = useState(false)
+	const [updating, setUpdating] = useState(false)
+	const [checking, setChecking] = useState(false)
+	const [updateInfo, setUpdateInfo] = useState<AcademicSkillsUpdateInfo | null>(null)
 
 	const handleInstallSkills = async () => {
 		setInstalling(true)
@@ -23,6 +27,41 @@ const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 			setInstalling(false)
 		}
 	}
+
+	const handleCheckUpdate = async () => {
+		setChecking(true)
+		setUpdateInfo(null)
+		try {
+			const info = await StateServiceClient.checkAcademicSkillsUpdate(EmptyRequest.create({}))
+			setUpdateInfo(info)
+		} catch (error) {
+			console.error("Failed to check updates:", error)
+			setUpdateInfo({
+				hasUpdate: false,
+				currentVersion: "unknown",
+				latestVersion: "unknown",
+				releaseUrl: "",
+			})
+		} finally {
+			setChecking(false)
+		}
+	}
+
+	const handleUpdate = async () => {
+		setUpdating(true)
+		try {
+			await StateServiceClient.updateAcademicSkills(EmptyRequest.create({}))
+			// Clear cached info so user can check again
+			setUpdateInfo(null)
+		} catch (error) {
+			console.error("Failed to update skills:", error)
+		} finally {
+			setUpdating(false)
+		}
+	}
+
+	const currentVersion = updateInfo?.currentVersion
+	const latestVersion = updateInfo?.latestVersion
 
 	return (
 		<div>
@@ -69,14 +108,57 @@ const AboutSection = ({ version, renderSectionHeader }: AboutSectionProps) => {
 						包含 deep-research、academic-paper、academic-paper-reviewer、academic-pipeline
 						四个学术研究 Skill，支持文献综述、论文写作、同行评审等完整科研流程。
 					</p>
-					<div>
+					<p className="text-xs text-description">
+						{currentVersion ? `当前版本: v${currentVersion}` : ""}
+					</p>
+					<div className="flex gap-2 flex-wrap">
 						<VSCodeButton
 							appearance="primary"
 							disabled={installing}
 							onClick={handleInstallSkills}>
-							{installing ? "安装中..." : "📥 安装学术研究技能包"}
+							{installing ? "安装中..." : "📥 安装"}
+						</VSCodeButton>
+						<VSCodeButton
+							appearance="secondary"
+							disabled={checking || updating}
+							onClick={handleCheckUpdate}>
+							{checking ? "检查中..." : "🔄 检查更新"}
 						</VSCodeButton>
 					</div>
+
+					{updateInfo && (
+						<div className="mt-2 p-2 rounded-sm border border-(--vscode-panel-border)">
+							{updateInfo.hasUpdate ? (
+								<>
+									<p className="text-sm font-medium text-(--vscode-terminal-ansiYellow)">
+										📦 有新版本可用: v{currentVersion} → v{latestVersion}
+									</p>
+									{updateInfo.releaseNotes && (
+										<p className="text-xs text-description mt-1 line-clamp-3">
+											{updateInfo.releaseNotes.slice(0, 300)}
+										</p>
+									)}
+									<div className="flex gap-2 mt-2">
+										<VSCodeButton
+											appearance="primary"
+											disabled={updating}
+											onClick={handleUpdate}>
+											{updating ? "升级中..." : "⬆️ 升级"}
+										</VSCodeButton>
+										<VSCodeButton
+											appearance="secondary"
+											onClick={() => window.open(updateInfo.releaseUrl, "_blank")}>
+											📖 发布说明
+										</VSCodeButton>
+									</div>
+								</>
+							) : (
+								<p className="text-sm text-(--vscode-terminal-ansiGreen)">
+									✅ 已是最新版本 (v{currentVersion})
+								</p>
+							)}
+						</div>
+					)}
 				</div>
 			</Section>
 		</div>
