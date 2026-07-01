@@ -98,10 +98,15 @@ export const MoonshotProvider = ({ showModelOptions, isPopup, currentMode }: Moo
 												updates: { options: { planModeApiModelId: value } },
 												updateMask: ["options.planModeApiModelId"],
 											}
-										: {
-												updates: { options: { actModeApiModelId: value } },
-												updateMask: ["options.actModeApiModelId"],
-											},
+										: currentMode === "academic"
+											? {
+													updates: { options: { academicModeApiModelId: value } },
+													updateMask: ["options.academicModeApiModelId"],
+												}
+											: {
+													updates: { options: { actModeApiModelId: value } },
+													updateMask: ["options.actModeApiModelId"],
+												},
 								),
 							)
 						}}

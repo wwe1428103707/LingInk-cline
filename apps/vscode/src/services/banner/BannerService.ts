@@ -426,7 +426,7 @@ export class BannerService {
 
 			const config = StateManager.get().getApiConfiguration()
 			const mode = StateManager.get().getGlobalSettingsKey("mode")
-			const provider = mode === "plan" ? config?.planModeApiProvider : config?.actModeApiProvider
+			const provider = mode === "plan" ? config?.planModeApiProvider : mode === "academic" ? config?.academicModeApiProvider : config?.actModeApiProvider
 
 			return rules.providers.some((ruleProvider) => {
 				// Check if ruleProvider is an alias for the selected provider

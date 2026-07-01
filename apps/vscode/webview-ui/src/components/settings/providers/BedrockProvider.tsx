@@ -82,10 +82,15 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 					reasoningEffort: apiConfiguration?.planModeReasoningEffort,
 					thinkingBudgetTokens: apiConfiguration?.planModeThinkingBudgetTokens,
 				}
-			: {
-					reasoningEffort: apiConfiguration?.actModeReasoningEffort,
-					thinkingBudgetTokens: apiConfiguration?.actModeThinkingBudgetTokens,
-				}
+			: currentMode === "academic"
+				? {
+						reasoningEffort: apiConfiguration?.academicModeReasoningEffort,
+						thinkingBudgetTokens: apiConfiguration?.academicModeThinkingBudgetTokens,
+					}
+				: {
+						reasoningEffort: apiConfiguration?.actModeReasoningEffort,
+						thinkingBudgetTokens: apiConfiguration?.actModeThinkingBudgetTokens,
+					}
 	const adaptiveThinkingDefaultEffort =
 		resolveClaudeOpusAdaptiveThinking(modeFields.reasoningEffort, modeFields.thinkingBudgetTokens).effort ?? "none"
 	const awsAuthentication =

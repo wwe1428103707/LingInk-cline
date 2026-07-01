@@ -24,7 +24,13 @@ export function buildSapProviderConfig(config: ApiConfiguration, mode: Mode): Sa
 	const useOrchestrationMode = config.sapAiCoreUseOrchestrationMode ?? true
 	const deploymentId = useOrchestrationMode
 		? undefined
-		: trimString(mode === "plan" ? config.planModeSapAiCoreDeploymentId : config.actModeSapAiCoreDeploymentId)
+		: trimString(
+				mode === "plan"
+					? config.planModeSapAiCoreDeploymentId
+					: mode === "academic"
+						? config.academicModeSapAiCoreDeploymentId
+						: config.actModeSapAiCoreDeploymentId,
+			)
 	const sapFields = {
 		clientId: trimString(config.sapAiCoreClientId),
 		clientSecret: trimString(config.sapAiCoreClientSecret),

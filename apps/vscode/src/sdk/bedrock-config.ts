@@ -75,7 +75,9 @@ export function buildBedrockProviderConfig(configuration: ApiConfiguration, mode
 		customModelBaseId: trimToUndefined(
 			mode === "plan"
 				? configuration.planModeAwsBedrockCustomModelBaseId
-				: configuration.actModeAwsBedrockCustomModelBaseId,
+				: mode === "academic"
+					? configuration.academicModeAwsBedrockCustomModelBaseId
+					: configuration.actModeAwsBedrockCustomModelBaseId,
 		),
 	}
 	return {

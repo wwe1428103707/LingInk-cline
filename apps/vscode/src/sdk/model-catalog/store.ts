@@ -135,8 +135,8 @@ function memoryKey(providerId: ProviderId, mode: Mode): string {
 	return `${providerId}:${mode}`
 }
 
-function modePair<T>(mode: Mode, plan: T, act: T): T {
-	return mode === "plan" ? plan : act
+function modePair<T>(mode: Mode, plan: T, act: T, academic?: T): T {
+	return mode === "plan" ? plan : mode === "academic" ? (academic ?? act) : act
 }
 
 function patchValue<T>(value: T | null | undefined): T | undefined {
@@ -382,7 +382,7 @@ function getModelIdKey(providerId: ProviderId, mode: Mode): keyof ApiConfigurati
 
 function getModelInfoKey(providerId: ProviderId, mode: Mode): (keyof ApiConfiguration & SettingsKey) | undefined {
 	const keys = modelInfoKeysByProvider[providerKey(providerId)]
-	return keys ? modePair(mode, keys.plan, keys.act) : undefined
+	return keys ? modePair(mode, keys.plan, keys.act, keys.academic) : undefined
 }
 
 function syncedModes(mode: Mode): Mode[] {
@@ -426,7 +426,7 @@ function readSelectionFromState(providerId: ProviderId, mode: Mode): ModelSelect
 		return { providerId, modelId, modelInfo }
 	}
 
-	const activeProvider = mode === "plan" ? apiConfiguration.planModeApiProvider : apiConfiguration.actModeApiProvider
+	const activeProvider = mode === "plan" ? apiConfiguration.planModeApiProvider : mode === "academic" ? apiConfiguration.academicModeApiProvider : apiConfiguration.actModeApiProvider
 	const provider = providerForStorage(providerId)
 	if (activeProvider !== provider) {
 		return rememberedSelection ?? providerSettingsSelection

@@ -208,12 +208,12 @@ export class SdkSessionEventCoordinator {
 		try {
 			const apiConfig = stateManager.getApiConfiguration()
 			const mode = normalizeMode(stateManager.getGlobalSettingsKey("mode"))
-			const provider = mode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider
+			const provider = mode === "plan" ? apiConfig.planModeApiProvider : mode === "academic" ? apiConfig.academicModeApiProvider : apiConfig.actModeApiProvider
 			if (provider !== "cline") {
 				return false
 			}
 
-			const modelId = mode === "plan" ? apiConfig.planModeClineModelId : apiConfig.actModeClineModelId
+			const modelId = mode === "plan" ? apiConfig.planModeClineModelId : mode === "academic" ? apiConfig.academicModeClineModelId : apiConfig.actModeClineModelId
 			if (!modelId) {
 				return false
 			}
@@ -242,7 +242,7 @@ export class SdkSessionEventCoordinator {
 		}
 		const apiConfig = stateManager.getApiConfiguration()
 		const mode = normalizeMode(stateManager.getGlobalSettingsKey("mode"))
-		return mode === "plan" ? apiConfig.planModeClineModelId : apiConfig.actModeClineModelId
+		return mode === "plan" ? apiConfig.planModeClineModelId : mode === "academic" ? apiConfig.academicModeClineModelId : apiConfig.actModeClineModelId
 	}
 
 	private logQueueEvents(event: CoreSessionEvent): void {

@@ -47,7 +47,7 @@ export function useStaticProviderSelection(
 	const hideUsageCost = useProviderUsageCostDisplay(providerId) === "hide"
 
 	const fallbackSavedModelId =
-		currentMode === "plan" ? apiConfiguration?.planModeApiModelId : apiConfiguration?.actModeApiModelId
+		currentMode === "plan" ? apiConfiguration?.planModeApiModelId : currentMode === "academic" ? apiConfiguration?.academicModeApiModelId : apiConfiguration?.actModeApiModelId
 	const savedModelId = options.savedModelId ?? fallbackSavedModelId
 
 	const { selectedModelId, selectedModelInfo } = useMemo(() => {

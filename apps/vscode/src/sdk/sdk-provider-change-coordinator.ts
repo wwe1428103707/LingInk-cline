@@ -27,7 +27,7 @@ export interface SdkProviderChangeCoordinatorOptions {
 }
 
 function providerForMode(config: ApiConfiguration, mode: Mode): string | undefined {
-	return mode === "plan" ? config.planModeApiProvider : config.actModeApiProvider
+	return mode === "plan" ? config.planModeApiProvider : mode === "academic" ? config.academicModeApiProvider : config.actModeApiProvider
 }
 
 export class SdkProviderChangeCoordinator {

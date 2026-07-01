@@ -244,7 +244,9 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 										apiConfiguration?.[
 											currentMode === "plan"
 												? "planModeSapAiCoreDeploymentId"
-												: "actModeSapAiCoreDeploymentId"
+												: currentMode === "academic"
+													? "academicModeSapAiCoreDeploymentId"
+													: "actModeSapAiCoreDeploymentId"
 										]
 									}
 									selectedModelId={selectedModelId || ""}
