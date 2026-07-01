@@ -911,31 +911,6 @@ describe("BannerService", () => {
 			})
 		})
 
-		it('should return "jetbrains" when ide contains "jetbrains"', async () => {
-			stubHostInfo({ ide: "jetbrains" })
-			mockFetch.resolves(createSuccessResponse(emptyResponse))
-
-			await mockFetchForTesting(mockFetch, async () => {
-				const bannerService = BannerService.initialize(mockController)
-				bannerService.getActiveBanners()
-				await new Promise((resolve) => setTimeout(resolve, 10))
-
-				expect(await getIdeParam(mockFetch)).to.equal("jetbrains")
-			})
-		})
-
-		it('should return "jetbrains" when ide is "Cline for JetBrains" (case-insensitive)', async () => {
-			stubHostInfo({ ide: "Cline for JetBrains" })
-			mockFetch.resolves(createSuccessResponse(emptyResponse))
-
-			await mockFetchForTesting(mockFetch, async () => {
-				const bannerService = BannerService.initialize(mockController)
-				bannerService.getActiveBanners()
-				await new Promise((resolve) => setTimeout(resolve, 10))
-
-				expect(await getIdeParam(mockFetch)).to.equal("jetbrains")
-			})
-		})
 
 		it('should return "cli" when ide contains "cli"', async () => {
 			stubHostInfo({ ide: "cli" })
@@ -1002,18 +977,6 @@ describe("BannerService", () => {
 			})
 		})
 
-		it("should prefer ide field over platform field for detection", async () => {
-			stubHostInfo({ ide: "Cline for JetBrains", platform: "Visual Studio Code 1.103.0" })
-			mockFetch.resolves(createSuccessResponse(emptyResponse))
-
-			await mockFetchForTesting(mockFetch, async () => {
-				const bannerService = BannerService.initialize(mockController)
-				bannerService.getActiveBanners()
-				await new Promise((resolve) => setTimeout(resolve, 10))
-
-				expect(await getIdeParam(mockFetch)).to.equal("jetbrains")
-			})
-		})
 	})
 
 	describe("Rate Limit Backoff (429)", () => {

@@ -44,7 +44,7 @@ For Responses API providers: add to `isNextGenModelProvider()` in `src/utils/mod
 Modular: `components/` (shared) + `variants/` (model-specific) + `templates/` (`{{PLACEHOLDER}}`). Variants override components via `componentOverrides` in `config.ts` or custom `template.ts`. XS variant is heavily condensed inline. Always regenerate snapshots after changes.
 
 ## Global State Keys (silent failure risk)
-Adding a key requires updating the typed storage definitions in `src/shared/storage/state-keys.ts`; runtime reads and writes should go through `StateManager`, not VS Code `ExtensionContext` storage. Persistent state is file-backed so it works across VS Code, CLI, and JetBrains hosts.
+Persistent state is file-backed so it works across VS Code and CLI hosts.
 
 ## Slash Commands (3 places)
 - `src/core/slash-commands/index.ts` — definitions.

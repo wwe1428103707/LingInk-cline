@@ -429,13 +429,7 @@ curl localhost:19229/api -d '{"method":"ui.screenshot"}'
 existing data from your real `~/.cline`, copy it: `cp -r ~/.cline ~/.cline2`. Be aware that
 secrets (API keys, auth tokens) will be shared if you do this.
 
-**⚠️ "Introducing Cline Kanban" overlay**: On fresh launches, a full-screen promo overlay may
-appear in the sidebar. It blocks all interactions and makes screenshots useless. **Dismiss it
-immediately after opening the sidebar**, before doing anything else:
-```bash
-curl localhost:19229/api -d '{"method":"ui.open_sidebar"}'
-curl localhost:19229/api -d '{"method":"web.evaluate","params":{"expression":"document.querySelectorAll(\".sr-only\").forEach(el => el.parentElement?.click())"}}'
-```
+
 
 **Screenshots**: `ui.screenshot` and `ui.sidebar_screenshot` save PNG files to `/tmp/cline-debug/`
 and return `{path}` in the response. **Do NOT `open` the file** — on macOS this launches Preview.app

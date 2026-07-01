@@ -29,7 +29,7 @@
 </table>
 </div>
 
-Run Cline in your terminal. Interactive chat for paired sessions, or fully headless for CI/CD and scripting. The CLI shares its agent core with the [Cline VS Code extension](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev), JetBrains plugin, and SDK, so plan/act modes, MCP servers, checkpoints, rules, skills, and provider configuration all behave the same across surfaces.
+Run Cline in your terminal. Interactive chat for paired sessions, or fully headless for CI/CD and scripting. The CLI shares its agent core with the [Cline VS Code extension](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev) and SDK, so plan/act modes, MCP servers, checkpoints, rules, skills, and provider configuration all behave the same across surfaces.
 
 ## Install
 
@@ -262,7 +262,6 @@ Schedules can route results back to chat surfaces with `--delivery-adapter`, `--
 | `--json` | Output NDJSON instead of styled text |
 | `--data-dir <path>` | Use isolated local state at `<path>` instead of `~/.cline` (enables sandbox mode automatically) |
 | `--auto-approve [true\|false]` | Set tool auto-approval for all tools |
-| `--kanban` | Run the external `kanban` app |
 | `-y, --yolo` | Skip tool approval prompts, enable `submit_and_exit`, and disable spawn/team tools by default |
 | `-z, --zen` | Dispatch the task to the background hub and exit the CLI immediately |
 | `--team-name <name>` | Override the runtime team state name |
@@ -277,7 +276,7 @@ Schedules can route results back to chat surfaces with `--delivery-adapter`, `--
 - `cline config` - Open the interactive config view
 - `cline history|h [options]` - List session history or manage saved sessions
 - `cline version` - Show CLI version
-- `cline update [options]` - Check for CLI and kanban updates
+- `cline update [options]` - Check for CLI updates
 - `cline auth <provider>` - Authenticate or seed provider credentials
 - `cline connect <adapter>` - Run a chat connector bridge (`telegram`, `gchat`, `whatsapp`)
 - `cline connect --stop [adapter]` - Stop connector bridge processes and their sessions
@@ -287,7 +286,6 @@ Schedules can route results back to chat surfaces with `--delivery-adapter`, `--
 - `cline doctor log` - Open the CLI runtime log file
 - `cline hook` - Handle a hook payload from stdin
 - `cline hub` - Manage the local hub daemon
-- `cline kanban` - Run the external `kanban` app, installing it first when needed
 
 ## Zen mode
 

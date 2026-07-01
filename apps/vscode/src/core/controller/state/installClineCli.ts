@@ -16,7 +16,7 @@ export async function installClineCli(_controller: Controller, _request: EmptyRe
 
 	try {
 		// Use the HostProvider to execute the command in a terminal
-		// This works across different platforms (VSCode, JetBrains, etc.)
+		// This works across different platforms
 		const response = await HostProvider.workspace.executeCommandInTerminal(
 			ExecuteCommandInTerminalRequest.create({
 				command: installCommand,

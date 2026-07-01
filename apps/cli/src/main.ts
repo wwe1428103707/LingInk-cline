@@ -12,7 +12,6 @@ import {
 } from "./commands/program";
 import {
 	autoUpdateOnStartup,
-	getPreferredKanbanInstaller,
 } from "./commands/update";
 import { CLI_DEFAULT_CHECKPOINT_CONFIG } from "./runtime/defaults";
 import {
@@ -682,15 +681,6 @@ export async function runCli(): Promise<void> {
 			ctx.exitCode = 0;
 		});
 
-	program
-		.command("kanban")
-		.description("Run the kanban app")
-		.action(async () => {
-			const { launchKanban } = await import("./commands/kanban");
-			ctx.exitCode = await launchKanban({
-				preferredInstaller: getPreferredKanbanInstaller(),
-			});
-		});
 
 	try {
 		await program.parseAsync(normalizedArgs, { from: "user" });
@@ -712,13 +702,12 @@ export async function runCli(): Promise<void> {
 	}
 
 	const rootOpts = program.opts<{
-		kanban?: boolean;
 		tui?: boolean;
 		update?: boolean;
 		verbose?: boolean;
 	}>();
 	if (rootOpts.update) {
-		if (rootOpts.kanban || rootOpts.tui || program.args.length > 0) {
+		if (rootOpts.tui || program.args.length > 0) {
 			writeErr("Use --update without a prompt or task flags.");
 			process.exitCode = 1;
 			return;
@@ -726,23 +715,6 @@ export async function runCli(): Promise<void> {
 		const { checkForUpdates } = await import("./commands/update");
 		process.exitCode = await checkForUpdates({
 			verbose: rootOpts.verbose === true,
-		});
-		return;
-	}
-	if (rootOpts.kanban) {
-		if (rootOpts.tui) {
-			writeErr("Use either --kanban or --tui, not both.");
-			process.exitCode = 1;
-			return;
-		}
-		if (program.args.length > 0) {
-			writeErr("Use --kanban without a prompt.");
-			process.exitCode = 1;
-			return;
-		}
-		const { launchKanban } = await import("./commands/kanban");
-		process.exitCode = await launchKanban({
-			preferredInstaller: getPreferredKanbanInstaller(),
 		});
 		return;
 	}
@@ -1171,31 +1143,11 @@ export async function runCli(): Promise<void> {
 			}
 			const initialClineProviderSettings =
 				provider === "cline" ? selectedProviderSettings : undefined;
-			let initialNotice:
-				| import("./kanban-migration/notice").CliMigrationNotice
-				| undefined;
-			let markInitialNoticeShown:
-				| ((
-						notice: import("./kanban-migration/notice").CliMigrationNotice,
-				  ) => void)
-				| undefined;
-			if (!launchConfigView && process.stdin.isTTY && process.stdout.isTTY) {
-				const { getClineCliMigrationNotice, markClineCliMigrationNoticeShown } =
-					await import("./kanban-migration/notice");
-				initialNotice = getClineCliMigrationNotice();
-				if (initialNotice) {
-					markInitialNoticeShown = () => {
-						markClineCliMigrationNoticeShown();
-					};
-				}
-			}
 			await runInteractive(config, userInstructionService, resumeSessionId, {
 				initialPrompt: args.prompt,
 				clineApiBaseUrl: initialClineProviderSettings?.baseUrl,
 				clineProviderSettings: initialClineProviderSettings,
 				initialView,
-				initialNotice,
-				onInitialNoticeShown: markInitialNoticeShown,
 			});
 			return;
 		}

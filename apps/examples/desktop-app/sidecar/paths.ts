@@ -76,19 +76,8 @@ export function resolveMcpSettingsPath(): string {
 	);
 }
 
-// ---------------------------------------------------------------------------
-// Session log paths (kanban-style)
-// ---------------------------------------------------------------------------
-
-function kanbanDataRoot(): string {
-	return (
-		process.env.CLINE_KANBAN_DATA_DIR?.trim() ||
-		join(homedir(), ".cline", "apps", "kanban")
-	);
-}
-
 export function sessionLogPath(sessionId: string): string {
-	return join(kanbanDataRoot(), "sessions", `${sessionId}.jsonl`);
+	return join(homedir(), ".cline", "apps", "sessions", `${sessionId}.jsonl`);
 }
 
 // ---------------------------------------------------------------------------

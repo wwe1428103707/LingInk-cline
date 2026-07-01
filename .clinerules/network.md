@@ -1,10 +1,10 @@
 # Networking & Proxy Support
 
-To ensure Cline works correctly in all environments (VSCode, JetBrains, CLI) and with various network configurations (especially corporate proxies), strictly follow these guidelines for all network activity.
+To ensure Cline works correctly in all environments (VSCode, CLI) and with various network configurations (especially corporate proxies), strictly follow these guidelines for all network activity.
 
 In extension code, do NOT use the global `fetch` or a default `axios` instance. (Note, `shared/net.ts` is exempt from these rules because it sets up the fetch wrappers.) In Webview code, you SHOULD use global `fetch`.
 
-Global `fetch` and default `axios` do not automatically pick up proxy configurations in all environments (specifically JetBrains and CLI). You MUST use the provided utilities in `@/shared/net` which handle proxy agent configuration. In the webview, the browser/embedder handles proxies.
+Global `fetch` and default `axios` do not automatically pick up proxy configurations in all environments (specifically the CLI). You MUST use the provided utilities in `@/shared/net` which handle proxy agent configuration. In the webview, the browser/embedder handles proxies.
 
 ## Guidelines
 

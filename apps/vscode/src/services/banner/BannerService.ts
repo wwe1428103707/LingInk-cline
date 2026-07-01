@@ -26,7 +26,6 @@ const OS_MAP: Record<string, string> = {
 
 const IDE_MAP: Record<string, string> = {
 	vscode: "vscode",
-	jetbrains: "jetbrains",
 	cli: "cli",
 }
 
@@ -247,8 +246,7 @@ export class BannerService {
 	public async sendBannerEvent(bannerId: string, eventType: "dismiss"): Promise<void> {
 		try {
 			const url = new URL("/banners/v2/messages", ClineEnv.config().apiBaseUrl).toString()
-			const ideType = this.getIdeType()
-			const surface = ideType === "cli" ? "cli" : ideType === "jetbrains" ? "jetbrains" : "vscode"
+			const surface = ideType === "cli" ? "cli" : "vscode"
 
 			const controller = new AbortController()
 			const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)

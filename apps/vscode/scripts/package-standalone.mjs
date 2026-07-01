@@ -15,7 +15,7 @@ const BINARIES_DIR = `${BUILD_DIR}/binaries`
 const RUNTIME_DEPS_DIR = "standalone/runtime-files"
 const IS_DEBUG_BUILD = process.env.IS_DEBUG_BUILD === "true"
 
-// This should match the node version packaged with the JetBrains plugin.
+// This should match the node version used by the standalone runtime.
 const TARGET_NODE_VERSION = "22.15.0"
 const TARGET_PLATFORMS = [
 	{ platform: "win32", arch: "x64", targetDir: "win-x64" },
@@ -50,8 +50,7 @@ async function installNodeDependencies() {
 	// This is an ISOLATED runtime install inside the standalone distribution
 	// directory (dist-standalone), driven by the "cline-core" runtime-files
 	// manifest — it is NOT part of the monorepo workspace install. TARGET_NODE_VERSION
-	// and the prebuild-install calls below target the Node ABI of the bundled
-	// runtime (matching the JetBrains-packaged Node), not the build tooling.
+	// runtime (matching the bundled standalone runtime), not the build tooling.
 	console.log("Running bun install in distribution directory...")
 	execSync("bun install", { stdio: "inherit", cwd: BUILD_DIR })
 
