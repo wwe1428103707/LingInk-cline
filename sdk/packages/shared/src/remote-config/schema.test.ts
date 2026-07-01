@@ -528,7 +528,6 @@ describe("Remote Config Schema", () => {
 			const validConfig: RemoteConfig = {
 				version: "v1",
 				telemetryEnabled: true,
-				kanbanEnabled: true,
 				mcpMarketplaceEnabled: true,
 				yoloModeAllowed: false,
 				providerSettings: {
@@ -623,7 +622,6 @@ describe("Remote Config Schema", () => {
 			const config = {
 				version: "v1",
 				telemetryEnabled: true,
-				kanbanEnabled: true,
 				mcpMarketplaceEnabled: false,
 				blockPersonalRemoteMCPServers: true,
 				allowedMCPServers: [
@@ -766,7 +764,6 @@ describe("Remote Config Schema", () => {
 			expect(result.version).to.equal("v1");
 			expect(result.telemetryEnabled).to.equal(true);
 			expect(result.yoloModeAllowed).to.equal(true);
-			expect(result.kanbanEnabled).to.equal(true);
 
 			expect(result.mcpMarketplaceEnabled).to.equal(false);
 			expect(result.allowedMCPServers).to.deep.equal(config.allowedMCPServers);

@@ -4,7 +4,6 @@ import {
 	ProviderSettingsManager,
 	type UserInstructionConfigService,
 } from "@cline/core";
-import type { CliMigrationNotice } from "../kanban-migration/notice";
 import { logCliError } from "../logging/errors";
 import {
 	loadClineAccountSnapshot,
@@ -84,8 +83,6 @@ export async function runInteractive(
 		clineProviderSettings?: ProviderSettings;
 		initialView?: "chat" | "config";
 		initialPrompt?: string;
-		initialNotice?: CliMigrationNotice;
-		onInitialNoticeShown?: (notice: CliMigrationNotice) => void | Promise<void>;
 	},
 ): Promise<void> {
 	assertInteractivePreflight(config);

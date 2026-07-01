@@ -1,0 +1,43 @@
+{
+	"compilerOptions": {
+		"composite": true,
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"jsx": "react",
+		"lib": ["es2022", "DOM"],
+		"module": "esnext",
+		"moduleResolution": "Bundler",
+		"noEmit": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"noImplicitReturns": true,
+		"resolveJsonModule": true,
+		"rootDir": "apps/vscode",
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"target": "es2022",
+		"typeRoots": [
+			"apps/vscode/node_modules/@types",
+			"node_modules/@types",
+			"apps/vscode/src/types"
+		],
+		"useDefineForClassFields": true,
+		"useUnknownInCatchVariables": false,
+		"paths": {
+			"@/*": ["./apps/vscode/src/*"],
+			"@cline/core": ["./sdk/packages/core/src/index.ts"],
+			"@cline/shared": ["./sdk/packages/shared/src/index.ts"],
+			"@cline/shared/*": ["./sdk/packages/shared/src/*"],
+			"@cline/llms": ["./sdk/packages/llms/src/index.ts"],
+			"@cline/agents": ["./sdk/packages/agents/src/index.ts"],
+			"@generated/*": ["./apps/vscode/src/generated/*"],
+			"@shared/*": ["./apps/vscode/src/shared/*"],
+			"@integration-tests/*": ["./apps/vscode/src/test/integration/*"]
+		}
+	},
+	"include": ["apps/vscode/src/**/*.ts", "apps/vscode/src/**/*.tsx"],
+	"exclude": ["node_modules", "apps/vscode/node_modules"]
+}

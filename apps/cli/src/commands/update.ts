@@ -13,12 +13,7 @@ import { resolveClineBuildEnv } from "@cline/shared";
 import { version } from "../../package.json";
 import { ensureCliHubServer } from "../utils/hub-runtime";
 import { c, writeErr, writeln } from "../utils/output";
-import {
-	getInstalledKanbanVersion,
-	type KanbanInstaller,
-	resolveKanbanInstallCommand,
-	spawnKanbanInstallProcess,
-} from "./kanban";
+
 
 const DEFAULT_PACKAGE_NAME = "cline";
 
@@ -193,9 +188,6 @@ async function getLatestPackageVersion(
 	}
 }
 
-async function getLatestKanbanVersion(): Promise<string | null> {
-	return getLatestPackageVersion("kanban");
-}
 
 function waitForProcessExit(child: ChildProcess): Promise<number> {
 	return new Promise<number>((resolve, reject) => {
@@ -218,56 +210,10 @@ async function runCliUpdate(
 	return waitForProcessExit(updateProcess);
 }
 
-type KanbanInstallCommand = NonNullable<
-	ReturnType<typeof resolveKanbanInstallCommand>
->;
 
-async function runKanbanUpdate(
-	installCommand: KanbanInstallCommand,
-): Promise<number> {
-	const updateProcess = spawnKanbanInstallProcess(installCommand, {
-		env: process.env,
-		windowsHide: true,
-	});
-	return waitForProcessExit(updateProcess);
-}
 
-function formatUpdateSummaryTargets(targets: string[]): string {
-	if (targets.length === 0) {
-		return "";
-	}
-	if (targets.length === 1) {
-		return targets[0] ?? "";
-	}
-	if (targets.length === 2) {
-		return `${targets[0]} and ${targets[1]}`;
-	}
-	const lastTarget = targets[targets.length - 1];
-	return `${targets.slice(0, -1).join(", ")}, and ${lastTarget}`;
-}
 
-function packageManagerToKanbanInstaller(
-	packageManager: PackageManager,
-): KanbanInstaller | undefined {
-	switch (packageManager) {
-		case PackageManager.NPM:
-			return "npm";
-		case PackageManager.PNPM:
-			return "pnpm";
-		case PackageManager.BUN:
-			return "bun";
-		default:
-			return undefined;
-	}
-}
 
-export function getPreferredKanbanInstaller(
-	currentVersion = version,
-): KanbanInstaller | undefined {
-	return packageManagerToKanbanInstaller(
-		getInstallationInfo(currentVersion).packageManager,
-	);
-}
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -391,7 +337,6 @@ export function autoUpdateOnStartup(): void {
 
 export interface CheckForUpdatesOptions {
 	verbose?: boolean;
-	includeKanban?: boolean;
 }
 
 /**
@@ -402,34 +347,13 @@ export async function checkForUpdates(
 	options: CheckForUpdatesOptions = {},
 ): Promise<number> {
 	const currentVersion = version;
-	const includeKanban = options.includeKanban ?? true;
-	writeln(
-		`${c.cyan}Checking for updates${includeKanban ? " to Cline CLI and kanban" : ""}…${c.reset}`,
-	);
+	writeln(`${c.cyan}Checking for updates…${c.reset}`);
 
 	const { packageName, updateCommand, packageManager } =
 		getInstallationInfo(currentVersion);
 
 	try {
 		const latestVersion = await getLatestVersion(packageName, currentVersion);
-		const kanbanInstallCommand = includeKanban
-			? resolveKanbanInstallCommand(
-					process.env,
-					process.platform,
-					packageManagerToKanbanInstaller(packageManager),
-				)
-			: null;
-		const latestKanbanVersion = kanbanInstallCommand
-			? await getLatestKanbanVersion()
-			: null;
-		const installedKanbanVersion = includeKanban
-			? getInstalledKanbanVersion()
-			: null;
-		const shouldUpdateKanban =
-			kanbanInstallCommand !== null &&
-			latestKanbanVersion !== null &&
-			(installedKanbanVersion === null ||
-				compareVersions(installedKanbanVersion, latestKanbanVersion) < 0);
 
 		if (options.verbose) {
 			writeln(`${c.dim}Current version: ${currentVersion}${c.reset}`);
@@ -438,43 +362,22 @@ export async function checkForUpdates(
 			if (latestVersion) {
 				writeln(`${c.dim}Latest version:  ${latestVersion}${c.reset}`);
 			}
-			if (includeKanban) {
-				writeln(
-					`${c.dim}Kanban version:  ${installedKanbanVersion ?? "(not installed)"}${c.reset}`,
-				);
-				if (latestKanbanVersion) {
-					writeln(`${c.dim}Latest kanban:   ${latestKanbanVersion}${c.reset}`);
-				}
-				if (!kanbanInstallCommand) {
-					writeln(
-						`${c.dim}Kanban installer: unavailable (npm, pnpm, or bun not found)${c.reset}`,
-					);
-				}
-			}
 		}
 
-		if (!latestVersion && !shouldUpdateKanban) {
+		if (!latestVersion) {
 			writeErr("Failed to check for updates: could not fetch latest version");
 			return 1;
 		}
 
 		const cliUpdateAvailable =
-			latestVersion !== null &&
 			compareVersions(currentVersion, latestVersion) < 0;
 		const cliIsUpToDate =
-			latestVersion !== null &&
 			compareVersions(currentVersion, latestVersion) >= 0;
 
-		if (!cliUpdateAvailable && !shouldUpdateKanban) {
-			if (cliIsUpToDate && installedKanbanVersion && latestKanbanVersion) {
-				writeln(
-					`${c.green}✓${c.reset} Already on the latest versions ${c.bold}${packageName}@${currentVersion}${c.reset} and ${c.bold}kanban@${installedKanbanVersion}${c.reset}`,
-				);
-			} else if (cliIsUpToDate) {
-				writeln(
-					`${c.green}✓${c.reset} Already on the latest version ${c.bold}${currentVersion}${c.reset}`,
-				);
-			}
+		if (cliIsUpToDate) {
+			writeln(
+				`${c.green}✓${c.reset} Already on the latest version ${c.bold}${currentVersion}${c.reset}`,
+			);
 			return 0;
 		}
 
@@ -484,77 +387,42 @@ export async function checkForUpdates(
 			);
 		}
 
-		let hadFailure = false;
-		const installedUpdates: string[] = [];
-
-		if (cliUpdateAvailable && latestVersion) {
-			if (!updateCommand) {
-				writeln(
-					`${c.dim}Unable to determine Cline update command. Please update manually with your package manager.${c.reset}`,
-				);
-				hadFailure = true;
-			} else {
-				const manualUpdateCommand = withMinimumReleaseAgeBypass(
-					updateCommand,
-					packageManager,
-				);
-				writeln(
-					`${c.cyan}Installing ${packageName}@${latestVersion}…${c.reset}`,
-				);
-				try {
-					const exitCode = await runCliUpdate(manualUpdateCommand);
-					if (exitCode === 0) {
-						installedUpdates.push(`${packageName}@${latestVersion}`);
-						await restartHubServerIfRunning();
-					} else {
-						writeErr(
-							`Cline update failed (exit code ${exitCode}). Try running: ${manualUpdateCommand.command}`,
-						);
-						hadFailure = true;
-					}
-				} catch (error) {
-					const message =
-						error instanceof Error ? error.message : String(error);
-					writeErr(
-						`Failed to run Cline update command ${manualUpdateCommand.command}: ${message}`,
-					);
-					hadFailure = true;
-				}
-			}
-		}
-
-		if (shouldUpdateKanban && kanbanInstallCommand && latestKanbanVersion) {
-			writeln(`${c.cyan}Installing kanban@${latestKanbanVersion}…${c.reset}`);
-			try {
-				const exitCode = await runKanbanUpdate(kanbanInstallCommand);
-				if (exitCode === 0) {
-					installedUpdates.push(`kanban@${latestKanbanVersion}`);
-				} else {
-					writeErr(
-						`Kanban update failed (exit code ${exitCode}). Try running: ${kanbanInstallCommand.displayCommand}`,
-					);
-					hadFailure = true;
-				}
-			} catch (error) {
-				const message = error instanceof Error ? error.message : String(error);
-				writeErr(
-					`Failed to run Kanban update command ${kanbanInstallCommand.displayCommand}: ${message}`,
-				);
-				hadFailure = true;
-			}
-		}
-
-		if (installedUpdates.length > 0) {
-			const label =
-				installedUpdates.length === 1
-					? "Installed update for"
-					: "Installed updates for";
+		if (!updateCommand) {
 			writeln(
-				`${c.green}✓${c.reset} ${label} ${formatUpdateSummaryTargets(installedUpdates)}`,
+				`${c.dim}Unable to determine Cline update command. Please update manually with your package manager.${c.reset}`,
 			);
+			return 1;
 		}
 
-		return hadFailure ? 1 : 0;
+		const manualUpdateCommand = withMinimumReleaseAgeBypass(
+			updateCommand,
+			packageManager,
+		);
+		writeln(
+			`${c.cyan}Installing ${packageName}@${latestVersion}…${c.reset}`,
+		);
+		try {
+			const exitCode = await runCliUpdate(manualUpdateCommand);
+			if (exitCode === 0) {
+				writeln(
+					`${c.green}✓${c.reset} Installed update for ${packageName}@${latestVersion}`,
+				);
+				await restartHubServerIfRunning();
+				return 0;
+			} else {
+				writeErr(
+					`Cline update failed (exit code ${exitCode}). Try running: ${manualUpdateCommand.command}`,
+				);
+				return 1;
+			}
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : String(error);
+			writeErr(
+				`Failed to run Cline update command ${manualUpdateCommand.command}: ${message}`,
+			);
+			return 1;
+		}
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		writeErr(`Error checking for updates: ${message}`);

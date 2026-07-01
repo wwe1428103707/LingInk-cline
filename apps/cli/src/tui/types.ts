@@ -10,7 +10,6 @@ import type {
 	ToolApprovalRequest,
 	ToolApprovalResult,
 } from "@cline/shared";
-import type { CliMigrationNotice } from "../kanban-migration/notice";
 import type {
 	PendingPromptSnapshot,
 	PendingPromptSubmittedEvent,
@@ -121,8 +120,6 @@ export interface TuiProps {
 	config: Config;
 	initialView?: "chat" | "config";
 	initialPrompt?: string;
-	initialNotice?: CliMigrationNotice;
-	onInitialNoticeShown?: (notice: CliMigrationNotice) => void | Promise<void>;
 	initialMessages?: Message[];
 	loadDeferredInitialMessages?: () => Promise<ResumedSessionResult>;
 	initialRepoStatus?: RepoStatus;

@@ -1,6 +1,6 @@
 # Plugins
 
-A Cline plugin is a TypeScript module that extends any agent built on the Cline SDK. The same plugin runs in the Cline CLI, VS Code and JetBrains extensions, and any custom app built on `@cline/core`.
+A Cline plugin is a TypeScript module that extends any agent built on the Cline SDK. The same plugin runs in the Cline CLI, and VS Code extension, and any custom app built on `@cline/core`.
 
 A plugin can:
 

@@ -388,6 +388,10 @@ export const zhCN: Record<string, string> = {
 	"settings.terminalTroubleshooting": "完整故障排除指南",
 
 	"onboarding.start": "开始使用",
+	"onboarding.configureProvider": "配置 API 提供商",
+	"onboarding.continue": "继续",
+	"onboarding.changeLater": "之后可在设置中更改",
+
 
 	// ===== Navbar =====
 	"navbar.newTask": "新建任务",

@@ -1,6 +1,6 @@
 # Storage Architecture
 
-Global settings, secrets and workspace state are stored in **file-backed JSON stores** under `~/.cline/data/`. This is the shared storage layer used by VSCode, CLI, and JetBrains.
+Global settings, secrets and workspace state are stored in **file-backed JSON stores** under `~/.cline/data/`. This is the shared storage layer used by VSCode and CLI.
 
 ## Key Abstractions
 
@@ -18,7 +18,7 @@ In-memory cache on top of `StorageContext`. All runtime reads hit the cache; wri
 
 ## ⚠️ Do NOT Use VSCode's ExtensionContext for Storage
 
-**Do not** read from or write to `context.globalState`, `context.workspaceState`, or `context.secrets` for persistent data. These are VSCode-specific and not available on CLI or JetBrains.
+**Do not** read from or write to `context.globalState`, `context.workspaceState`, or `context.secrets` for persistent data. These are VSCode-specific and not available on CLI.
 
 Instead, use:
 ```typescript
@@ -33,7 +33,7 @@ StateManager.get().setSecret("mySecretKey", value)
 StateManager.get().setWorkspaceState("myWsKey", value)
 ```
 
-Remember that your data may be read by a different client than the one that wrote it. For example, a value written by Cline in JetBrains may be read by Cline CLI.
+Remember that your data may be read by a different client than the one that wrote it. For example, a value written by Cline CLI may be read by Cline VSCode.
 
 ## VSCode Migration (src/hosts/vscode/vscode-to-file-migration.ts)
 

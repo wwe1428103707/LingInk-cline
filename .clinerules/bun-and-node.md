@@ -27,7 +27,7 @@ Node process. The following are Node runtime/ABI references and are correct as-i
 | Reference | Why it is Node |
 |-----------|----------------|
 | esbuild `platform: "node"` / `target: "node..."` | The bundle targets the Node runtime (extension host, standalone core). |
-| `TARGET_NODE_VERSION` (`scripts/package-standalone.mjs`) | Pins the Node ABI of the bundled standalone runtime (matches the JetBrains-packaged Node). |
+| `TARGET_NODE_VERSION` (`scripts/package-standalone.mjs`) | Pins the Node ABI of the bundled standalone runtime. |
 | `prebuild-install --target=<node version>` | Downloads native `.node` binaries for that Node ABI. |
 | `NODE_PATH=... node cline-core.js` | The standalone core is launched by Node, not bun. |
 | `node:` import specifiers (e.g. `node:fs`) | Node builtin module scheme; unrelated to tooling. |

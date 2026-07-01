@@ -81,7 +81,6 @@ export function addRootOptions(cmd: Command): Command {
 				"Auto-create a detached git worktree under ~/.cline/worktrees/ and run the task there",
 			)
 			.option("--update", "Check for updates and install if available")
-			.option("--kanban", "Run the kanban app")
 			.option("-v, --verbose", "Show verbose output")
 			// HIDDEN/LEGACY OPTIONS BELOW
 			.addOption(

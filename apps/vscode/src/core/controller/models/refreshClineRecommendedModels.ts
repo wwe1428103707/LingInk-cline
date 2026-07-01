@@ -51,7 +51,7 @@ function isFallbackRecommendedModels(data: ClineRecommendedModelsData): boolean 
 
 async function fetchAndCacheClineRecommendedModels(): Promise<ClineRecommendedModelsData> {
 	// Delegate the actual HTTP fetch + response normalization + offline fallback
-	// to the SDK so the CLI/JetBrains and the extension share one implementation.
+	// to the SDK so the CLI and the extension share one implementation.
 	// We pass the proxy-aware fetch (per .clinerules/network.md) and the
 	// extension's configured API base URL. On failure the SDK returns its own
 	// fallback list.

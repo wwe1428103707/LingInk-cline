@@ -183,7 +183,6 @@ export const RemoteConfigSchema = z.object({
 
 	// General settings not specific to any provider
 	telemetryEnabled: z.boolean().optional(),
-	kanbanEnabled: z.boolean().optional(),
 
 	// MCP settings
 	// Legacy field name. If this is false, locally configured MCP servers are blocked.

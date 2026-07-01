@@ -22,5 +22,4 @@ calls. See `apps/vscode/src/dev/debug-harness/README.md` for the debug harness.
 
 ## Debug harness
 
-- **Dismiss the Kanban/promo overlay** before any debug harness interaction.
-- **Use the command palette** to navigate tabs in the debug harness.
+

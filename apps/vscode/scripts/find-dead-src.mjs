@@ -2,7 +2,7 @@
 // that drives tree-shaking + minification mangling) to compute which src/ files
 // are reachable from BOTH shipped entry points:
 //   - src/extension.ts            (VS Code extension host)
-//   - src/standalone/cline-core.ts (standalone host used by JetBrains + CLI)
+//   - src/standalone/cline-core.ts (standalone host used by CLI)
 //
 // A src/*.ts file that is NOT in the union of metafile inputs for those two
 // builds is unreachable from any shipped entry => dead (modulo dynamic import()
