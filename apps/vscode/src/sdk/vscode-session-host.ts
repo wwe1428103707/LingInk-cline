@@ -34,6 +34,7 @@ import type { McpHub } from "@/services/mcp/McpHub"
 import { Logger } from "@/shared/services/Logger"
 import type { SdkSessionHost } from "./session-host"
 import { createVscodeExtraTools } from "./vscode-runtime-builder"
+import { EditingSessionService } from "@/integrations/editor/editingSessionService"
 
 export interface VscodeSessionHostOptions {
 	mcpHub: McpHub
@@ -75,19 +76,13 @@ export class VscodeSessionHost implements SdkSessionHost {
 	}
 
 	static async create(options: VscodeSessionHostOptions): Promise<VscodeSessionHost> {
-		// Build tool executor capabilities from options — only include keys that are provided.
-		// When a terminal manager is available, suppress the SDK's built-in run_commands
-		// tool by setting bash to undefined. Our custom run_commands (provided via
-		// extraTools) replaces it with foreground/background terminal support.
 		const toolExecutors: Partial<ToolExecutors> = {}
+		// Always provide our custom editor executor so edits go through the
+		// editing session (backup + review flow) instead of direct fs writes.
+		const editingService = EditingSessionService.getInstance()
+		;(toolExecutors as Record<string, unknown>).editor = editingService.createEditorExecutor()
 		if (options.askQuestion) {
 			toolExecutors.askQuestion = options.askQuestion
-		}
-		if (options.getTerminalManager) {
-			// Setting bash to undefined suppresses the SDK's createShellTool():
-			// createDefaultTools() checks `enableBash && executors.bash` — falsy
-			// bash means no built-in run_commands tool is created.
-			;(toolExecutors as Record<string, unknown>).bash = undefined
 		}
 
 		const inner = await ClineCore.create({
