@@ -110,7 +110,9 @@ async function fetchLatestRelease(): Promise<{ tag_name: string; html_url: strin
  * Check whether a newer version of ARS skills is available.
  */
 export async function checkForARSUpdate(workspaceRoot: string): Promise<UpdateCheckResult> {
-	const currentVersion = getBundledVersion()
+	// Use installed version if available, fall back to bundled (static in VSIX).
+	const installedVersion = await getInstalledVersion(workspaceRoot)
+	const currentVersion = installedVersion ?? getBundledVersion()
 	const latestInfo = await fetchLatestRelease()
 
 	if (!latestInfo || !latestInfo.tag_name) {

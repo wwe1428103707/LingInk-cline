@@ -14,6 +14,7 @@ import type { PluginManifest } from "..";
 const DEPRECATED_CONFIG_DIR = ".clinerules";
 const CLINE_CONFIG_DIR = ".cline";
 const LEGACY_AGENT_SKILLS_CONFIG_DIR = ".agents";
+const CLAUDE_CONFIG_DIR = ".claude";
 
 export const AGENT_CONFIG_DIRECTORY_NAME = "agents";
 export const HOOKS_CONFIG_DIRECTORY_NAME = "hooks";
@@ -312,7 +313,6 @@ function dedupePaths(paths: ReadonlyArray<string>): string[] {
 	}
 	return deduped;
 }
-
 function getWorkspaceSkillDirectories(workspacePath?: string): string[] {
 	if (!workspacePath) {
 		return [];
@@ -321,6 +321,7 @@ function getWorkspaceSkillDirectories(workspacePath?: string): string[] {
 		DEPRECATED_CONFIG_DIR,
 		CLINE_CONFIG_DIR,
 		LEGACY_AGENT_SKILLS_CONFIG_DIR,
+		CLAUDE_CONFIG_DIR,
 	].map((dir) => join(workspacePath, dir, SKILLS_CONFIG_DIRECTORY_NAME));
 }
 
