@@ -97,11 +97,18 @@
 			}
 		],
 		"viewsContainers": {
-			"secondarySidebar": [
+			"activitybar": [
 				{
 					"id": "claude-dev-ActivityBar",
 					"title": "%activitybar.title%",
-					"icon": "assets/icons/icon.png"
+					"icon": "assets/icons/icon.svg"
+				}
+			],
+			"secondarySidebar": [
+				{
+					"id": "claude-dev-SecondarySidebar",
+					"title": "%activitybar.title%",
+					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
@@ -111,7 +118,15 @@
 					"type": "webview",
 					"id": "claude-dev.SidebarProvider",
 					"name": "",
-					"icon": "assets/icons/icon.png"
+					"icon": "assets/icons/icon.svg"
+				}
+			],
+			"claude-dev-SecondarySidebar": [
+				{
+					"type": "webview",
+					"id": "claude-dev.SecondarySidebarProvider",
+					"name": "",
+					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
@@ -276,27 +291,27 @@
 				{
 					"command": "cline.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider || view == claude-dev.SecondarySidebarProvider"
 				},
 				{
 					"command": "cline.marketplaceButtonClicked",
 					"group": "navigation@2",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider || view == claude-dev.SecondarySidebarProvider"
 				},
 				{
 					"command": "cline.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider || view == claude-dev.SecondarySidebarProvider"
 				},
 				{
 					"command": "cline.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider || view == claude-dev.SecondarySidebarProvider"
 				},
 				{
 					"command": "cline.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider || view == claude-dev.SecondarySidebarProvider"
 				}
 			],
 			"editor/context": [

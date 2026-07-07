@@ -13,7 +13,7 @@ describe("network proxy settings", () => {
 			vscodeProxyUrl: "http://127.0.0.1:7890",
 		}))
 
-		resolveNetworkProxyUrl().should.equal("http://127.0.0.1:7890")
+		resolveNetworkProxyUrl()!.should.equal("http://127.0.0.1:7890")
 	})
 
 	it("uses the plugin proxy URL when configured to use a custom proxy", () => {
@@ -23,7 +23,7 @@ describe("network proxy settings", () => {
 			vscodeProxyUrl: "http://127.0.0.1:7890",
 		}))
 
-		resolveNetworkProxyUrl().should.equal("http://127.0.0.1:1080")
+		resolveNetworkProxyUrl()!.should.equal("http://127.0.0.1:1080")
 	})
 
 	it("ignores proxy settings when configured to disable plugin proxying", () => {

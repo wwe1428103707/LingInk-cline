@@ -1,5 +1,5 @@
-import logoSrc from "./icon.jpg"
+import ClineLogoVariable from "./ClineLogoVariable"
 
-const ClineLogoSanta = (props: Record<string, unknown>) => <img alt="LingInk" src={logoSrc} {...props} />
+const ClineLogoSanta = ClineLogoVariable
 
 export default ClineLogoSanta

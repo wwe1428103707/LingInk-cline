@@ -1,7 +1,6 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useState } from "react"
 import { AccountServiceClient } from "@/services/grpc-client"
-import { t } from "@/i18n"
 
 const COOLDOWN_MS = 5 * 60 * 1000 // 5 minutes
 const COOLDOWN_KEY = "cline:spendLimitRequestCooldown"

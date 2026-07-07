@@ -1,15 +1,15 @@
+import * as fs from "node:fs/promises"
+import * as path from "node:path"
 import { sendShowWebviewEvent } from "@core/controller/ui/subscribeToShowWebview"
 import { WebviewProvider } from "@core/webview"
 import * as vscode from "vscode"
 import { handleGrpcRequest, handleGrpcRequestCancel } from "@/core/controller/grpc-handler"
 import { HostProvider } from "@/hosts/host-provider"
 import { ExtensionRegistryInfo } from "@/registry"
+import { areSkillsInstalled, installBundledSkills } from "@/services/skill-installer"
 import type { ExtensionMessage } from "@/shared/ExtensionMessage"
 import { Logger } from "@/shared/services/Logger"
 import { WebviewMessage } from "@/shared/WebviewMessage"
-import * as fs from "node:fs/promises"
-import * as path from "node:path"
-import { installBundledSkills, areSkillsInstalled } from "@/services/skill-installer"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -20,6 +20,7 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 	// Used in package.json as the view's id. This value cannot be changed due to how vscode caches
 	// views based on their id, and updating the id would break existing instances of the extension.
 	public static readonly SIDEBAR_ID = ExtensionRegistryInfo.views.Sidebar
+	public static readonly SECONDARY_SIDEBAR_ID = ExtensionRegistryInfo.views.SecondarySidebar
 
 	private webview?: vscode.WebviewView
 	private disposables: vscode.Disposable[] = []

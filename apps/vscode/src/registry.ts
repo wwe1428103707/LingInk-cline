@@ -1,4 +1,4 @@
-import { name, publisher, version, clineBaseVersion } from "../package.json"
+import { clineBaseVersion, name, publisher, version } from "../package.json"
 import { HostProvider } from "./hosts/host-provider"
 
 const prefix = name === "claude-dev" ? "cline" : name
@@ -33,11 +33,11 @@ const ClineCommands = {
 	JupyterImproveCell: prefix + ".jupyterImproveCell",
 	// LingInk ARS skill installer
 	InstallAcademicSkills: prefix + ".installAcademicSkills",
-		// Academic research context menu commands
-		PolishText: prefix + ".polishText",
-		CheckArgument: prefix + ".checkArgument",
-		AddCitations: prefix + ".addCitations",
-		GenerateReviewResponse: prefix + ".generateReviewResponse",
+	// Academic research context menu commands
+	PolishText: prefix + ".polishText",
+	CheckArgument: prefix + ".checkArgument",
+	AddCitations: prefix + ".addCitations",
+	GenerateReviewResponse: prefix + ".generateReviewResponse",
 }
 
 /**
@@ -46,6 +46,7 @@ const ClineCommands = {
  */
 const ClineViewIds = {
 	Sidebar: name + ".SidebarProvider",
+	SecondarySidebar: name + ".SecondarySidebarProvider",
 }
 
 /**

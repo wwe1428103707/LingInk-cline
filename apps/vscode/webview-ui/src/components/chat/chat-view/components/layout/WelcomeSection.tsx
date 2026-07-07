@@ -316,7 +316,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 					</>
 				)}
 			</div>
-			<AcademicQuickTasks />
+			<AcademicQuickTasks onSelectTask={onSelectQuickWin} />
 			<SuggestedTasks onSelectQuickWin={onSelectQuickWin} shouldShowQuickWins={shouldShowQuickWins} />
 
 			{/* Quick launch worktree modal */}

@@ -59,7 +59,7 @@ import { telemetryService } from "./services/telemetry"
 import { LG_TASK_URI_PATH, SharedUriHandler, TASK_URI_PATH } from "./services/uri/SharedUriHandler"
 import { ShowMessageType } from "./shared/proto/host/window"
 import { fileExistsAtPath } from "./utils/fs"
-import { checkAndPromptSkillInstall, checkAndPromptARSUpdate, INSTALL_SKILLS_COMMAND } from "./services/skill-installer"
+import { checkAndPromptSkillInstall, checkAndPromptARSUpdate } from "./services/skill-installer"
 import { StateManager } from "./core/storage/StateManager"
 import { configureNetworkProxySettingsProvider } from "./shared/net"
 
@@ -139,6 +139,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(VscodeWebviewProvider.SIDEBAR_ID, webview, {
+			webviewOptions: { retainContextWhenHidden: true },
+		}),
+		vscode.window.registerWebviewViewProvider(VscodeWebviewProvider.SECONDARY_SIDEBAR_ID, webview, {
 			webviewOptions: { retainContextWhenHidden: true },
 		}),
 	)
