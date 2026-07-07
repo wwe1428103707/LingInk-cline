@@ -75,6 +75,7 @@ export interface ExtensionState {
 	 * current turn reaches a safe continuation point.
 	 */
 	queuedPrompts?: QueuedPrompt[]
+	editReview?: EditReviewState
 	/**
 	 * Monotonic version of this state snapshot. The webview applies a snapshot only if its
 	 * stateVersion is newer than the last applied, so stale/out-of-order state pushes are
@@ -146,6 +147,34 @@ export interface ExtensionState {
 	banners?: BannerCardData[]
 	welcomeBanners?: BannerCardData[]
 	openAiCodexIsAuthenticated?: boolean
+}
+
+export type EditReviewSessionState = "collecting" | "reviewing"
+
+export type EditReviewHunkState = "modified" | "accepted" | "rejected"
+
+export interface EditReviewHunk {
+	hunkId: string
+	filePath: string
+	relPath: string
+	oldText: string
+	newText: string
+	state: EditReviewHunkState
+}
+
+export interface EditReviewFile {
+	entryId: string
+	filePath: string
+	relPath: string
+	insertions: number
+	deletions: number
+	hunks: EditReviewHunk[]
+}
+
+export interface EditReviewState {
+	sessionId: string
+	state: EditReviewSessionState
+	files: EditReviewFile[]
 }
 
 /**

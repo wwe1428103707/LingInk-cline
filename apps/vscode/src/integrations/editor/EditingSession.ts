@@ -10,16 +10,11 @@
  * - After collection completes, user reviews & accepts/rejects per file
  */
 
+import * as fs from "fs/promises"
 import type { Event } from "vscode"
 import { EventEmitter } from "vscode"
-import * as fs from "fs/promises"
 import { Logger } from "@/shared/services/Logger"
-import {
-	ModifiedFileEntry,
-	ModifiedFileEntryState,
-	generateEntryId,
-	type IModifiedFileEntry,
-} from "./ModifiedFileEntry"
+import { generateEntryId, type IModifiedFileEntry, ModifiedFileEntry, ModifiedFileEntryState } from "./ModifiedFileEntry"
 
 export type EditingSessionState = "idle" | "collecting" | "reviewing" | "completed"
 
@@ -38,6 +33,12 @@ export interface IEditingSession {
 
 	/** Mark collection complete and switch to reviewing */
 	finishCollecting(): void
+
+	/** Accept a single recorded edit hunk */
+	acceptHunk(hunkId: string): Promise<void>
+
+	/** Reject a single recorded edit hunk */
+	rejectHunk(hunkId: string): Promise<void>
 
 	/** Accept changes for specific files (empty = all) */
 	accept(...filePaths: string[]): Promise<void>
@@ -80,23 +81,14 @@ export class EditingSession implements IEditingSession {
 		Logger.log(`[EditingSession ${this.sessionId}] Started collecting edits`)
 	}
 
-	async queueEdit(
-		filePath: string,
-		relPath: string,
-		oldText: string,
-		newText: string,
-	): Promise<void> {
+	async queueEdit(filePath: string, relPath: string, oldText: string, newText: string): Promise<void> {
 		this._assertState("collecting")
 		const entry = await this._getOrCreateEntry(filePath, relPath)
 		await entry.applyEdit(oldText, newText)
 		this._onDidChangeEntries.fire()
 	}
 
-	async queueWrite(
-		filePath: string,
-		relPath: string,
-		content: string,
-	): Promise<void> {
+	async queueWrite(filePath: string, relPath: string, content: string): Promise<void> {
 		this._assertState("collecting")
 		const entry = await this._getOrCreateEntry(filePath, relPath)
 		await entry.replaceContent(content)
@@ -106,72 +98,63 @@ export class EditingSession implements IEditingSession {
 	finishCollecting(): void {
 		this._assertState("collecting")
 		this._setState("reviewing")
-		Logger.log(
-			`[EditingSession ${this.sessionId}] Finished collecting, ${this._entries.length} file(s) modified`,
-		)
+		Logger.log(`[EditingSession ${this.sessionId}] Finished collecting, ${this._entries.length} file(s) modified`)
+	}
+
+	async acceptHunk(hunkId: string): Promise<void> {
+		this._assertState("reviewing")
+		const entry = this._entries.find((item) => item.hunks.some((hunk) => hunk.hunkId === hunkId))
+		await entry?.acceptHunk(hunkId)
+		this._onDidChangeEntries.fire()
+		this._checkAllResolved()
+	}
+
+	async rejectHunk(hunkId: string): Promise<void> {
+		this._assertState("reviewing")
+		const entry = this._entries.find((item) => item.hunks.some((hunk) => hunk.hunkId === hunkId))
+		await entry?.rejectHunk(hunkId)
+		this._onDidChangeEntries.fire()
+		this._checkAllResolved()
 	}
 
 	async accept(...filePaths: string[]): Promise<void> {
 		this._assertState("reviewing")
-		const targets =
-			filePaths.length > 0
-				? this._entries.filter(e => filePaths.includes(e.filePath))
-				: this._entries
+		const targets = filePaths.length > 0 ? this._entries.filter((e) => filePaths.includes(e.filePath)) : this._entries
 
-		await Promise.all(
-			targets
-				.filter(e => e.state === ModifiedFileEntryState.Modified)
-				.map(e => e.accept()),
-		)
+		await Promise.all(targets.filter((e) => e.state === ModifiedFileEntryState.Modified).map((e) => e.accept()))
 
 		this._checkAllResolved()
 	}
 
 	async reject(...filePaths: string[]): Promise<void> {
 		this._assertState("reviewing")
-		const targets =
-			filePaths.length > 0
-				? this._entries.filter(e => filePaths.includes(e.filePath))
-				: this._entries
+		const targets = filePaths.length > 0 ? this._entries.filter((e) => filePaths.includes(e.filePath)) : this._entries
 
-		await Promise.all(
-			targets
-				.filter(e => e.state === ModifiedFileEntryState.Modified)
-				.map(e => e.reject()),
-		)
+		await Promise.all(targets.filter((e) => e.state === ModifiedFileEntryState.Modified).map((e) => e.reject()))
 
 		this._checkAllResolved()
 	}
 
 	getEntry(filePath: string): IModifiedFileEntry | undefined {
-		return this._entries.find(e => e.filePath === filePath)
+		return this._entries.find((e) => e.filePath === filePath)
 	}
 
 	countByState(): Record<ModifiedFileEntryState, number> {
 		return {
-			[ModifiedFileEntryState.Modified]: this._entries.filter(
-				e => e.state === ModifiedFileEntryState.Modified,
-			).length,
-			[ModifiedFileEntryState.Accepted]: this._entries.filter(
-				e => e.state === ModifiedFileEntryState.Accepted,
-			).length,
-			[ModifiedFileEntryState.Rejected]: this._entries.filter(
-				e => e.state === ModifiedFileEntryState.Rejected,
-			).length,
+			[ModifiedFileEntryState.Modified]: this._entries.filter((e) => e.state === ModifiedFileEntryState.Modified).length,
+			[ModifiedFileEntryState.Accepted]: this._entries.filter((e) => e.state === ModifiedFileEntryState.Accepted).length,
+			[ModifiedFileEntryState.Rejected]: this._entries.filter((e) => e.state === ModifiedFileEntryState.Rejected).length,
 		}
 	}
 
 	async reset(): Promise<void> {
-		await Promise.all(this._entries.map(e => e.dispose()))
+		await Promise.all(this._entries.map((e) => e.dispose()))
 		this._entries = []
 		this._setState("idle")
 	}
 
-	private async _getOrCreateEntry(
-		filePath: string,
-		relPath: string,
-	): Promise<ModifiedFileEntry> {
-		const existing = this._entries.find(e => e.filePath === filePath)
+	private async _getOrCreateEntry(filePath: string, relPath: string): Promise<ModifiedFileEntry> {
+		const existing = this._entries.find((e) => e.filePath === filePath)
 		if (existing) {
 			return existing
 		}
@@ -183,20 +166,13 @@ export class EditingSession implements IEditingSession {
 			// New file — content is empty
 		}
 
-		const entry = new ModifiedFileEntry(
-			generateEntryId(),
-			filePath,
-			relPath,
-			originalContent,
-		)
+		const entry = new ModifiedFileEntry(generateEntryId(), filePath, relPath, originalContent)
 		this._entries.push(entry)
 		return entry
 	}
 
 	private _checkAllResolved(): void {
-		const remaining = this._entries.filter(
-			e => e.state === ModifiedFileEntryState.Modified,
-		)
+		const remaining = this._entries.filter((e) => e.state === ModifiedFileEntryState.Modified)
 		if (remaining.length === 0) {
 			this._setState("completed")
 		}
@@ -209,9 +185,7 @@ export class EditingSession implements IEditingSession {
 
 	private _assertState(expected: EditingSessionState): void {
 		if (this._state !== expected) {
-			throw new Error(
-				`EditingSession ${this.sessionId}: expected state "${expected}", got "${this._state}"`,
-			)
+			throw new Error(`EditingSession ${this.sessionId}: expected state "${expected}", got "${this._state}"`)
 		}
 	}
 }

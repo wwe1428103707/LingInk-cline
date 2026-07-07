@@ -35,6 +35,7 @@ import { clearRemoteConfig } from "@/core/storage/remote-config/utils"
 import { StateManager } from "@/core/storage/StateManager"
 import type { WorkspaceRootManager } from "@/core/workspace/WorkspaceRootManager"
 import { HostProvider } from "@/hosts/host-provider"
+import { EditingSessionService } from "@/integrations/editor/editingSessionService"
 import type { ITerminalManager } from "@/integrations/terminal/types"
 import { ExtensionRegistryInfo } from "@/registry"
 import { OcaAuthService } from "@/services/auth/oca/OcaAuthService"
@@ -1750,6 +1751,7 @@ export class Controller {
 				taskHistory: processedTaskHistory,
 				turnState: this.turnStateTracker.get(),
 				queuedPrompts,
+				editReview: EditingSessionService.getInstance().getReviewState(),
 				stateVersion: minter.nextSeq(),
 				epoch: minter.epoch,
 			}

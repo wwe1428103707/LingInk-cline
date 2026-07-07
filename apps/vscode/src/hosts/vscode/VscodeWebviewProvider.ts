@@ -5,6 +5,7 @@ import { WebviewProvider } from "@core/webview"
 import * as vscode from "vscode"
 import { handleGrpcRequest, handleGrpcRequestCancel } from "@/core/controller/grpc-handler"
 import { HostProvider } from "@/hosts/host-provider"
+import { EditingSessionService } from "@/integrations/editor/editingSessionService"
 import { ExtensionRegistryInfo } from "@/registry"
 import { areSkillsInstalled, installBundledSkills } from "@/services/skill-installer"
 import type { ExtensionMessage } from "@/shared/ExtensionMessage"
@@ -210,6 +211,30 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 						checkSkillsInstalledResult: { installed: false },
 					})
 				}
+				break
+			}
+			case "editReviewAction": {
+				const reviewAction = message.editReviewAction
+				if (!reviewAction) {
+					break
+				}
+				const editingService = EditingSessionService.getInstance()
+				if (reviewAction.action === "acceptAll") {
+					await editingService.accept()
+				} else if (reviewAction.action === "rejectAll") {
+					await editingService.reject()
+				} else if (reviewAction.action === "accept") {
+					await editingService.accept(reviewAction.filePath)
+				} else if (reviewAction.action === "reject") {
+					await editingService.reject(reviewAction.filePath)
+				} else if (reviewAction.action === "openDiff") {
+					await editingService.openDiff(reviewAction.filePath)
+				} else if (reviewAction.action === "acceptHunk") {
+					await editingService.acceptHunk(reviewAction.hunkId)
+				} else if (reviewAction.action === "rejectHunk") {
+					await editingService.rejectHunk(reviewAction.hunkId)
+				}
+				await this.controller.postStateToWebview()
 				break
 			}
 			default: {

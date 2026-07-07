@@ -1,6 +1,7 @@
 import type { CoreSessionEvent } from "@cline/core"
 import { refreshClineRecommendedModels } from "@/core/controller/models/refreshClineRecommendedModels"
 import type { StateManager } from "@/core/storage/StateManager"
+import { EditingSessionService } from "@/integrations/editor/editingSessionService"
 import { CLINE_RECOMMENDED_MODELS_FALLBACK } from "@/shared/cline/recommended-models"
 import type { ClineApiReqInfo, TurnPhase } from "@/shared/ExtensionMessage"
 import { Logger } from "@/shared/services/Logger"
@@ -87,6 +88,7 @@ export class SdkSessionEventCoordinator {
 
 		if (activeSession) {
 			if (result.sessionEnded || result.turnComplete) {
+				EditingSessionService.getInstance().finishCollectingIfNeeded()
 				// Authoritative UI phase at turn end. If the completion tool was used this turn
 				// the phase is "completed" (green box + Start New Task); otherwise the agent
 				// simply stopped and is waiting for the user ("awaiting_followup"). Error turns

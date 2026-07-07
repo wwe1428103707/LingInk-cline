@@ -1,8 +1,14 @@
 export interface WebviewMessage {
-	type: "grpc_request" | "grpc_request_cancel" | "installSkills" | "checkSkillsInstalled"
+	type: "grpc_request" | "grpc_request_cancel" | "installSkills" | "checkSkillsInstalled" | "editReviewAction"
 	grpc_request?: GrpcRequest
 	grpc_request_cancel?: GrpcCancel
+	editReviewAction?: EditReviewAction
 }
+
+export type EditReviewAction =
+	| { action: "acceptAll" | "rejectAll" }
+	| { action: "accept" | "reject" | "openDiff"; filePath: string }
+	| { action: "acceptHunk" | "rejectHunk"; hunkId: string }
 
 export type GrpcRequest = {
 	service: string
