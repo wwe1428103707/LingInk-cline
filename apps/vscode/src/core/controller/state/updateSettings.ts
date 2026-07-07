@@ -268,6 +268,16 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 			controller.stateManager.setGlobalState("showFeatureTips", request.showFeatureTips)
 		}
 
+		if (request.networkProxyMode !== undefined && request.networkProxyMode !== "") {
+			const mode =
+				request.networkProxyMode === "custom" || request.networkProxyMode === "off" ? request.networkProxyMode : "vscode"
+			controller.stateManager.setGlobalState("networkProxyMode", mode)
+		}
+
+		if (request.networkProxyUrl !== undefined) {
+			controller.stateManager.setGlobalState("networkProxyUrl", request.networkProxyUrl.trim() || undefined)
+		}
+
 		// Post updated state to webview
 		await controller.postStateToWebview()
 

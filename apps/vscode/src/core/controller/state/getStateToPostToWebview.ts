@@ -69,6 +69,8 @@ export async function getStateToPostToWebview(controller: {
 	const lastDismissedCliBannerVersion = stateManager.getGlobalStateKey("lastDismissedCliBannerVersion") || 0
 	const dismissedBanners = stateManager.getGlobalStateKey("dismissedBanners")
 	const showFeatureTips = stateManager.getGlobalSettingsKey("showFeatureTips")
+	const networkProxyMode = stateManager.getGlobalSettingsKey("networkProxyMode")
+	const networkProxyUrl = stateManager.getGlobalSettingsKey("networkProxyUrl")
 
 	const localClineRulesToggles = stateManager.getWorkspaceStateKey("localClineRulesToggles")
 	const localWindsurfRulesToggles = stateManager.getWorkspaceStateKey("localWindsurfRulesToggles")
@@ -175,6 +177,8 @@ export async function getStateToPostToWebview(controller: {
 		backgroundEditEnabled: stateManager.getGlobalSettingsKey("backgroundEditEnabled"),
 		optOutOfRemoteConfig: stateManager.getGlobalSettingsKey("optOutOfRemoteConfig"),
 		showFeatureTips,
+		networkProxyMode,
+		networkProxyUrl,
 		banners,
 		welcomeBanners,
 		openAiCodexIsAuthenticated,

@@ -21,6 +21,7 @@ export async function checkAcademicSkillsUpdate(
 				currentVersion: "unknown",
 				latestVersion: "unknown",
 				releaseUrl: "",
+				error: "未打开工作区，无法检查 Academic Research Skills 更新",
 			}
 		}
 
@@ -31,6 +32,7 @@ export async function checkAcademicSkillsUpdate(
 			latestVersion: result.latestVersion,
 			releaseUrl: result.releaseUrl,
 			releaseNotes: result.releaseNotes,
+			error: result.error,
 		}
 	} catch (error) {
 		Logger.error("[checkAcademicSkillsUpdate] Failed:", error)
@@ -39,6 +41,7 @@ export async function checkAcademicSkillsUpdate(
 			currentVersion: "unknown",
 			latestVersion: "unknown",
 			releaseUrl: "",
+			error: error instanceof Error ? error.message : String(error),
 		}
 	}
 }

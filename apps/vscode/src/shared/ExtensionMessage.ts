@@ -141,6 +141,8 @@ export interface ExtensionState {
 	backgroundEditEnabled?: boolean
 	optOutOfRemoteConfig?: boolean
 	showFeatureTips?: boolean
+	networkProxyMode?: "vscode" | "custom" | "off"
+	networkProxyUrl?: string
 	banners?: BannerCardData[]
 	welcomeBanners?: BannerCardData[]
 	openAiCodexIsAuthenticated?: boolean

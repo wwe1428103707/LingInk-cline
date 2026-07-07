@@ -1,7 +1,7 @@
 import { EmptyRequest } from "@shared/proto/cline/common"
 import type { AcademicSkillsUpdateInfo } from "@shared/proto/cline/state"
 import { UpdateSettingsRequest } from "@shared/proto/cline/state"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { memo, type ReactNode, useEffect, useState } from "react"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -93,6 +93,14 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 	const [installingSkills, setInstallingSkills] = useState(false)
 
 	const { t } = useTranslation()
+	const {
+		enableCheckpointsSetting,
+		useAutoCondense,
+		backgroundEditEnabled,
+		showFeatureTips,
+		networkProxyMode,
+		networkProxyUrl,
+	} = useExtensionState()
 
 	const agentFeatures: FeatureToggle[] = [
 		{
@@ -137,6 +145,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 	const [checking, setChecking] = useState(false)
 	const [updating, setUpdating] = useState(false)
 	const [updateInfo, setUpdateInfo] = useState<AcademicSkillsUpdateInfo | null>(null)
+	const [proxyUrlDraft, setProxyUrlDraft] = useState(networkProxyUrl ?? "")
 
 	const handleCheckUpdate = async () => {
 		setChecking(true)
@@ -193,7 +202,10 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 		window.addEventListener("message", handler)
 		return () => window.removeEventListener("message", handler)
 	}, [])
-	const { enableCheckpointsSetting, useAutoCondense, backgroundEditEnabled, showFeatureTips } = useExtensionState()
+
+	useEffect(() => {
+		setProxyUrlDraft(networkProxyUrl ?? "")
+	}, [networkProxyUrl])
 
 	// State lookup for mapped features
 	const featureState: Record<string, boolean | undefined> = {
@@ -247,7 +259,57 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							))}
 						</div>
 					</div>
-				</div>
+					</div>
+
+					<div>
+						<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+							{t("settings.features.section.network", "Network")}
+						</div>
+						<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-3">
+							<div className="flex flex-col gap-2">
+								<label className="text-xs text-foreground/90" htmlFor="network-proxy-mode">
+									{t("settings.networkProxy.mode", "Proxy mode")}
+								</label>
+								<select
+									className="w-full bg-(--vscode-dropdown-background) text-(--vscode-dropdown-foreground) border border-(--vscode-dropdown-border) rounded-sm px-2 py-1 text-xs"
+									id="network-proxy-mode"
+									onChange={(event) =>
+										updateSetting("networkProxyMode", event.currentTarget.value as "vscode" | "custom" | "off")
+									}
+									value={networkProxyMode ?? "vscode"}>
+									<option value="vscode">{t("settings.networkProxy.mode.vscode", "Use VS Code proxy settings")}</option>
+									<option value="custom">{t("settings.networkProxy.mode.custom", "Use LingInk proxy")}</option>
+									<option value="off">{t("settings.networkProxy.mode.off", "Disable LingInk proxy")}</option>
+								</select>
+								<p className="text-xs text-description">
+									{t(
+										"settings.networkProxy.desc",
+										"Applies to LingInk network requests such as Academic Research Skills update checks and downloads.",
+									)}
+								</p>
+							</div>
+							{networkProxyMode === "custom" && (
+								<div className="flex flex-col gap-2">
+									<label className="text-xs text-foreground/90" htmlFor="network-proxy-url">
+										{t("settings.networkProxy.url", "Proxy URL")}
+									</label>
+									<VSCodeTextField
+										className="w-full"
+										id="network-proxy-url"
+										onBlur={(event) => updateSetting("networkProxyUrl", event.currentTarget.value)}
+										onInput={(event) => setProxyUrlDraft(event.currentTarget.value)}
+										onKeyDown={(event) => {
+											if (event.key === "Enter") {
+												updateSetting("networkProxyUrl", event.currentTarget.value)
+											}
+										}}
+										placeholder="http://127.0.0.1:7890"
+										value={proxyUrlDraft}
+									/>
+								</div>
+							)}
+						</div>
+					</div>
 
 				{/* LingInk ARS Skills */}
 				<div>
@@ -299,7 +361,9 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 
 						{updateInfo && (
 							<div className="p-2 rounded-sm border border-(--vscode-panel-border)">
-								{updateInfo.hasUpdate ? (
+								{updateInfo.error ? (
+									<p className="text-sm text-(--vscode-errorForeground)">⚠️ {updateInfo.error}</p>
+								) : updateInfo.hasUpdate ? (
 									<>
 										<p className="text-sm font-medium text-(--vscode-terminal-ansiYellow)">
 											📦 有新版本可用: v{updateInfo.currentVersion} → v{updateInfo.latestVersion}

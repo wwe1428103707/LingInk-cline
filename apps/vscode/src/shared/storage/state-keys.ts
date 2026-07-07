@@ -320,6 +320,8 @@ const USER_SETTINGS_FIELDS = {
 	backgroundEditEnabled: { default: true as boolean },
 	optOutOfRemoteConfig: { default: false as boolean },
 	showFeatureTips: { default: true as boolean },
+	networkProxyMode: { default: "vscode" as "vscode" | "custom" | "off" },
+	networkProxyUrl: { default: undefined as string | undefined },
 
 	// OpenTelemetry configuration
 	openTelemetryEnabled: { default: true as boolean },

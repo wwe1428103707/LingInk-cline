@@ -93,11 +93,65 @@
  * ```
  */
 
-import { EnvHttpProxyAgent, setGlobalDispatcher, fetch as undiciFetch } from "undici"
+import { EnvHttpProxyAgent, ProxyAgent, setGlobalDispatcher, fetch as undiciFetch } from "undici"
 
 type FetchFunction = (...args: Parameters<typeof globalThis.fetch>) => ReturnType<typeof globalThis.fetch>
+export type NetworkProxyMode = "vscode" | "custom" | "off"
+export type NetworkProxySettings = {
+	mode?: NetworkProxyMode
+	customProxyUrl?: string
+	vscodeProxyUrl?: string
+}
+type NetworkProxySettingsProvider = () => NetworkProxySettings | undefined
 
 let mockFetch: FetchFunction | undefined
+let proxySettingsProvider: NetworkProxySettingsProvider | undefined
+let cachedProxyAgent: { url: string; agent: ProxyAgent } | undefined
+
+export function configureNetworkProxySettingsProvider(provider: NetworkProxySettingsProvider | undefined): void {
+	proxySettingsProvider = provider
+	cachedProxyAgent = undefined
+}
+
+export function resolveNetworkProxyUrl(settings = proxySettingsProvider?.()): string | undefined {
+	if (!settings || settings.mode === "off") {
+		return undefined
+	}
+
+	const candidate = settings.mode === "custom" ? settings.customProxyUrl : settings.vscodeProxyUrl
+	const trimmed = candidate?.trim()
+	return trimmed ? trimmed : undefined
+}
+
+function getProxyAgent(proxyUrl: string): ProxyAgent {
+	if (cachedProxyAgent?.url === proxyUrl) {
+		return cachedProxyAgent.agent
+	}
+
+	const agent = new ProxyAgent(proxyUrl)
+	cachedProxyAgent = { url: proxyUrl, agent }
+	return agent
+}
+
+function fetchWithProxy(
+	baseFetch: typeof globalThis.fetch,
+	input: string | URL | Request,
+	init?: RequestInit,
+): Promise<Response> {
+	if (mockFetch) {
+		return mockFetch(input, init)
+	}
+
+	const proxyUrl = resolveNetworkProxyUrl()
+	if (!proxyUrl) {
+		return baseFetch(input, init)
+	}
+
+	return (undiciFetch as any)(input, {
+		...init,
+		dispatcher: getProxyAgent(proxyUrl),
+	}) as Promise<Response>
+}
 
 /**
  * Platform-configured fetch that respects proxy settings.
@@ -124,7 +178,7 @@ export const fetch: typeof globalThis.fetch = (() => {
 	}
 
 	return ((input: string | URL | Request, init?: RequestInit): Promise<Response> =>
-		(mockFetch || baseFetch)(input, init)) as typeof globalThis.fetch
+		fetchWithProxy(baseFetch, input, init)) as typeof globalThis.fetch
 })()
 
 /**

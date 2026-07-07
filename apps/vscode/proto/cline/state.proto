@@ -333,6 +333,8 @@ message Settings {
   optional string academic_mode_vercel_ai_gateway_model_id = 229;
   optional OpenRouterModelInfo academic_mode_vercel_ai_gateway_model_info = 230;
   optional string academic_mode_api_provider = 231;
+  optional string network_proxy_mode = 232;
+  optional string network_proxy_url = 233;
 }
 
 message State {
@@ -475,6 +477,8 @@ message UpdateSettingsRequest {
   optional bool opt_out_of_remote_config = 39;
   optional bool worktrees_enabled = 40;
   optional bool show_feature_tips = 42;
+  optional string network_proxy_mode = 44;
+  optional string network_proxy_url = 45;
 }
 
 message UpdateTerminalConnectionTimeoutRequest {

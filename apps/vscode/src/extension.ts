@@ -60,6 +60,8 @@ import { LG_TASK_URI_PATH, SharedUriHandler, TASK_URI_PATH } from "./services/ur
 import { ShowMessageType } from "./shared/proto/host/window"
 import { fileExistsAtPath } from "./utils/fs"
 import { checkAndPromptSkillInstall, checkAndPromptARSUpdate, INSTALL_SKILLS_COMMAND } from "./services/skill-installer"
+import { StateManager } from "./core/storage/StateManager"
+import { configureNetworkProxySettingsProvider } from "./shared/net"
 
 // This method is called when the VS Code extension is activated.
 // NOTE: This is VS Code specific - services that should be registered
@@ -85,6 +87,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	// 4. Register services and perform common initialization
 	// IMPORTANT: Must be done after host provider is setup and migrations are complete
 	const webview = (await initialize(storageContext)) as VscodeWebviewProvider
+	configureNetworkProxySettingsProvider(() => {
+		const stateManager = StateManager.get()
+		return {
+			mode: stateManager.getGlobalSettingsKey("networkProxyMode"),
+			customProxyUrl: stateManager.getGlobalSettingsKey("networkProxyUrl"),
+			vscodeProxyUrl: vscode.workspace.getConfiguration("http").get<string>("proxy"),
+		}
+	})
 
 	// 4.5 Auto-detect ARS skills and prompt user to install if missing
 	checkAndPromptSkillInstall().catch((err) =>

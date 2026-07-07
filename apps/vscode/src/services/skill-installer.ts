@@ -3,6 +3,7 @@ import * as fs from "node:fs/promises"
 import * as path from "node:path"
 import * as vscode from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
+import { fetch } from "@/shared/net"
 import { Logger } from "@/shared/services/Logger"
 
 /**
@@ -43,6 +44,7 @@ export interface UpdateCheckResult {
 	latestVersion: string
 	releaseUrl: string
 	releaseNotes?: string
+	error?: string
 }
 
 /**
@@ -77,7 +79,9 @@ async function getInstalledVersion(workspaceRoot: string): Promise<string | null
 /**
  * Fetch the latest release version from GitHub API.
  */
-async function fetchLatestRelease(): Promise<{ tag_name: string; html_url: string; body?: string } | null> {
+const UPDATE_CHECK_ERROR = "无法获取最新版本信息，请检查网络连接或代理设置"
+
+async function fetchLatestRelease(): Promise<{ tag_name: string; html_url: string; body?: string; error?: string }> {
 	try {
 		const response = await fetch(GITHUB_API_LATEST_RELEASE, {
 			headers: {
@@ -86,7 +90,7 @@ async function fetchLatestRelease(): Promise<{ tag_name: string; html_url: strin
 			},
 		})
 		if (!response.ok) {
-			return null
+			return { tag_name: "", html_url: "", error: `${UPDATE_CHECK_ERROR} (HTTP ${response.status})` }
 		}
 		const data = await response.json()
 		return {
@@ -94,8 +98,9 @@ async function fetchLatestRelease(): Promise<{ tag_name: string; html_url: strin
 			html_url: data.html_url ?? "",
 			body: data.body ?? undefined,
 		}
-	} catch {
-		return null
+	} catch (error) {
+		Logger.warn("[SkillInstaller] Failed to fetch latest ARS release:", error)
+		return { tag_name: "", html_url: "", error: UPDATE_CHECK_ERROR }
 	}
 }
 
@@ -110,8 +115,9 @@ export async function checkForARSUpdate(workspaceRoot: string): Promise<UpdateCh
 		return {
 			hasUpdate: false,
 			currentVersion,
-			latestVersion: currentVersion,
+			latestVersion: "unknown",
 			releaseUrl: GITHUB_RELEASES_URL,
+			error: latestInfo?.error ?? UPDATE_CHECK_ERROR,
 		}
 	}
 
@@ -232,7 +238,7 @@ export async function downloadAndInstallUpdate(workspaceRoot: string): Promise<s
 	// Get latest release info
 	const latestInfo = await fetchLatestRelease()
 	if (!latestInfo || !latestInfo.tag_name) {
-		throw new Error("无法获取最新版本信息，请检查网络连接")
+		throw new Error(latestInfo?.error ?? UPDATE_CHECK_ERROR)
 	}
 
 	const tag = latestInfo.tag_name
@@ -417,6 +423,11 @@ export async function checkAndPromptARSUpdate(): Promise<void> {
 	if (!workspaceRoot) return
 
 	const result = await checkForARSUpdate(workspaceRoot)
+	if (result.error) {
+		vscode.window.showWarningMessage(`⚠️ 学术研究技能包更新检查失败: ${result.error}`, { modal: false })
+		return
+	}
+
 	if (!result.hasUpdate) {
 		vscode.window.showInformationMessage(`✅ 学术研究技能包已是最新版本 (v${result.currentVersion})`, { modal: false })
 		return

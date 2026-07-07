@@ -304,6 +304,8 @@ export const ExtensionStateContextProvider: React.FC<{
 		lastDismissedCliBannerVersion: 0,
 		backgroundEditEnabled: true,
 		showFeatureTips: true,
+		networkProxyMode: "vscode",
+		networkProxyUrl: undefined,
 		globalSkillsToggles: {},
 		localSkillsToggles: {},
 
