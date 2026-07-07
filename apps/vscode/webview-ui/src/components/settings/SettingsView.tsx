@@ -2,6 +2,7 @@ import type { ExtensionMessage } from "@shared/ExtensionMessage"
 import { ResetStateRequest } from "@shared/proto/cline/state"
 import {
 	CheckCheck,
+	Cog,
 	FlaskConical,
 	HardDriveDownload,
 	Info,
@@ -20,6 +21,7 @@ import { Tab, TabContent, TabList, TabTrigger } from "../common/Tab"
 import ViewHeader from "../common/ViewHeader"
 import SectionHeader from "./SectionHeader"
 import AboutSection from "./sections/AboutSection"
+import AdvancedSettingsSection from "./sections/AdvancedSettingsSection"
 import ApiConfigurationSection from "./sections/ApiConfigurationSection"
 import DebugSection from "./sections/DebugSection"
 import FeatureSettingsSection from "./sections/FeatureSettingsSection"
@@ -29,7 +31,7 @@ import { RemoteConfigSection } from "./sections/RemoteConfigSection"
 const IS_DEV = process.env.IS_DEV
 
 // Tab definitions
-type SettingsTabID = "api-config" | "features" | "general" | "about" | "debug" | "remote-config"
+type SettingsTabID = "api-config" | "features" | "advanced" | "general" | "about" | "debug" | "remote-config"
 interface SettingsTab {
 	id: SettingsTabID
 	name: string
@@ -53,6 +55,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 			"api-config": ApiConfigurationSection,
 			general: GeneralSettingsSection,
 			features: FeatureSettingsSection,
+			advanced: AdvancedSettingsSection,
 			"remote-config": RemoteConfigSection,
 			about: AboutSection,
 			debug: DebugSection,
@@ -76,6 +79,13 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 				tooltipText: t("tab.tooltip.features", "Feature Settings"),
 				headerText: t("tab.header.features", "Feature Settings"),
 				icon: CheckCheck,
+			},
+			{
+				id: "advanced",
+				name: t("tab.advanced", "Advanced"),
+				tooltipText: t("tab.tooltip.advanced", "Advanced Settings"),
+				headerText: t("tab.header.advanced", "Advanced Settings"),
+				icon: Cog,
 			},
 			{
 				id: "general",
