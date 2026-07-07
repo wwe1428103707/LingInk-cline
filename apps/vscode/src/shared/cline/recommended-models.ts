@@ -18,25 +18,25 @@ export const CLINE_RECOMMENDED_MODELS_FALLBACK: ClineRecommendedModelsData = {
 		{
 			id: "google/gemini-3.1-pro-preview",
 			name: "Google Gemini 3.1 Pro Preview",
-			description: "Latest Gemini release with 1m ctx window and strong coding performance",
+			description: "Latest Gemini release with a 1m context window and strong research reasoning",
 			tags: ["NEW"],
 		},
 		{
 			id: "anthropic/claude-sonnet-4.6",
 			name: "Anthropic Claude Sonnet 4.6",
-			description: "Latest Sonnet release with strong coding and agent performance",
+			description: "Latest Sonnet release with strong writing, analysis, and agent performance",
 			tags: ["NEW"],
 		},
 		{
 			id: "anthropic/claude-opus-4.6",
 			name: "Anthropic Claude Opus 4.6",
-			description: "Most intelligent model for agents and coding",
+			description: "Most intelligent model for deep research and complex writing tasks",
 			tags: ["BEST"],
 		},
 		{
 			id: "openai/gpt-5.3-codex",
 			name: "OpenAI GPT-5.3 Codex",
-			description: "OpenAI's latest with strong coding abilities",
+			description: "OpenAI's latest with strong reasoning and structured editing abilities",
 			tags: ["NEW"],
 		},
 	],
@@ -44,7 +44,7 @@ export const CLINE_RECOMMENDED_MODELS_FALLBACK: ClineRecommendedModelsData = {
 		{
 			id: "kwaipilot/kat-coder-pro",
 			name: "KwaiKAT Kat Coder Pro",
-			description: "KwaiKAT's most advanced agentic coding model in the KAT-Coder series",
+			description: "KwaiKAT's advanced agentic model for structured research workflows",
 			tags: ["FREE"],
 		},
 		{

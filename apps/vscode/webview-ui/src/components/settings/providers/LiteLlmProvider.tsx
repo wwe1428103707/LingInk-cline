@@ -80,7 +80,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 					disabled={remoteConfigSettings?.liteLlmBaseUrl !== undefined}
 					initialValue={config?.baseUrl || ""}
 					onChange={handleBaseUrlChange}
-					placeholder={"Default: http://localhost:4000"}
+					placeholder={t("apiConfig.liteLlm.baseUrlPlaceholder", "Default: http://localhost:4000")}
 					style={{ width: "100%" }}
 					type="text">
 					<div className="flex items-center gap-2 mb-1">
@@ -94,7 +94,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 					disabled={remoteConfigSettings?.configuredApiKeys?.litellm}
 					initialValue={savedApiKeyMask}
 					onChange={handleApiKeyChange}
-					placeholder="Default: noop"
+					placeholder={t("apiConfig.liteLlm.apiKeyPlaceholder", "Default: noop")}
 					style={{ width: "100%" }}
 					type="password">
 					<div className="flex items-center gap-2 mb-1">
@@ -111,7 +111,7 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 						label="Model"
 						models={models}
 						onChange={handleModelChange}
-						placeholder="Search or enter a custom model ID..."
+						placeholder={t("apiConfig.liteLlm.modelPlaceholder", "Search or enter a custom model ID...")}
 						selectedModelId={selectedModelId}
 					/>
 					<VSCodeButton
@@ -119,10 +119,10 @@ export const LiteLlmProvider = ({ showModelOptions, isPopup, currentMode }: Lite
 						disabled={isLoading}
 						onClick={onRefreshModels}>
 						{isLoading ? (
-							"Loading..."
+							t("common.loading", "Loading...")
 						) : (
 							<>
-								Refresh models <RefreshCwIcon className="ml-1" />
+								{t("apiConfig.liteLlm.refreshModels", "Refresh models")} <RefreshCwIcon className="ml-1" />
 							</>
 						)}
 					</VSCodeButton>

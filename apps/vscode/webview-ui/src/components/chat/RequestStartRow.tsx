@@ -30,7 +30,7 @@ type ApiReqState = "pre" | "thinking" | "error" | "final"
 // Helper to format search regex for display - show all terms separated by |
 const formatSearchRegex = (regex: string, path: string, filePattern?: string): string => {
 	const cleanedPath = cleanPathPrefix(path)
-	const pathDisplay = cleanedPath ? `${cleanedPath}/` : "codebase"
+	const pathDisplay = cleanedPath ? `${cleanedPath}/` : "workspace"
 	const terms = regex
 		.split("|")
 		.map((t) => t.trim().replace(/\\b/g, "").replace(/\\s\?/g, " "))

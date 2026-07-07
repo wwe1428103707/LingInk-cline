@@ -1,4 +1,5 @@
 import { openAiModelInfoSafeDefaults } from "@shared/api"
+import { t } from "@/i18n"
 import type { Mode } from "@shared/storage/types"
 import { isClaudeOpusAdaptiveThinkingModel, resolveClaudeOpusAdaptiveThinking } from "@shared/utils/reasoning-support"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -105,9 +106,9 @@ export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: An
 				<BaseUrlField
 					disabled={!!remoteConfigSettings?.anthropicBaseUrl}
 					initialValue={config?.baseUrl}
-					label="Use custom base URL"
+					label={t("apiConfig.baseUrl.custom", "Use custom base URL")}
 					onChange={handleBaseUrlChange}
-					placeholder="Default: https://api.anthropic.com"
+					placeholder={t("apiConfig.anthropic.baseUrlPlaceholder", "Default: https://api.anthropic.com")}
 					showLockIcon={!!remoteConfigSettings?.anthropicBaseUrl}
 				/>
 			</RemotelyConfiguredInputWrapper>

@@ -28,8 +28,8 @@ function clinePassFallbackModelInfo(modelId: string): ModelInfo {
 }
 
 /**
- * ClinePass is a first-class SDK provider whose credentials are backed by the
- * user's Cline OAuth account. Keep the UX close to the Cline provider (account
+ * LingInk Pass is a first-class SDK provider whose credentials are backed by the
+ * user's LingInk OAuth account. Keep the UX close to the LingInk provider (account
  * card + model selection), but resolve and persist selections through the SDK
  * provider catalog under providerId="cline-pass".
  */

@@ -1,7 +1,7 @@
-# Unlock Specialized Capabilities with MCP
+# Research Tools with MCP
 
-**The Model Context Protocol (MCP) connects Cline to a world of powerful tools.**
+**The Model Context Protocol (MCP) connects LingInk to specialized research and writing tools.**
 
-Go beyond local code. With the Model Context Protocol (MCP), Cline accesses vital context from external datasources like databases and APIs. Configure local or remote MCP servers to give Cline specialized, secure tools for complex, real-world development tasks.
+Use MCP to connect literature search, citation managers, local scripts, databases, or custom academic workflows. LingInk can use those tools with your approval to support literature review, evidence checks, and manuscript preparation.
 
-![Cline MCP Servers Demo](https://storage.googleapis.com/cline_public_images/docs/assets/clines-mcp-servers-4_compress.webp)
+![LingInk MCP servers demo](https://storage.googleapis.com/cline_public_images/docs/assets/clines-mcp-servers-4_compress.webp)

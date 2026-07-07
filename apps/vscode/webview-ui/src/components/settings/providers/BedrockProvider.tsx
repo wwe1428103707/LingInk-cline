@@ -274,12 +274,12 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 					initialValue={config?.aws?.profile ?? ""}
 					key="profile"
 					onChange={(value) => writeAws({ profile: value }, "profile")}
-					placeholder="Enter profile name (default if empty)">
-					<span className="font-medium">AWS Profile Name</span>
+					placeholder={t("bedrock.awsProfilePlaceholder", "Enter profile name (default if empty)")}>
+					<span className="font-medium">{t("bedrock.awsProfileName", "AWS Profile Name")}</span>
 				</DebouncedTextField>
 			) : selectedAuthentication === "apikey" ? (
 				<ApiKeyField
-					helpText="This key is stored locally and only used to make API requests from this extension."
+					helpText={t("apiConfig.apiKey.helpText", "This key is stored locally and only used to make API requests from this extension.")}
 					initialValue={savedApiKeyMask}
 					key="apikey"
 					label="AWS Bedrock Api Key"
@@ -290,7 +290,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 			) : (
 				<>
 					<ApiKeyField
-						helpText="This key is stored locally and only used to make API requests from this extension."
+						helpText={t("apiConfig.apiKey.helpText", "This key is stored locally and only used to make API requests from this extension.")}
 						initialValue={accessKeyMask}
 						key="accessKey"
 						label="AWS Access Key"
@@ -299,7 +299,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 						providerName="AWS"
 					/>
 					<ApiKeyField
-						helpText="This key is stored locally and only used to make API requests from this extension."
+						helpText={t("apiConfig.apiKey.helpText", "This key is stored locally and only used to make API requests from this extension.")}
 						initialValue={secretKeyMask}
 						label="AWS Secret Key"
 						onChange={(value) => handleAwsSecretChange("secretKey", value, secretKeyMask, "secret key")}
@@ -307,7 +307,7 @@ export const BedrockProvider = ({ showModelOptions, isPopup, currentMode }: Bedr
 						providerName="AWS"
 					/>
 					<ApiKeyField
-						helpText="This key is stored locally and only used to make API requests from this extension."
+						helpText={t("apiConfig.apiKey.helpText", "This key is stored locally and only used to make API requests from this extension.")}
 						initialValue={sessionTokenMask}
 						label="AWS Session Token"
 						onChange={(value) => handleAwsSecretChange("sessionToken", value, sessionTokenMask, "session token")}

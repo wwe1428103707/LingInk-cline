@@ -108,6 +108,7 @@ export async function getStateToPostToWebview(controller: {
 
 	return {
 		version,
+		clineBaseVersion: ExtensionRegistryInfo.clineBaseVersion,
 		apiConfiguration,
 		currentTaskItem,
 		clineMessages,

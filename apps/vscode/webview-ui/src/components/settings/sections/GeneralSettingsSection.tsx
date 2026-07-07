@@ -44,7 +44,7 @@ const GeneralSettingsSection = ({ renderSectionHeader }: GeneralSettingsSectionP
 					</Tooltip>
 
 					<p className="text-sm mt-[5px] text-description">
-						{t("settings.telemetry.desc", "Help improve Cline by sending usage data and error reports. No code, prompts, or personal information are ever sent. See our")}{" "}
+						{t("settings.telemetry.desc", "Help improve LingInk by sending usage data and error reports. No manuscript text, prompts, or personal information are ever sent. See our")}{" "}
 						<VSCodeLink
 							className="text-inherit"
 							href="https://docs.cline.bot/more-info/telemetry"

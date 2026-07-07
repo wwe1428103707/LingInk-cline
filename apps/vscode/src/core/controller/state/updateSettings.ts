@@ -40,6 +40,9 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 				actModeApiProvider: protoApiConfiguration.actModeApiProvider
 					? convertProtoToApiProvider(protoApiConfiguration.actModeApiProvider)
 					: undefined,
+				academicModeApiProvider: protoApiConfiguration.academicModeApiProvider
+					? convertProtoToApiProvider(protoApiConfiguration.academicModeApiProvider)
+					: undefined,
 				planModeReasoningEffort: protoApiConfiguration.planModeReasoningEffort as OpenaiReasoningEffort | undefined,
 				actModeReasoningEffort: protoApiConfiguration.actModeReasoningEffort as OpenaiReasoningEffort | undefined,
 			}
@@ -102,12 +105,7 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 		}
 
 		if (request.mode !== undefined) {
-			const mode =
-				request.mode === PlanActMode.PLAN || request.mode === "PLAN"
-					? "plan"
-					: request.mode === PlanActMode.ACADEMIC || request.mode === "ACADEMIC"
-						? "academic"
-						: "act"
+			const mode = request.mode === PlanActMode.PLAN ? "plan" : request.mode === PlanActMode.ACADEMIC ? "academic" : "act"
 			controller.stateManager.setGlobalState("mode", mode)
 		}
 

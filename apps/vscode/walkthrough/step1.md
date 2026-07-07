@@ -1,7 +1,7 @@
-# Beyond Autocomplete: True Agentic Planning
+# From Topic to Writing Plan
 
-**Cline analyzes your request, explores your code, and presents a clear plan.**
+**LingInk analyzes your research goal, asks clarifying questions, and presents a focused writing plan.**
 
-Watch Cline break down complex tasks, ask clarifying questions, and outline its approach. Understand the 'why' before any code is written, ensuring changes align with your architecture and intent.
+Use LingInk to break down topic selection, thesis framing, chapter planning, revision goals, or reviewer feedback. It helps you understand the next step before any manuscript change is made.
 
-![Cline planning demonstration](https://storage.googleapis.com/cline_public_images/docs/assets/cline-plan-hifi-1_compress.webp)
+![LingInk planning demonstration](https://storage.googleapis.com/cline_public_images/docs/assets/cline-plan-hifi-1_compress.webp)

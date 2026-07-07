@@ -36,7 +36,7 @@ const ApiConfigurationSection = ({ renderSectionHeader, initialModelTab }: ApiCo
 								opacity: 1,
 								cursor: "pointer",
 							}}>
-							Plan Mode
+							{t("apiConfig.planMode", "Plan Mode")}
 						</TabButton>
 						<TabButton
 							disabled={currentTab === "act"}
@@ -46,7 +46,7 @@ const ApiConfigurationSection = ({ renderSectionHeader, initialModelTab }: ApiCo
 								opacity: 1,
 								cursor: "pointer",
 							}}>
-							Act Mode
+							{t("apiConfig.actMode", "Act Mode")}
 						</TabButton>
 						<TabButton
 							disabled={currentTab === "academic"}
@@ -56,7 +56,7 @@ const ApiConfigurationSection = ({ renderSectionHeader, initialModelTab }: ApiCo
 								opacity: 1,
 								cursor: "pointer",
 							}}>
-							Academic
+							{t("apiConfig.academicMode", "Academic")}
 						</TabButton>
 					</div>
 
@@ -92,8 +92,7 @@ const ApiConfigurationSection = ({ renderSectionHeader, initialModelTab }: ApiCo
 					{t("apiConfig.planActSeparateModels", "Use different models for Plan, Act and Academic modes")}
 					</VSCodeCheckbox>
 					<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
-						{t("apiConfig.planActSeparateModels.desc", "Switching between Plan and Act mode will persist the API and model used in the previous mode.")} This may be
-						helpful e.g. when using a strong reasoning model to architect a plan for a cheaper coding model to act on.
+						{t("apiConfig.planActSeparateModels.desc", "Switching between Plan, Act, and Academic modes will persist the API and model used in the previous mode. This can help you use a stronger reasoning model for planning and a lighter model for polishing or formatting.")}
 					</p>
 				</div>
 			</Section>

@@ -1,4 +1,4 @@
-import { name, publisher, version } from "../package.json"
+import { name, publisher, version, clineBaseVersion } from "../package.json"
 import { HostProvider } from "./hosts/host-provider"
 
 const prefix = name === "claude-dev" ? "cline" : name
@@ -56,6 +56,7 @@ export const ExtensionRegistryInfo = {
 	id: publisher + "." + name,
 	name,
 	version,
+	clineBaseVersion,
 	publisher,
 	commands: ClineCommands,
 	views: ClineViewIds,

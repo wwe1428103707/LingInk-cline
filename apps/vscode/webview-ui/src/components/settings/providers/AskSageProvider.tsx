@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { type ModelInfo } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { useEffect, useState } from "react"
@@ -79,7 +81,7 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 	return (
 		<div>
 			<ApiKeyField
-				helpText="This key is stored locally and only used to make API requests from this extension."
+				helpText={t("apiConfig.apiKey.helpText", "This key is stored locally and only used to make API requests from this extension.")}
 				initialValue={apiConfiguration?.asksageApiKey || ""}
 				onChange={(value) => handleFieldChange("asksageApiKey", value)}
 				providerName="AskSage"
@@ -88,10 +90,10 @@ export const AskSageProvider = ({ showModelOptions, isPopup, currentMode }: AskS
 			<DebouncedTextField
 				initialValue={apiConfiguration?.asksageApiUrl || askSageDefaultURL}
 				onChange={(value) => handleFieldChange("asksageApiUrl", value)}
-				placeholder="Enter AskSage API URL..."
+				placeholder={t("asksage.apiUrlPlaceholder", "Enter AskSage API URL...")}
 				style={{ width: "100%" }}
 				type="text">
-				<span style={{ fontWeight: 500 }}>AskSage API URL</span>
+				<span style={{ fontWeight: 500 }}>{t("asksage.apiUrl", "AskSage API URL")}</span>
 			</DebouncedTextField>
 
 			{showModelOptions && (

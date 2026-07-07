@@ -2,7 +2,6 @@ import type { ExtensionMessage } from "@shared/ExtensionMessage"
 import { ResetStateRequest } from "@shared/proto/cline/state"
 import {
 	CheckCheck,
-	Cog,
 	FlaskConical,
 	HardDriveDownload,
 	Info,
@@ -21,7 +20,6 @@ import { Tab, TabContent, TabList, TabTrigger } from "../common/Tab"
 import ViewHeader from "../common/ViewHeader"
 import SectionHeader from "./SectionHeader"
 import AboutSection from "./sections/AboutSection"
-import AdvancedSettingsSection from "./sections/AdvancedSettingsSection"
 import ApiConfigurationSection from "./sections/ApiConfigurationSection"
 import DebugSection from "./sections/DebugSection"
 import FeatureSettingsSection from "./sections/FeatureSettingsSection"
@@ -31,7 +29,7 @@ import { RemoteConfigSection } from "./sections/RemoteConfigSection"
 const IS_DEV = process.env.IS_DEV
 
 // Tab definitions
-type SettingsTabID = "api-config" | "features" | "advanced" | "general" | "about" | "debug" | "remote-config"
+type SettingsTabID = "api-config" | "features" | "general" | "about" | "debug" | "remote-config"
 interface SettingsTab {
 	id: SettingsTabID
 	name: string
@@ -55,7 +53,6 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 			"api-config": ApiConfigurationSection,
 			general: GeneralSettingsSection,
 			features: FeatureSettingsSection,
-			advanced: AdvancedSettingsSection,
 			"remote-config": RemoteConfigSection,
 			about: AboutSection,
 			debug: DebugSection,
@@ -81,18 +78,18 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 				icon: CheckCheck,
 			},
 			{
-				id: "advanced",
-				name: t("tab.advanced", "Advanced"),
-				tooltipText: t("tab.tooltip.advanced", "Advanced Settings"),
-				headerText: t("tab.header.advanced", "Advanced Settings"),
-				icon: Cog,
-			},
-			{
 				id: "general",
 				name: t("tab.general", "General"),
 				tooltipText: t("tab.tooltip.general", "General Settings"),
 				headerText: t("tab.header.general", "General Settings"),
 				icon: Wrench,
+			},
+			{
+				id: "about",
+				name: t("tab.about", "About"),
+				tooltipText: t("tab.tooltip.about", "About LingInk"),
+				headerText: t("tab.header.about", "About"),
+				icon: Info,
 			},
 			{
 				id: "remote-config",
@@ -101,13 +98,6 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 				headerText: t("tab.header.remoteConfig", "Remote Config"),
 				icon: HardDriveDownload,
 				hidden: () => true,
-			},
-			{
-				id: "about",
-				name: t("tab.about", "About"),
-				tooltipText: t("tab.tooltip.about", "About Cline"),
-				headerText: t("tab.header.about", "About"),
-				icon: Info,
 			},
 			// Only show in dev mode
 			{
@@ -141,7 +131,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 		[SETTINGS_TABS],
 	)
 
-	const { version, environment, settingsInitialModelTab } = useExtensionState()
+	const { version, clineBaseVersion, environment, settingsInitialModelTab } = useExtensionState()
 
 
 	const [activeTab, setActiveTab] = useState<string>(targetSection || SETTINGS_TABS[0].id)
@@ -244,12 +234,13 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 			props.onResetState = handleResetState
 		} else if (activeTab === "about") {
 			props.version = version
+			props.clineBaseVersion = clineBaseVersion
 		} else if (activeTab === "api-config") {
 			props.initialModelTab = settingsInitialModelTab
 		}
 
 		return <Component {...props} />
-	}, [activeTab, handleResetState, settingsInitialModelTab, version, TAB_CONTENT_MAP])
+	}, [activeTab, clineBaseVersion, handleResetState, settingsInitialModelTab, version, TAB_CONTENT_MAP])
 
 	return (
 		<Tab>

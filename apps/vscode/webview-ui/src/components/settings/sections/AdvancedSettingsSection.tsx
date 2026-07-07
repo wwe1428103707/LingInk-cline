@@ -1,6 +1,6 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { PlugIcon, PuzzleIcon } from "lucide-react"
-import { useState } from "react"
+
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
@@ -16,7 +16,6 @@ interface AdvancedSettingsSectionProps {
 
 const AdvancedSettingsSection = ({ renderSectionHeader }: AdvancedSettingsSectionProps) => {
 	const { t: translate } = useTranslation()
-	const [installingSkills, setInstallingSkills] = useState(false)
 
 	const {
 		yoloModeToggled,
@@ -143,7 +142,7 @@ const AdvancedSettingsSection = ({ renderSectionHeader }: AdvancedSettingsSectio
 									</div>
 								</div>
 								<p className="text-xs text-description mt-1">
-									{translate("settings.worktrees.desc", "启用 git 工作树管理以并行运行 Cline 任务。")}
+									{translate("settings.worktrees.desc", "启用 git 工作树管理以并行运行 LingInk 灵砚任务。")}
 								</p>
 							</div>
 						</div>
@@ -173,7 +172,7 @@ const AdvancedSettingsSection = ({ renderSectionHeader }: AdvancedSettingsSectio
 					</div>
 					<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-3">
 						<p className="text-xs text-muted-foreground">
-							管理 MCP 服务器连接和已安装的插件。MCP 服务器用于连接外部 API 和本地工具；插件用于扩展 Cline 的额外功能。
+							管理 MCP 服务器连接和已安装的插件。MCP 服务器用于连接外部 API 和本地工具；插件用于扩展 LingInk 灵砚的额外功能。
 						</p>
 						<div className="flex flex-col gap-2">
 							<VSCodeButton
@@ -192,27 +191,6 @@ const AdvancedSettingsSection = ({ renderSectionHeader }: AdvancedSettingsSectio
 					</div>
 				</div>
 
-				{/* ARS Skills (kept here for advanced users) */}
-				<div className="mb-8">
-					<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
-						灵砚 Academic Research Skills
-					</div>
-					<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-2">
-						<p className="text-xs text-muted-foreground">
-							安装 deep-research、academic-paper、academic-paper-reviewer、academic-pipeline
-							四个学术研究 Skill，支持文献综述、论文写作、同行评审等完整科研流程。
-						</p>
-						<VSCodeButton
-							appearance="primary"
-							disabled={installingSkills}
-							onClick={() => {
-								setInstallingSkills(true)
-								window.postMessage({ type: "installSkills" }, "*")
-							}}>
-							{installingSkills ? "安装中..." : "📥 安装学术研究技能包"}
-						</VSCodeButton>
-					</div>
-				</div>
 			</Section>
 		</div>
 	)

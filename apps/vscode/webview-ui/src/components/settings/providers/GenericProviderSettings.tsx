@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { Mode } from "@shared/storage/types"
 import { type ProviderId } from "@/context/ExtensionStateContext"
 import { useProviderConfig } from "@/hooks/useProviderConfig"
@@ -71,7 +72,7 @@ export const GenericProviderSettings = ({
 			<ApiKeyField
 				initialValue={savedApiKeyMask}
 				onChange={handleApiKeyChange}
-				placeholder="Enter API Key..."
+				placeholder={t("apiConfig.apiKey.placeholder", "Enter API Key...")}
 				providerName={providerName}
 				signupUrl={signupUrl}
 			/>

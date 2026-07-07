@@ -29,7 +29,7 @@ const getActivityText = (tool: ClineSayTool): string | null => {
 	const cleanedPath = cleanPathPrefix(tool.path || "")
 	const formatSearchRegex = (regex: string, path: string, filePattern?: string): string => {
 		const cleanedPath = cleanPathPrefix(path)
-		const pathDisplay = cleanedPath ? `${cleanedPath}/` : "codebase"
+		const pathDisplay = cleanedPath ? `${cleanedPath}/` : "workspace"
 		const terms = regex
 			.split("|")
 			.map((t) => t.trim().replace(/\\b/g, "").replace(/\\s\?/g, " "))
@@ -339,8 +339,8 @@ function formatSearchDisplay(regex: string, path: string, filePattern?: string):
 		.filter(Boolean)
 
 	const termDisplay = terms.length > 3 ? `${terms.length} patterns` : `"${terms.join(" | ")}"`
-	// When path is empty (e.g. SDK search_codebase has no path param), show "codebase"
-	const pathDisplay = path ? `${cleanPathPrefix(path)}/` : "codebase"
+	// When path is empty (e.g. SDK search_codebase has no path param), show workspace context.
+	const pathDisplay = path ? `${cleanPathPrefix(path)}/` : "workspace"
 	let result = `${termDisplay} in ${pathDisplay}`
 
 	if (filePattern && filePattern !== "*") {
@@ -390,5 +390,5 @@ export function getToolGroupSummaryFromParsedTools(tools: ClineSayTool[]): strin
 		parts.push(`performed ${counts.search} search${counts.search > 1 ? "es" : ""}`)
 	}
 
-	return parts.length === 0 ? "Context" : "Cline" + action + parts.join(", ")
+	return parts.length === 0 ? "Context" : "LingInk" + action + parts.join(", ")
 }

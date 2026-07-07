@@ -230,7 +230,7 @@ function createAuthSucceededHtml(redirectUri?: string): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cline - Authentication Success</title>
+    <title>LingInk - Authentication Success</title>
 	${redirect}
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Azeret:wght@300;400;700&display=swap');
@@ -323,7 +323,7 @@ function createAuthSucceededHtml(redirectUri?: string): string {
     <div class="container">
         <div class="checkmark"></div>
         <h1>Authentication Successful</h1>
-        <p>Your authentication token has been securely sent back to your ${platform}. You can now return to your development environment to continue working.</p>
+        <p>Your authentication token has been securely sent back to your ${platform}. You can now return to your writing environment to continue working.</p>
         <div class="countdown">Feel free to close this window and continue in your ${platform}</div>
     </div>
 </body>

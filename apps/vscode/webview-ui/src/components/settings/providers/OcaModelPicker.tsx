@@ -7,6 +7,7 @@ import { VSC_BUTTON_BACKGROUND, VSC_BUTTON_FOREGROUND, VSC_DESCRIPTION_FOREGROUN
 import { ModelInfoView } from "../common/ModelInfoView"
 import ThinkingBudgetSlider from "../ThinkingBudgetSlider"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
+import { t } from "@/i18n"
 
 interface OcaModelPickerProps {
 	apiConfiguration: ApiConfiguration | undefined
@@ -180,12 +181,12 @@ const OcaModelPicker: React.FC<OcaModelPickerProps> = ({
 						minWidth: 0,
 						margin: 0,
 					}}>
-					{loading ? "Refreshing…" : "Refresh"}
+					{loading ? t("common.loading", "Refreshing…") : t("common.refresh", "Refresh")}
 				</VSCodeButton>
 			</div>
 			{lastRefreshedText ? (
 				<div className="text-[11px] text-(--vscode-descriptionForeground) mt-0 mb-2">
-					Last refreshed at {lastRefreshedText}
+					{t("oca.lastRefreshed", "Last refreshed at {lastRefreshedText}", { lastRefreshedText })}
 				</div>
 			) : null}
 			{!loading && selectedModelInfo && selectedModelInfo.supportsReasoning && reasoningEffortOptions.length > 0 && (

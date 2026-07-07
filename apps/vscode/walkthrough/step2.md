@@ -1,7 +1,7 @@
-# Deep Codebase Intelligence
+# Paper-Aware Context
 
-**Cline starts with broad context and explores deeply where needed.**
+**LingInk starts with your manuscript, notes, references, and project files before suggesting revisions.**
 
-Cline is designed with inherent codebase intelligence. It doesn't operate in a vacuum, but starts with a structural understanding of your project. Before making changes, it performs targeted agentic exploration to gain any additional specific context required, ensuring its actions are always well-informed and aligned with your architecture.
+LingInk is designed for academic writing workflows. It can read the surrounding context of a paper, compare sections, inspect citation notes, and keep revisions aligned with your argument, structure, and target audience.
 
-![Cline Deep Codebase Intelligence Demo](https://storage.googleapis.com/cline_public_images/docs/assets/cline-reading-codebase-hifi-2_compress.webp)
+![LingInk paper context demo](https://storage.googleapis.com/cline_public_images/docs/assets/cline-reading-codebase-hifi-2_compress.webp)

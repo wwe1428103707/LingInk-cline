@@ -1,10 +1,10 @@
-import { Empty, EmptyRequest } from "@shared/proto/cline/common"
-import { ShowMessageType } from "@shared/proto/host/window"
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
+import { Empty, EmptyRequest } from "@shared/proto/cline/common"
+import { ShowMessageType } from "@shared/proto/host/window"
 import { HostProvider } from "@/hosts/host-provider"
+import { areSkillsInstalled, installBundledSkills as installBundledSkillsFromService } from "@/services/skill-installer"
 import { Logger } from "@/shared/services/Logger"
-import { areSkillsInstalled, installBundledSkills } from "@/services/skill-installer"
 import { Controller } from ".."
 
 /**
@@ -33,7 +33,7 @@ export async function installBundledSkills(_controller: Controller, _request: Em
 			return Empty.create()
 		}
 
-		const dstDir = await installBundledSkills(workspaceRoot)
+		const dstDir = await installBundledSkillsFromService(workspaceRoot)
 
 		// Count installed files for user feedback
 		let fileCount = 0
@@ -54,7 +54,7 @@ export async function installBundledSkills(_controller: Controller, _request: Em
 		HostProvider.window
 			.showMessage({
 				type: ShowMessageType.INFORMATION,
-				message: `✅ 学术研究技能包已安装到工作区！共 ${fileCount} 个文件。重启 Cline 会话后即可使用。`,
+				message: `✅ 学术研究技能包已安装到工作区！共 ${fileCount} 个文件。重启 LingInk 会话后即可使用。`,
 				options: { items: [] },
 			})
 			.catch(() => {})

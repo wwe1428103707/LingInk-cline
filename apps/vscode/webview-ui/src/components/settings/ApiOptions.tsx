@@ -343,7 +343,7 @@ const ApiOptions = ({
 							setIsDropdownVisible(true)
 						}}
 						onKeyDown={handleKeyDown}
-						placeholder="Search and select provider..."
+						placeholder={t("apiConfig.provider.placeholder", "Search and select provider...")}
 						role="combobox"
 						style={{
 							width: "100%",

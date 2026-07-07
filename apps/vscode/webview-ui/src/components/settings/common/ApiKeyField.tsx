@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
 import { useDebounceEffect } from "@/utils/useDebounceEffect"
@@ -23,9 +24,9 @@ export const ApiKeyField = ({
 	onChange,
 	providerName,
 	signupUrl,
-	placeholder = "Enter API Key...",
+	placeholder = t("apiConfig.apiKey.placeholder", "Enter API Key..."),
 	helpText,
-	label = `${providerName} API Key`,
+	label = `${providerName} ${t("apiConfig.apiKey", "API Key")}`,
 }: ApiKeyFieldProps) => {
 	const [localValue, setLocalValue] = useState(initialValue)
 	const isFocusedRef = useRef(false)

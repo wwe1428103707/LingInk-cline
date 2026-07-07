@@ -38,7 +38,7 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 					onChange={(value) => {
 						handleFieldChange("difyBaseUrl", value)
 					}}
-					placeholder={"Enter base URL..."}
+					placeholder={t("apiConfig.baseUrl.placeholder", "Enter base URL...")}
 					style={{ width: "100%", marginBottom: 10 }}
 					type="text">
 					<span style={{ fontWeight: 500 }}>{t("apiConfig.baseUrl", "Base URL")}</span>
@@ -53,13 +53,12 @@ export const DifyProvider = ({ showModelOptions, isPopup, currentMode }: DifyPro
 				/>
 
 				<div style={{ fontSize: "12px", color: "var(--vscode-descriptionForeground)", marginTop: "5px" }}>
-					<p>
-						Dify is a platform that provides access to various AI models through a unified API. Configure your Dify
-						instance URL and API key to get started.
-					</p>
-					<p style={{ marginTop: "8px" }}>
-						<strong>Note:</strong> The model selection is handled within your Dify application configuration.
-					</p>
+				<p>
+					{t("dify.description", "Dify is a platform that provides access to various AI models through a unified API. Configure your Dify instance URL and API key to get started.")}
+				</p>
+				<p style={{ marginTop: "8px" }}>
+					<strong>{t("dify.note", "Note")}:</strong> {t("dify.noteDescription", "The model selection is handled within your Dify application configuration.")}
+				</p>
 				</div>
 			</div>
 

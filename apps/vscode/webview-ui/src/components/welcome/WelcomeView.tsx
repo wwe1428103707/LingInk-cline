@@ -39,23 +39,22 @@ const WelcomeView = memo(() => {
 	return (
 		<div className="fixed inset-0 p-0 flex flex-col">
 			<div className="h-full px-5 overflow-auto flex flex-col gap-2.5">
-				<h2 className="text-lg font-semibold">Hi, I'm Cline</h2>
+				<h2 className="text-lg font-semibold">Hi, I'm LingInk</h2>
 				<div className="flex justify-center my-5">
 					<ClineLogoWhite className="size-16" />
 				</div>
 				<p>
-					I can do all kinds of tasks thanks to breakthroughs in{" "}
+					I help with academic writing tasks using strong language models such as{" "}
 					<VSCodeLink className="inline" href="https://www.anthropic.com/claude/sonnet">
-						Claude 4.6 Sonnet's
+						Claude Sonnet
 					</VSCodeLink>
-					agentic coding capabilities and access to tools that let me create & edit files, explore complex projects, use
-					a browser, and execute terminal commands <i>(with your permission, of course)</i>. I can even use MCP to
-					create new tools and extend my own capabilities.
+					. I can help plan papers, review literature, polish drafts, inspect argument logic, suggest citations, and
+					prepare reviewer responses <i>(with your permission, of course)</i>.
 				</p>
 
 				<p className="text-(--vscode-descriptionForeground)">
-					Sign up for an account to get started for free, or use an API key that provides access to models like Claude
-					Sonnet.
+					Sign up for an account to get started for free, or use an API key that provides access to models suited to
+					research and writing.
 				</p>
 
 				<VSCodeButton appearance="primary" className="w-full mt-1" disabled={isLoading} onClick={handleLogin}>

@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { VSCodeCheckbox, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
 import { useDebouncedInput } from "../utils/useDebouncedInput"
@@ -21,8 +22,8 @@ interface BaseUrlFieldProps {
 export const BaseUrlField = ({
 	initialValue,
 	onChange,
-	label = "Use custom base URL",
-	placeholder = "Default: https://api.example.com",
+	label = t("apiConfig.baseUrl.custom", "Use custom base URL"),
+	placeholder = t("apiConfig.baseUrl.defaultPlaceholder", "Default: https://api.example.com"),
 	disabled = false,
 	showLockIcon = false,
 }: BaseUrlFieldProps) => {

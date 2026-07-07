@@ -2,38 +2,36 @@
 	"name": "claude-dev",
 	"displayName": "%displayName%",
 	"description": "%description%",
-	"version": "4.0.0",
+	"version": "0.1.0",
+	"clineBaseVersion": "4.0.0",
 	"icon": "assets/icons/icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "Cline Bot Inc."
+		"name": "LingInk Team"
 	},
 	"license": "Apache-2.0",
 	"publisher": "saoudrizwan",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/cline/cline"
-	},
-	"homepage": "https://cline.bot",
 	"categories": [
 		"AI",
 		"Chat",
-		"Programming Languages",
 		"Education",
-		"Snippets",
-		"Testing"
+		"Other"
 	],
 	"keywords": [
-		"cline",
-		"claude",
-		"dev",
+		"lingink",
+		"灵砚",
+		"academic writing",
+		"paper writing",
+		"research",
+		"literature review",
+		"citation",
+		"论文写作",
+		"学术写作",
 		"mcp",
 		"openrouter",
-		"coding",
 		"agent",
-		"autonomous",
 		"chatgpt",
 		"sonnet",
 		"ai",
@@ -48,7 +46,7 @@
 	"contributes": {
 		"icons": {
 			"cline-icon": {
-				"description": "cline",
+				"description": "LingInk",
 				"default": {
 					"fontPath": "assets/icons/cline-bot.woff",
 					"fontCharacter": "\\e900"
@@ -171,93 +169,93 @@
 			{
 				"command": "cline.dev.expireMcpOAuthTokens",
 				"title": "%command.cline.dev.expireMcpOAuthTokens%",
-				"category": "Cline",
+				"category": "LingInk",
 				"when": "cline.isDevMode"
 			},
 			{
 				"command": "cline.addToChat",
 				"title": "%command.cline.addToChat%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.addTerminalOutputToChat",
 				"title": "%command.cline.addTerminalOutputToChat%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.focusChatInput",
 				"title": "%command.cline.focusChatInput%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.generateGitCommitMessage",
 				"title": "%command.cline.generateGitCommitMessage%",
-				"category": "Cline",
-				"icon": "$(cline-icon)"
+				"category": "LingInk",
+				"icon": "$(sparkle)"
 			},
 			{
 				"command": "cline.abortGitCommitMessage",
 				"title": "%command.cline.abortGitCommitMessage%",
-				"category": "Cline",
+				"category": "LingInk",
 				"icon": "$(debug-stop)"
 			},
 			{
 				"command": "cline.explainCode",
 				"title": "%command.cline.explainCode%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.improveCode",
 				"title": "%command.cline.improveCode%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.jupyterGenerateCell",
 				"title": "%command.cline.jupyterGenerateCell%",
-				"category": "Cline",
+				"category": "LingInk",
 				"icon": "$(sparkle)"
 			},
 			{
 				"command": "cline.jupyterExplainCell",
 				"title": "%command.cline.jupyterExplainCell%",
-				"category": "Cline",
+				"category": "LingInk",
 				"icon": "$(question)"
 			},
 			{
 				"command": "cline.jupyterImproveCell",
 				"title": "%command.cline.jupyterImproveCell%",
-				"category": "Cline",
+				"category": "LingInk",
 				"icon": "$(lightbulb)"
 			},
 			{
 				"command": "cline.openWalkthrough",
 				"title": "%command.cline.openWalkthrough%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.reconstructTaskHistory",
 				"title": "%command.cline.reconstructTaskHistory%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.polishText",
 				"title": "%command.cline.polishText%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.checkArgument",
 				"title": "%command.cline.checkArgument%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.addCitations",
 				"title": "%command.cline.addCitations%",
-				"category": "Cline"
+				"category": "LingInk"
 			},
 			{
 				"command": "cline.generateReviewResponse",
 				"title": "%command.cline.generateReviewResponse%",
-				"category": "Cline"
+				"category": "LingInk"
 			}
 		],
 		"keybindings": [

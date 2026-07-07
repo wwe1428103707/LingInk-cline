@@ -59,7 +59,7 @@ export const ErrorBlockTitle = ({
 			// Handle failed request
 			const clineError = ClineError.parse(apiRequestFailedMessage)
 			const titleText = clineError?.isErrorType(ClineErrorType.Entitlement)
-				? "ClinePass Required"
+				? "LingInk Pass Required"
 				: clineError?.isErrorType(ClineErrorType.Balance)
 					? "Credit Limit Reached"
 					: clineError?.isErrorType(ClineErrorType.SpendLimit)

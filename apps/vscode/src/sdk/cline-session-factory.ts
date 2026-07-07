@@ -53,11 +53,11 @@ const PLAN_MODE_INSTRUCTIONS = `# Plan Mode
 
 You are in Plan mode. Your role is to explore, analyze, and plan -- not to execute.
 
-- Read files, search the codebase, and gather context to understand the problem
+- Read relevant project files and documents, search the workspace, and gather context to understand the task
 - Ask clarifying questions when requirements are ambiguous
 - Present your plan as a structured outline with clear steps
 - Explain tradeoffs between different approaches when they exist
-- Do NOT edit files, write code, run destructive commands, or make any changes
+- Do NOT edit files, rewrite manuscript sections, run destructive commands, or make any changes
 - Do NOT implement anything -- focus on understanding and alignment first
 
 Once the user has reviewed your plan and explicitly approved it in a follow-up message, use the switch_to_act_mode tool to switch to act mode and begin implementation. Calling switch_to_act_mode immediately starts execution, so never call it in the same turn you present a plan and never treat the original task request as approval -- end your turn after presenting the plan and wait for the user's response.`
@@ -322,7 +322,10 @@ const PROVIDER_API_KEY_MAP: Record<string, keyof ApiConfiguration> = {
  * Maps a provider ID to the mode-specific model ID field name in ApiConfiguration.
  * For providers that have dedicated model ID fields per mode.
  */
-const PROVIDER_MODEL_ID_MAP: Record<string, { plan: keyof ApiConfiguration; act: keyof ApiConfiguration; academic: keyof ApiConfiguration }> = {
+const PROVIDER_MODEL_ID_MAP: Record<
+	string,
+	{ plan: keyof ApiConfiguration; act: keyof ApiConfiguration; academic: keyof ApiConfiguration }
+> = {
 	anthropic: { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
 	openrouter: { plan: "planModeOpenRouterModelId", act: "actModeOpenRouterModelId", academic: "academicModeOpenRouterModelId" },
 	openai: { plan: "planModeOpenAiModelId", act: "actModeOpenAiModelId", academic: "academicModeOpenAiModelId" },
@@ -342,13 +345,29 @@ const PROVIDER_MODEL_ID_MAP: Record<string, { plan: keyof ApiConfiguration; act:
 	fireworks: { plan: "planModeFireworksModelId", act: "actModeFireworksModelId", academic: "academicModeFireworksModelId" },
 	groq: { plan: "planModeGroqModelId", act: "actModeGroqModelId", academic: "academicModeGroqModelId" },
 	baseten: { plan: "planModeBasetenModelId", act: "actModeBasetenModelId", academic: "academicModeBasetenModelId" },
-	huggingface: { plan: "planModeHuggingFaceModelId", act: "actModeHuggingFaceModelId", academic: "academicModeHuggingFaceModelId" },
-	"huawei-cloud-maas": { plan: "planModeHuaweiCloudMaasModelId", act: "actModeHuaweiCloudMaasModelId", academic: "academicModeHuaweiCloudMaasModelId" },
+	huggingface: {
+		plan: "planModeHuggingFaceModelId",
+		act: "actModeHuggingFaceModelId",
+		academic: "academicModeHuggingFaceModelId",
+	},
+	"huawei-cloud-maas": {
+		plan: "planModeHuaweiCloudMaasModelId",
+		act: "actModeHuaweiCloudMaasModelId",
+		academic: "academicModeHuaweiCloudMaasModelId",
+	},
 	oca: { plan: "planModeOcaModelId", act: "actModeOcaModelId", academic: "academicModeOcaModelId" },
 	aihubmix: { plan: "planModeAihubmixModelId", act: "actModeAihubmixModelId", academic: "academicModeAihubmixModelId" },
 	hicap: { plan: "planModeHicapModelId", act: "actModeHicapModelId", academic: "academicModeHicapModelId" },
-	nousResearch: { plan: "planModeNousResearchModelId", act: "actModeNousResearchModelId", academic: "academicModeNousResearchModelId" },
-	"vercel-ai-gateway": { plan: "planModeVercelAiGatewayModelId", act: "actModeVercelAiGatewayModelId", academic: "academicModeVercelAiGatewayModelId" },
+	nousResearch: {
+		plan: "planModeNousResearchModelId",
+		act: "actModeNousResearchModelId",
+		academic: "academicModeNousResearchModelId",
+	},
+	"vercel-ai-gateway": {
+		plan: "planModeVercelAiGatewayModelId",
+		act: "actModeVercelAiGatewayModelId",
+		academic: "academicModeVercelAiGatewayModelId",
+	},
 }
 
 // ---------------------------------------------------------------------------
@@ -451,8 +470,14 @@ export function resolveModelId(providerId: string, mode: Mode, config: ApiConfig
 	}
 
 	if (providerId === "sapaicore") {
-		const genericField = mode === "plan" ? "planModeApiModelId" : mode === "academic" ? "academicModeApiModelId" : "actModeApiModelId"
-		const legacyField = mode === "plan" ? "planModeSapAiCoreModelId" : mode === "academic" ? "academicModeSapAiCoreModelId" : "actModeSapAiCoreModelId"
+		const genericField =
+			mode === "plan" ? "planModeApiModelId" : mode === "academic" ? "academicModeApiModelId" : "actModeApiModelId"
+		const legacyField =
+			mode === "plan"
+				? "planModeSapAiCoreModelId"
+				: mode === "academic"
+					? "academicModeSapAiCoreModelId"
+					: "actModeSapAiCoreModelId"
 		return (
 			(config[genericField] as string | undefined)?.trim() ||
 			(config[legacyField] as string | undefined)?.trim() ||
@@ -473,7 +498,8 @@ export function resolveModelId(providerId: string, mode: Mode, config: ApiConfig
 
 	// Fallback to generic mode model ID fields only for providers without a
 	// dedicated model field.
-	const genericField = mode === "plan" ? "planModeApiModelId" : mode === "academic" ? "academicModeApiModelId" : "actModeApiModelId"
+	const genericField =
+		mode === "plan" ? "planModeApiModelId" : mode === "academic" ? "academicModeApiModelId" : "actModeApiModelId"
 	return (config[genericField] as string | undefined)?.trim() || undefined
 }
 
@@ -598,11 +624,12 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 		// Resolve the provider and model for the current mode. Academic mode
 		// has its own provider setting (academicModeApiProvider) so users can
 		// configure a distinct model/provider pair for academic vs act work.
-		const modeProvider = mode === "plan"
-			? apiConfig.planModeApiProvider
-			: mode === "academic"
-				? apiConfig.academicModeApiProvider
-				: apiConfig.actModeApiProvider
+		const modeProvider =
+			mode === "plan"
+				? apiConfig.planModeApiProvider
+				: mode === "academic"
+					? apiConfig.academicModeApiProvider
+					: apiConfig.actModeApiProvider
 		providerId = modeProvider
 
 		if (providerId) {
@@ -695,7 +722,8 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 		Logger.log(`[SessionFactory] Built system prompt: ${systemPrompt.length} chars`)
 	} catch (error) {
 		Logger.warn("[SessionFactory] Failed to build system prompt, using minimal fallback:", error)
-		systemPrompt = "You are Cline, a highly skilled software engineer. Help the user with their request."
+		systemPrompt =
+			"You are LingInk, an AI academic writing and research assistant. Help the user plan, draft, revise, and polish scholarly work."
 	}
 
 	// Inject preferred language instructions when a non-default language is selected.
@@ -772,7 +800,7 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 				}
 			: {}),
 		disableMcpSettingsTools: true,
-		mode: mode === "plan" ? "plan" : mode === "academic" ? "academic" : "act",
+		mode: mode === "plan" ? "plan" : "act",
 		...reasoningConfig,
 		...(maxTokensPerTurn !== undefined ? { maxTokensPerTurn } : {}),
 		maxIterations: undefined,

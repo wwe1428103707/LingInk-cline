@@ -105,3 +105,7 @@ webview-ui/.vite-port
 *storybook.log
 storybook-static
 **/StorybookDecorator.tsx
+
+# Build artifacts from protoc compilation
+tmp-protoc/
+

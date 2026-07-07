@@ -86,3 +86,5 @@ apps/vscode/webview-ui/src/**/*.js.map
 .cline/**/managed.json
 .cline/**/bundle.json
 apps/vscode/tsconfig.test.generated.json
+.clinerules/skills/.lingink-ars-installed
+tmp-protoc/

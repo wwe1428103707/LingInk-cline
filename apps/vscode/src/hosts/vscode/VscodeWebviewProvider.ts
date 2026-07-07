@@ -7,6 +7,9 @@ import { ExtensionRegistryInfo } from "@/registry"
 import type { ExtensionMessage } from "@/shared/ExtensionMessage"
 import { Logger } from "@/shared/services/Logger"
 import { WebviewMessage } from "@/shared/WebviewMessage"
+import * as fs from "node:fs/promises"
+import * as path from "node:path"
+import { installBundledSkills, areSkillsInstalled } from "@/services/skill-installer"
 
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -163,7 +166,6 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 				break
 			}
 			case "installSkills": {
-				const { installBundledSkills } = await import("@/services/skill-installer")
 				try {
 					const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 					if (!workspaceRoot) {
@@ -171,8 +173,6 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 					}
 					const dstDir = await installBundledSkills(workspaceRoot)
 					// Count files
-					const fs = await import("node:fs/promises")
-					const path = await import("node:path")
 					let count = 0
 					const walk = async (d: string): Promise<void> => {
 						const entries = await fs.readdir(d, { withFileTypes: true })
@@ -185,13 +185,29 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 					this.postMessageToWebview({
 						type: "installSkillsResult",
 						installSkillsResult: { success: true, fileCount: count },
-					} as any)
+					})
 				} catch (error) {
 					const msg = error instanceof Error ? error.message : String(error)
 					this.postMessageToWebview({
 						type: "installSkillsResult",
 						installSkillsResult: { success: false, error: msg },
-					} as any)
+					})
+				}
+				break
+			}
+			case "checkSkillsInstalled": {
+				try {
+					const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+					const installed = workspaceRoot ? await areSkillsInstalled(workspaceRoot) : false
+					this.postMessageToWebview({
+						type: "checkSkillsInstalledResult",
+						checkSkillsInstalledResult: { installed },
+					})
+				} catch {
+					this.postMessageToWebview({
+						type: "checkSkillsInstalledResult",
+						checkSkillsInstalledResult: { installed: false },
+					})
 				}
 				break
 			}

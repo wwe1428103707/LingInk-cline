@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { openAiModelInfoSafeDefaults } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -70,10 +72,10 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 			<DebouncedTextField
 				initialValue={apiConfiguration?.claudeCodePath || ""}
 				onChange={(value) => handleFieldChange("claudeCodePath", value)}
-				placeholder="Default: claude"
+				placeholder={t("claudeCode.cliPathPlaceholder", "Default: claude")}
 				style={{ width: "100%", marginTop: 3 }}
 				type="text">
-				<span style={{ fontWeight: 500 }}>Claude Code CLI Path</span>
+				<span style={{ fontWeight: 500 }}>{t("claudeCode.cliPath", "Claude Code CLI Path")}</span>
 			</DebouncedTextField>
 
 			<p
@@ -82,7 +84,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 					marginTop: 3,
 					color: "var(--vscode-descriptionForeground)",
 				}}>
-				Path to the Claude Code CLI.
+				{t("claudeCode.cliPathDesc", "Path to the Claude Code CLI.")}
 			</p>
 
 			{showModelOptions && (
@@ -97,7 +99,7 @@ export const ClaudeCodeProvider = ({ showModelOptions, isPopup, currentMode }: C
 								marginTop: 2,
 								color: "var(--vscode-descriptionForeground)",
 							}}>
-							Use the latest version of {selectedModelId} by default.
+							{t("claudeCode.latestVersion", "Use the latest version of {selectedModelId} by default.")}
 						</p>
 					)}
 

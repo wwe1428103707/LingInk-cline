@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { type ModelInfo, openAiModelInfoSafeDefaults } from "@shared/api"
 import { VSCodeButton, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useState } from "react"
@@ -74,7 +75,7 @@ export function ModelPickerWithManualEntry({
 	return (
 		<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
 			<label htmlFor="provider-model-picker">
-				<span className="font-medium">Model</span>
+				<span className="font-medium">{t("apiConfig.model", "Model")}</span>
 			</label>
 
 			{isStale && <div role="status">Model list may be stale for the current provider configuration.</div>}
@@ -84,7 +85,7 @@ export function ModelPickerWithManualEntry({
 			{hasModels && (
 				<DropdownContainer className="dropdown-container">
 					<VSCodeDropdown
-						aria-label="Model"
+						aria-label={t("apiConfig.model", "Model")}
 						className="w-full"
 						id="provider-model-picker"
 						key={dropdownKey}
@@ -130,10 +131,10 @@ export function ModelPickerWithManualEntry({
 								commitCustomModel(customModelId)
 							}
 						}}
-						placeholder="Enter custom model ID"
+						placeholder={t("modelPicker.customModelId.placeholder", "Enter custom model ID")}
 						style={{ flexGrow: 1 }}
 						value={customModelId}>
-						<span className="font-medium">Custom model ID</span>
+						<span className="font-medium">{t("modelPicker.customModelId", "Custom model ID")}</span>
 					</VSCodeTextField>
 					<VSCodeButton appearance="secondary" onClick={() => commitCustomModel(customModelId)}>
 						Use custom model

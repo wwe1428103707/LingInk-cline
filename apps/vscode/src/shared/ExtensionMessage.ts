@@ -16,10 +16,21 @@ import { OnboardingModelGroup } from "./proto/cline/state"
 import { Mode } from "./storage/types"
 import { TelemetrySetting } from "./TelemetrySetting"
 import { UserInfo } from "./UserInfo"
+/**
+ * Result of a skill installation operation sent to the webview.
+ */
+export interface InstallSkillsResult {
+	success: boolean
+	fileCount?: number
+	error?: string
+}
+
 // webview will hold state
 export interface ExtensionMessage {
-	type: "grpc_response" // New type for gRPC responses
+	type: "grpc_response" | "installSkillsResult" | "checkSkillsInstalledResult"
 	grpc_response?: GrpcResponse
+	installSkillsResult?: InstallSkillsResult
+	checkSkillsInstalledResult?: { installed: boolean }
 }
 
 export type GrpcResponse = {
@@ -96,6 +107,7 @@ export interface ExtensionState {
 	lastCompletedCommandTs?: number
 	userInfo?: UserInfo
 	version: string
+	clineBaseVersion?: string
 	distinctId: string
 	globalClineRulesToggles: ClineRulesToggles
 	localClineRulesToggles: ClineRulesToggles

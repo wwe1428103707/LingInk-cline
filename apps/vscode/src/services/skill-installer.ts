@@ -1,9 +1,9 @@
-import * as fs from "node:fs/promises"
 import * as fsSync from "node:fs"
+import * as fs from "node:fs/promises"
 import * as path from "node:path"
 import * as vscode from "vscode"
-import type { Logger } from "@/shared/services/Logger"
 import { HostProvider } from "@/hosts/host-provider"
+import { Logger } from "@/shared/services/Logger"
 
 /**
  * Name of the marker file placed in the workspace skills dir after installation.
@@ -35,8 +35,7 @@ const GITHUB_RELEASES_URL = `https://github.com/${ARS_GITHUB_REPO}/releases`
 /**
  * Message shown when ARS skills are not installed.
  */
-const INSTALL_PROMPT_MSG =
-	"灵砚学术研究技能包 (Academic Research Skills) 未在当前工作区安装。是否立即安装？"
+const INSTALL_PROMPT_MSG = "灵砚学术研究技能包 (Academic Research Skills) 未在当前工作区安装。是否立即安装？"
 
 export interface UpdateCheckResult {
 	hasUpdate: boolean
@@ -212,11 +211,7 @@ export async function installBundledSkills(workspaceRoot: string): Promise<strin
 	await fs.mkdir(dstDir, { recursive: true })
 
 	// Copy bundled skills recursively
-	const result = await copyRecursive(srcDir, dstDir, [
-		"plugin.js",
-		"plugin.ts",
-		"skills",
-	])
+	const result = await copyRecursive(srcDir, dstDir, ["plugin.js", "plugin.ts", "skills"])
 
 	// Write marker
 	await writeInstallMarker(workspaceRoot)
@@ -399,21 +394,15 @@ export async function checkAndPromptSkillInstall(): Promise<void> {
 		try {
 			const dstDir = await installBundledSkills(workspaceRoot)
 			const fileCount = countFiles(dstDir)
-			const countMsg = fileCount > 0
-				? `共 ${fileCount} 个文件`
-				: "文件已安装"
-			vscode.window.showInformationMessage(
-				`✅ 学术研究技能包已安装到工作区！${countMsg}\n重启 Cline 会话后即可使用。`,
-			)
+			const countMsg = fileCount > 0 ? `共 ${fileCount} 个文件` : "文件已安装"
+			vscode.window.showInformationMessage(`✅ 学术研究技能包已安装到工作区！${countMsg}\n重启 LingInk 会话后即可使用。`)
 		} catch (error) {
 			const msg = error instanceof Error ? error.message : String(error)
 			Logger.error(`[SkillInstaller] Installation failed: ${msg}`)
 			vscode.window.showErrorMessage(`❌ 安装失败: ${msg}`)
 		}
 	} else if (action === "📖 了解更多") {
-		vscode.env.openExternal(
-			vscode.Uri.parse(GITHUB_RELEASES_URL),
-		)
+		vscode.env.openExternal(vscode.Uri.parse(GITHUB_RELEASES_URL))
 	}
 }
 
@@ -429,10 +418,7 @@ export async function checkAndPromptARSUpdate(): Promise<void> {
 
 	const result = await checkForARSUpdate(workspaceRoot)
 	if (!result.hasUpdate) {
-		vscode.window.showInformationMessage(
-			`✅ 学术研究技能包已是最新版本 (v${result.currentVersion})`,
-			{ modal: false },
-		)
+		vscode.window.showInformationMessage(`✅ 学术研究技能包已是最新版本 (v${result.currentVersion})`, { modal: false })
 		return
 	}
 
@@ -446,9 +432,7 @@ export async function checkAndPromptARSUpdate(): Promise<void> {
 	if (action === "⬆️ 立即升级") {
 		try {
 			await downloadAndInstallUpdate(workspaceRoot)
-			vscode.window.showInformationMessage(
-				`✅ 学术研究技能包已升级到 v${result.latestVersion}！重启 Cline 会话后生效。`,
-			)
+			vscode.window.showInformationMessage(`✅ 学术研究技能包已升级到 v${result.latestVersion}！重启 LingInk 会话后生效。`)
 		} catch (error) {
 			const msg = error instanceof Error ? error.message : String(error)
 			Logger.error(`[SkillInstaller] Update failed: ${msg}`)

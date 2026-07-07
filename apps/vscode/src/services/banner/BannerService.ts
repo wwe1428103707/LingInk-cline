@@ -246,7 +246,7 @@ export class BannerService {
 	public async sendBannerEvent(bannerId: string, eventType: "dismiss"): Promise<void> {
 		try {
 			const url = new URL("/banners/v2/messages", ClineEnv.config().apiBaseUrl).toString()
-			const surface = ideType === "cli" ? "cli" : "vscode"
+			const surface = this.getIdeType() === "cli" ? "cli" : "vscode"
 
 			const controller = new AbortController()
 			const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
@@ -426,7 +426,12 @@ export class BannerService {
 
 			const config = StateManager.get().getApiConfiguration()
 			const mode = StateManager.get().getGlobalSettingsKey("mode")
-			const provider = mode === "plan" ? config?.planModeApiProvider : mode === "academic" ? config?.academicModeApiProvider : config?.actModeApiProvider
+			const provider =
+				mode === "plan"
+					? config?.planModeApiProvider
+					: mode === "academic"
+						? config?.academicModeApiProvider
+						: config?.actModeApiProvider
 
 			return rules.providers.some((ruleProvider) => {
 				// Check if ruleProvider is an alias for the selected provider
