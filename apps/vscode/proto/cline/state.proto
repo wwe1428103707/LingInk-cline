@@ -545,4 +545,5 @@ message AcademicSkillsUpdateInfo {
   string latest_version = 3;
   string release_url = 4;
   optional string release_notes = 5;
+  optional string error = 6;
 }

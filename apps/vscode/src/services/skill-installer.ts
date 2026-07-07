@@ -99,7 +99,9 @@ async function fetchLatestRelease(): Promise<{ tag_name: string; html_url: strin
 			body: data.body ?? undefined,
 		}
 	} catch (error) {
-		Logger.warn("[SkillInstaller] Failed to fetch latest ARS release:", error)
+		const errorMsg = error instanceof Error ? error.message : String(error)
+		const errorStack = error instanceof Error ? error.stack : undefined
+		Logger.warn(`[SkillInstaller] Failed to fetch latest ARS release: ${errorMsg}`, errorStack || "")
 		return { tag_name: "", html_url: "", error: UPDATE_CHECK_ERROR }
 	}
 }

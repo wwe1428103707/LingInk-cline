@@ -296,11 +296,18 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 									<VSCodeTextField
 										className="w-full"
 										id="network-proxy-url"
-										onBlur={(event) => updateSetting("networkProxyUrl", event.currentTarget.value)}
-										onInput={(event) => setProxyUrlDraft(event.currentTarget.value)}
+										onBlur={(event) => {
+											const input = event.currentTarget as HTMLInputElement
+											updateSetting("networkProxyUrl", input.value)
+										}}
+										onInput={(event) => {
+											const input = event.currentTarget as HTMLInputElement
+											setProxyUrlDraft(input.value)
+										}}
 										onKeyDown={(event) => {
+											const input = event.currentTarget as HTMLInputElement
 											if (event.key === "Enter") {
-												updateSetting("networkProxyUrl", event.currentTarget.value)
+												updateSetting("networkProxyUrl", input.value)
 											}
 										}}
 										placeholder="http://127.0.0.1:7890"

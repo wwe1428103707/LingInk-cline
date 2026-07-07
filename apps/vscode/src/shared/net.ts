@@ -120,7 +120,13 @@ export function resolveNetworkProxyUrl(settings = proxySettingsProvider?.()): st
 
 	const candidate = settings.mode === "custom" ? settings.customProxyUrl : settings.vscodeProxyUrl
 	const trimmed = candidate?.trim()
-	return trimmed ? trimmed : undefined
+	if (trimmed) {
+		return trimmed
+	}
+
+	// Fallback: check HTTP_PROXY/HTTPS_PROXY environment variables.
+	// VS Code sets these based on http.proxy setting for the extension host process.
+	return process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.https_proxy || process.env.http_proxy || undefined
 }
 
 function getProxyAgent(proxyUrl: string): ProxyAgent {
@@ -166,15 +172,25 @@ function fetchWithProxy(
 export const fetch: typeof globalThis.fetch = (() => {
 	// Note: Don't use Logger here; it may not be initialized.
 
-	let baseFetch: typeof globalThis.fetch = globalThis.fetch
-	// Note: See esbuild.mjs, process.env.IS_STANDALONE is statically rewritten
-	// to "true" or "false" (as strings) in the JetBrains/CLI build.
-	// We must use explicit string comparison because "false" is truthy in JS.
+	let baseFetch: typeof globalThis.fetch
+	let useEnvProxy = false
+
 	if (process.env.IS_STANDALONE === "true") {
-		// Configure undici with ProxyAgent
+		// Standalone (JetBrains/CLI): always configure EnvHttpProxyAgent.
+		useEnvProxy = true
+	} else {
+		// VS Code extension: only configure EnvHttpProxyAgent when proxy env vars are set.
+		// VS Code sets HTTP_PROXY/HTTPS_PROXY based on http.proxy setting for the extension host.
+		useEnvProxy = !!(process.env.HTTP_PROXY || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.https_proxy)
+	}
+
+	if (useEnvProxy) {
+		// Configure undici with ProxyAgent that reads HTTP_PROXY/HTTPS_PROXY env vars
 		const agent = new EnvHttpProxyAgent({})
 		setGlobalDispatcher(agent)
 		baseFetch = undiciFetch as any as typeof globalThis.fetch
+	} else {
+		baseFetch = globalThis.fetch
 	}
 
 	return ((input: string | URL | Request, init?: RequestInit): Promise<Response> =>

@@ -2,7 +2,7 @@
 	"name": "claude-dev",
 	"displayName": "%displayName%",
 	"description": "%description%",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"clineBaseVersion": "4.0.0",
 	"icon": "assets/icons/icon.png",
 	"engines": {
