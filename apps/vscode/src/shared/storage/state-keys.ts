@@ -232,7 +232,7 @@ const API_HANDLER_SETTINGS_FIELDS = {
 	actModeNousResearchModelId: { default: undefined as string | undefined },
 	actModeVercelAiGatewayModelId: { default: undefined as string | undefined },
 	actModeVercelAiGatewayModelInfo: { default: undefined as ModelInfo | undefined },
-	
+
 	// Academic mode configurations
 	academicModeApiModelId: { default: undefined as string | undefined },
 	academicModeThinkingBudgetTokens: { default: undefined as number | undefined },
@@ -313,7 +313,7 @@ const USER_SETTINGS_FIELDS = {
 	useAutoCondense: { default: true as boolean },
 	subagentsEnabled: { default: false as boolean },
 	worktreesEnabled: { default: false as boolean },
-	preferredLanguage: { default: "English" as string },
+	preferredLanguage: { default: "Simplified Chinese - 简体中文" as string },
 	mode: { default: "academic" as Mode },
 	focusChainSettings: { default: DEFAULT_FOCUS_CHAIN_SETTINGS as FocusChainSettings },
 	customPrompt: { default: undefined as "compact" | undefined },

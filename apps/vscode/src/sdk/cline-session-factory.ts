@@ -20,7 +20,7 @@ import { getGeneratedModelsForProvider, MODEL_COLLECTIONS_BY_PROVIDER_ID } from 
 import { buildClineSystemPrompt } from "@cline/shared"
 import type { ApiConfiguration } from "@shared/api"
 import type { HistoryItem } from "@shared/HistoryItem"
-import { DEFAULT_LANGUAGE_SETTINGS, getLanguageKey, type LanguageDisplay } from "@shared/Languages"
+import { getLanguageKey, type LanguageDisplay } from "@shared/Languages"
 import { Logger } from "@shared/services/Logger"
 import type { Settings } from "@shared/storage/state-keys"
 import type { Mode } from "@shared/storage/types"
@@ -726,13 +726,14 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 			"You are LingInk, an AI academic writing and research assistant. Help the user plan, draft, revise, and polish scholarly work."
 	}
 
-	// Inject preferred language instructions when a non-default language is selected.
+	// Inject preferred language instructions for the default language too, so
+	// the default actually affects model output instead of only the UI setting.
 	// Mirrors classic src/core/task/index.ts preferredLanguage handling.
 	try {
 		const preferredLanguageRaw = StateManager.get().getGlobalSettingsKey("preferredLanguage")
 		const preferredLanguage = getLanguageKey(preferredLanguageRaw as LanguageDisplay | undefined)
-		if (preferredLanguage && preferredLanguage !== DEFAULT_LANGUAGE_SETTINGS) {
-			systemPrompt = `${systemPrompt}\n\n# Preferred Language\n\nSpeak in ${preferredLanguage}.`
+		if (preferredLanguage) {
+			systemPrompt = `${systemPrompt}\n\n# Preferred Language\n\nSpeak in ${preferredLanguage} by default, unless the user explicitly asks you to use another language for the current response.`
 		}
 	} catch (error) {
 		Logger.warn("[SessionFactory] Failed to inject preferredLanguage instructions:", error)

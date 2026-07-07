@@ -302,6 +302,10 @@ describe("State Keys Type Safety", () => {
 			}
 		})
 
+		it("should default preferredLanguage to Simplified Chinese", () => {
+			expect(getDefaultValue("preferredLanguage")).to.equal("Simplified Chinese - 简体中文")
+		})
+
 		it("should return undefined for keys without defaults", () => {
 			// Keys with `undefined` as default should return undefined
 			const keysWithUndefinedDefaults = GlobalStateAndSettingKeys.filter((key) => {

@@ -237,8 +237,8 @@ message Settings {
   optional string act_mode_nous_research_model_id = 121;
   optional string act_mode_vercel_ai_gateway_model_id = 122;
   optional OpenRouterModelInfo act_mode_vercel_ai_gateway_model_info = 123;
-  optional string plan_mode_api_provider = 124;
-  optional string act_mode_api_provider = 125;
+  optional ApiProvider plan_mode_api_provider = 124;
+  optional ApiProvider act_mode_api_provider = 125;
   optional string hicap_model_id = 126;
   optional string lm_studio_model_id = 127;
   optional AutoApprovalSettings auto_approval_settings = 128;
@@ -332,7 +332,7 @@ message Settings {
   optional string academic_mode_nous_research_model_id = 228;
   optional string academic_mode_vercel_ai_gateway_model_id = 229;
   optional OpenRouterModelInfo academic_mode_vercel_ai_gateway_model_info = 230;
-  optional string academic_mode_api_provider = 231;
+  optional ApiProvider academic_mode_api_provider = 231;
   optional string network_proxy_mode = 232;
   optional string network_proxy_url = 233;
 }

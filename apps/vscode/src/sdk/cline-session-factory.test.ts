@@ -632,6 +632,33 @@ describe("buildSessionConfig", () => {
 		expect(config.providerConfig).not.toHaveProperty("apiKey")
 	})
 
+	it("injects Simplified Chinese as the default chat output language", async () => {
+		const config = await buildSessionConfig({ cwd: "/tmp/workspace" })
+
+		expect(config.systemPrompt).toContain("# Preferred Language")
+		expect(config.systemPrompt).toContain(
+			"Speak in zh-CN by default, unless the user explicitly asks you to use another language for the current response.",
+		)
+	})
+
+	it("honors an explicitly selected non-default chat output language", async () => {
+		mocks.stateManager.getGlobalSettingsKey.mockImplementation((key: string) => {
+			if (key === "preferredLanguage") {
+				return "English"
+			}
+			if (key === "subagentsEnabled" || key === "useAutoCondense") {
+				return false
+			}
+			return undefined
+		})
+
+		const config = await buildSessionConfig({ cwd: "/tmp/workspace" })
+
+		expect(config.systemPrompt).toContain(
+			"Speak in en by default, unless the user explicitly asks you to use another language for the current response.",
+		)
+	})
+
 	it("enables basic SDK compaction when global useAutoCondense is true", async () => {
 		mocks.stateManager.getGlobalSettingsKey.mockImplementation((key: string) => {
 			if (key === "useAutoCondense") {
