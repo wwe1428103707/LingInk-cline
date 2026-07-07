@@ -1,34 +1,5 @@
-import { SVGProps } from "react"
-import type { Environment } from "../../../src/shared/config-types"
-import { getEnvironmentColor } from "../utils/environmentColors"
+const ClineLogoSanta = (props: Record<string, unknown>) => (
+	<img src="./assets/icon.jpg" alt="LingInk" {...props} />
+)
 
-/**
- * ClineLogoSanta component renders the LingInk logo with a festive Santa hat
- * Includes automatic theme adaptation and environment-based color indicators.
- *
- * This festive version adds a Santa hat to the robot character while maintaining
- * the same theme and environment color system as ClineLogoVariable.
- *
- * @param {SVGProps<SVGSVGElement> & { environment?: Environment }} props - Standard SVG props plus optional environment
- * @returns {JSX.Element} SVG LingInk logo with Santa hat that adapts to VS Code themes and environment
- */
-const ClineLogoSanta = (props: SVGProps<SVGSVGElement> & { environment?: Environment }) => {
-	const { environment, ...svgProps } = props
-
-	// Determine fill color based on environment
-	const fillColor = environment ? getEnvironmentColor(environment) : "var(--vscode-icon-foreground)"
-
-	return (
-		<svg fill="none" height="50" viewBox="0 0 47 50" width="47" xmlns="http://www.w3.org/2000/svg" {...svgProps}>
-			<title>LingInk</title>
-			<path
-				d="M6 7.5C6 5.29086 7.79086 3.5 10 3.5H21C22.6569 3.5 24 4.84315 24 6.5V43.5C24 45.1569 22.6569 46.5 21 46.5H10C7.79086 46.5 6 44.7091 6 42.5V7.5ZM11.5 12.5C10.3954 12.5 9.5 13.3954 9.5 14.5C9.5 15.6046 10.3954 16.5 11.5 16.5H18.5C19.6046 16.5 20.5 15.6046 20.5 14.5C20.5 13.3954 19.6046 12.5 18.5 12.5H11.5ZM11.5 21C10.3954 21 9.5 21.8954 9.5 23C9.5 24.1046 10.3954 25 11.5 25H17.5C18.6046 25 19.5 24.1046 19.5 23C19.5 21.8954 18.6046 21 17.5 21H11.5ZM23 6.5C23 4.84315 24.3431 3.5 26 3.5H37C39.2091 3.5 41 5.29086 41 7.5V42.5C41 44.7091 39.2091 46.5 37 46.5H26C24.3431 46.5 23 45.1569 23 43.5V6.5ZM29.8 17.2C30.6686 15.225 33.3314 15.225 34.2 17.2L37.8 25.4C40.2 30.8 36.25 37 32 37C27.75 37 23.8 30.8 26.2 25.4L29.8 17.2ZM32 25C30.8954 25 30 25.8954 30 27C30 28.1046 30.8954 29 32 29C33.1046 29 34 28.1046 34 27C34 25.8954 33.1046 25 32 25Z"
-				fill={fillColor}
-			/>
-			<path d="M12 4.5C17.5 -0.5 25.5 -1 34 5L30 10.5C24 7.2 18.5 7.5 14 11.5L12 4.5Z" fill="#CC3333" />
-			<path d="M11 10C18.5 6.5 26.5 6.5 34 10" stroke="white" strokeLinecap="round" strokeWidth="4" />
-			<circle cx="35.5" cy="6.5" fill="white" r="3.5" />
-		</svg>
-	)
-}
 export default ClineLogoSanta

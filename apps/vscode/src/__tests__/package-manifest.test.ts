@@ -20,7 +20,7 @@ describe("VS Code package manifest", () => {
 			{
 				id: "claude-dev-ActivityBar",
 				title: "%activitybar.title%",
-				icon: "assets/icons/icon.svg",
+				icon: "assets/icons/icon.png",
 			},
 		])
 
@@ -31,7 +31,7 @@ describe("VS Code package manifest", () => {
 				type: "webview",
 				id: "claude-dev.SidebarProvider",
 				name: "",
-				icon: "assets/icons/icon.svg",
+				icon: "assets/icons/icon.png",
 			},
 		])
 	})
