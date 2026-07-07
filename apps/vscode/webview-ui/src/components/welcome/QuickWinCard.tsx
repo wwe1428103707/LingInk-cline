@@ -1,3 +1,11 @@
+import {
+	BookOpenTextIcon,
+	FileTextIcon,
+	HighlighterIcon,
+	type LucideIcon,
+	MessageSquareReplyIcon,
+	SparklesIcon,
+} from "lucide-react"
 import React from "react"
 import { QuickWinTask } from "./quickWinTasks"
 
@@ -6,44 +14,37 @@ interface QuickWinCardProps {
 	onExecute: () => void
 }
 
-const renderIcon = (iconName?: string) => {
-	if (!iconName) {
-		return <span className="codicon codicon-rocket text-[28px]! leading-none!"></span>
-	}
+const iconMap: Record<string, LucideIcon> = {
+	OutlineIcon: FileTextIcon,
+	LiteratureIcon: BookOpenTextIcon,
+	PolishIcon: HighlighterIcon,
+	ReviewIcon: MessageSquareReplyIcon,
+}
 
-	let iconClass = "codicon-rocket"
-	switch (iconName) {
-		case "WebAppIcon":
-			iconClass = "codicon-dashboard"
-			break
-		case "TerminalIcon":
-			iconClass = "codicon-terminal"
-			break
-		case "GameIcon":
-			iconClass = "codicon-game"
-			break
-		default:
-			break
-	}
-	return <span className={`codicon ${iconClass} text-[28px]! leading-none!`}></span>
+const renderIcon = (iconName?: string) => {
+	const Icon = iconName ? iconMap[iconName] || SparklesIcon : SparklesIcon
+	return <Icon aria-hidden="true" className="size-4.5" strokeWidth={1.8} />
 }
 
 const QuickWinCard: React.FC<QuickWinCardProps> = ({ task, onExecute }) => {
 	return (
-		<div
-			className="flex items-center mb-2 py-0 px-5 space-x-3 rounded-full cursor-pointer group transition-colors duration-150 ease-in-out bg-white/2 border border-(--vscode-panel-border) hover:bg-(--vscode-list-hoverBackground)"
-			onClick={() => onExecute()}>
-			<div className="shrink-0 flex items-center justify-center w-6 h-6 text-(--vscode-icon-foreground)">
+		<button
+			className="group mb-2 flex w-full cursor-pointer appearance-none items-center space-x-3 rounded-full border border-(--vscode-panel-border) bg-white/2 px-5 py-1 text-left transition-colors duration-150 ease-in-out hover:bg-(--vscode-list-hoverBackground)"
+			onClick={() => onExecute()}
+			type="button">
+			<span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-(--vscode-badge-background)/15 text-(--vscode-icon-foreground)">
 				{renderIcon(task.icon)}
-			</div>
+			</span>
 
-			<div className="grow min-w-0">
-				<h3 className="text-sm font-medium truncate text-(--vscode-editor-foreground) leading-tight mb-0 mt-0 pt-3">
+			<span className="min-w-0 grow">
+				<span className="mb-0 mt-0 block truncate pt-3 font-medium text-(--vscode-editor-foreground) text-sm leading-tight">
 					{task.title}
-				</h3>
-				<p className="text-xs truncate text-(--vscode-descriptionForeground) leading-tight mt-px">{task.description}</p>
-			</div>
-		</div>
+				</span>
+				<span className="mt-px block truncate text-(--vscode-descriptionForeground) text-xs leading-tight">
+					{task.description}
+				</span>
+			</span>
+		</button>
 	)
 }
 

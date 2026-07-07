@@ -1,4 +1,6 @@
+import * as path from "node:path"
 import * as vscode from "vscode"
+import { HostProvider } from "@/hosts/host-provider"
 
 export interface TerminalInfo {
 	terminal: vscode.Terminal
@@ -24,7 +26,7 @@ export class TerminalRegistry {
 		const terminalOptions: vscode.TerminalOptions = {
 			cwd,
 			name: "LingInk",
-			iconPath: new vscode.ThemeIcon("book"),
+			iconPath: vscode.Uri.file(path.join(HostProvider.get().extensionFsPath, "assets", "icons", "icon.png")),
 			env: {
 				CLINE_ACTIVE: "true",
 				// Override $SHELL to match the selected shell profile so that

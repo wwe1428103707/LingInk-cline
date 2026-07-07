@@ -44,15 +44,6 @@
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
-		"icons": {
-			"cline-icon": {
-				"description": "LingInk",
-				"default": {
-					"fontPath": "assets/icons/cline-bot.woff",
-					"fontCharacter": "\\e900"
-				}
-			}
-		},
 		"walkthroughs": [
 			{
 				"id": "ClineWalkthrough",

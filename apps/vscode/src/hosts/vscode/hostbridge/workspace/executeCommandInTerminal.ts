@@ -1,5 +1,7 @@
+import * as path from "node:path"
 import { ExecuteCommandInTerminalRequest, ExecuteCommandInTerminalResponse } from "@shared/proto/host/workspace"
 import * as vscode from "vscode"
+import { HostProvider } from "@/hosts/host-provider"
 import { Logger } from "@/shared/services/Logger"
 
 /**
@@ -14,7 +16,7 @@ export async function executeCommandInTerminal(
 		// Create terminal with fixed options
 		const terminalOptions: vscode.TerminalOptions = {
 			name: "LingInk",
-			iconPath: new vscode.ThemeIcon("book"),
+			iconPath: vscode.Uri.file(path.join(HostProvider.get().extensionFsPath, "assets", "icons", "icon.png")),
 			env: {
 				CLINE_ACTIVE: "true",
 			},

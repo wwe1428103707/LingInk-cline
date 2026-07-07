@@ -19,7 +19,6 @@ import { AccountServiceClient, StateServiceClient, UiServiceClient, WorktreeServ
 import { convertBannerData } from "@/utils/bannerUtils"
 import { getCurrentPlatform } from "@/utils/platformUtils"
 import { WelcomeSectionProps } from "../../types/chatTypes"
-import { t } from "@/i18n"
 
 /**
  * Welcome section shown when there's no active task
@@ -29,6 +28,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 	showAnnouncement,
 	hideAnnouncement,
 	showHistoryView,
+	onSelectQuickWin,
 	version,
 	taskHistory,
 	shouldShowQuickWins,
@@ -317,7 +317,7 @@ export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
 				)}
 			</div>
 			<AcademicQuickTasks />
-			<SuggestedTasks shouldShowQuickWins={shouldShowQuickWins} />
+			<SuggestedTasks onSelectQuickWin={onSelectQuickWin} shouldShowQuickWins={shouldShowQuickWins} />
 
 			{/* Quick launch worktree modal */}
 			<CreateWorktreeModal

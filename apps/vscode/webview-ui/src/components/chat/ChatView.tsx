@@ -1,4 +1,3 @@
-import { t } from "@/i18n"
 import { combineApiRequests } from "@shared/combineApiRequests"
 import { combineCommandSequences } from "@shared/combineCommandSequences"
 import { combineErrorRetryMessages } from "@shared/combineErrorRetryMessages"
@@ -11,6 +10,7 @@ import { useMount } from "react-use"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useShowNavbar } from "@/context/PlatformContext"
 import { useNormalizedApiConfiguration } from "@/hooks/useNormalizedApiConfiguration"
+import { t } from "@/i18n"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { Navbar } from "../menu/Navbar"
 import AutoApproveBar from "./auto-approve-menu/AutoApproveBar"
@@ -278,6 +278,27 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 
 	const shouldDisableFilesAndImages = selectedImages.length + selectedFiles.length >= MAX_IMAGES_AND_FILES_PER_MESSAGE
 
+	const handleSelectQuickWin = useCallback(
+		(prompt: string) => {
+			const trimmedPrompt = prompt.trim()
+			setInputValue((prevValue) => {
+				if (!prevValue.trim()) {
+					return trimmedPrompt
+				}
+				return `${prevValue.trimEnd()}\n\n${trimmedPrompt}`
+			})
+			setTimeout(() => {
+				if (textAreaRef.current) {
+					textAreaRef.current.focus()
+					textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight
+					const cursorPosition = textAreaRef.current.value.length
+					textAreaRef.current.setSelectionRange(cursorPosition, cursorPosition)
+				}
+			}, 0)
+		},
+		[setInputValue, textAreaRef],
+	)
+
 	// Subscribe to show webview events from the backend
 	useEffect(() => {
 		const cleanup = UiServiceClient.subscribeToShowWebview(
@@ -363,7 +384,9 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	const scrollBehavior = useScrollBehavior(displayMessages, visibleMessages, groupedMessages, expandedRows, setExpandedRows)
 
 	const placeholderText = useMemo(() => {
-		return task ? t("chat.input.placeholder", "Type a message...") : t("chat.input.placeholder.empty", "Type your task here...")
+		return task
+			? t("chat.input.placeholder", "Type a message...")
+			: t("chat.input.placeholder.empty", "Type your task here...")
 	}, [task])
 
 	return (
@@ -384,6 +407,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				) : (
 					<WelcomeSection
 						hideAnnouncement={hideAnnouncement}
+						onSelectQuickWin={handleSelectQuickWin}
 						shouldShowQuickWins={shouldShowQuickWins}
 						showAnnouncement={showAnnouncement}
 						showHistoryView={showHistoryView}

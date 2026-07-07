@@ -1,14 +1,11 @@
-import { NewTaskRequest } from "@shared/proto/cline/task"
 import React from "react"
-import { TaskServiceClient } from "@/services/grpc-client"
 import QuickWinCard from "./QuickWinCard"
 import { QuickWinTask, quickWinTasks } from "./quickWinTasks"
 
-export const SuggestedTasks: React.FC<{ shouldShowQuickWins: boolean }> = ({ shouldShowQuickWins }) => {
-	const handleExecuteQuickWin = async (prompt: string) => {
-		await TaskServiceClient.newTask(NewTaskRequest.create({ text: prompt, images: [] }))
-	}
-
+export const SuggestedTasks: React.FC<{ shouldShowQuickWins: boolean; onSelectQuickWin: (prompt: string) => void }> = ({
+	shouldShowQuickWins,
+	onSelectQuickWin,
+}) => {
 	if (shouldShowQuickWins) {
 		return (
 			<div className="px-4 pt-1 pb-3 select-none">
@@ -19,7 +16,7 @@ export const SuggestedTasks: React.FC<{ shouldShowQuickWins: boolean }> = ({ sho
 				<div className="flex flex-col space-y-1">
 					{" "}
 					{quickWinTasks.map((task: QuickWinTask) => (
-						<QuickWinCard key={task.id} onExecute={() => handleExecuteQuickWin(task.prompt)} task={task} />
+						<QuickWinCard key={task.id} onExecute={() => onSelectQuickWin(task.prompt)} task={task} />
 					))}
 				</div>
 			</div>
