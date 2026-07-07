@@ -1006,23 +1006,34 @@ const MarketplaceView = ({ initialType = "skill", onDone }: MarketplaceViewProps
 	const refresh = useCallback(async () => {
 		setLoading(true)
 		setError(null)
+		let catalogEntriesResult: MarketplaceEntry[] = []
 		try {
-			const [catalog, local] = await Promise.all([
-				MarketplaceServiceClient.getMarketplaceCatalog(EmptyRequest.create({})),
-				MarketplaceServiceClient.listMarketplaceLocalInstalledEntries(EmptyRequest.create({})),
-			])
-			const entries = catalog.entries.filter((entry) => isPrimitiveType(entry.type))
-			setCatalogEntries(entries)
-			setLocalEntries(local.entries.filter((entry) => isPrimitiveType(entry.type)))
+			const catalog = await MarketplaceServiceClient.getMarketplaceCatalog(EmptyRequest.create({}))
+			catalogEntriesResult = catalog.entries.filter((entry) => isPrimitiveType(entry.type))
+		} catch (err) {
+			console.error("Failed to fetch marketplace catalog:", err)
+			setError(err instanceof Error ? err.message : String(err))
+		}
+		setCatalogEntries(catalogEntriesResult)
+
+		try {
+			const local = await MarketplaceServiceClient.listMarketplaceLocalInstalledEntries(EmptyRequest.create({}))
+			const localFiltered = local.entries.filter((entry) => isPrimitiveType(entry.type))
+			setLocalEntries(localFiltered)
+		} catch (err) {
+			console.error("Failed to list local entries:", err)
+		}
+
+		try {
 			const installed = await MarketplaceServiceClient.listMarketplaceInstalledEntries(
-				MarketplaceEntriesRequest.create({ entries }),
+				MarketplaceEntriesRequest.create({ entries: catalogEntriesResult }),
 			)
 			setInstalledKeys(new Set(installed.installedKeys))
 		} catch (err) {
-			setError(err instanceof Error ? err.message : String(err))
-		} finally {
-			setLoading(false)
+			console.error("Failed to list installed entries:", err)
 		}
+
+		setLoading(false)
 	}, [])
 
 	useEffect(() => {

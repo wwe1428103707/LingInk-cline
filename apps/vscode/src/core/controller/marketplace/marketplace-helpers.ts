@@ -1,5 +1,7 @@
 import { spawn } from "node:child_process"
+import axios from "axios"
 import { createHash } from "node:crypto"
+import { getAxiosSettings } from "@/shared/net"
 import { existsSync, readFileSync } from "node:fs"
 import { homedir, platform } from "node:os"
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "node:path"
@@ -46,7 +48,8 @@ type SpawnResult = {
 	stderr: string
 }
 
-const MARKETPLACE_CATALOG_URL = "https://cline.github.io/marketplace/catalog.json"
+const MARKETPLACE_CATALOG_URL =
+	process.env.CLINE_MARKETPLACE_CATALOG_URL?.trim() || "https://cline.github.io/marketplace/catalog.json"
 const OFFICIAL_PLUGINS_REPO = "https://github.com/cline/plugins.git"
 const INSTALL_COMMAND_TIMEOUT_MS = 120_000
 const MAX_OUTPUT_CHARS = 12_000
@@ -109,17 +112,21 @@ function sanitizeEntry(raw: unknown): MarketplaceEntry | undefined {
 }
 
 export async function fetchMarketplaceCatalog(): Promise<MarketplaceCatalog> {
-	const response = await fetch(MARKETPLACE_CATALOG_URL, {
-		headers: { Accept: "application/json" },
-	})
-	if (!response.ok) {
-		throw new Error(`Failed to fetch marketplace catalog: ${response.status} ${response.statusText}`.trim())
+	const url = MARKETPLACE_CATALOG_URL
+	try {
+		const response = await axios.get(url, {
+			...getAxiosSettings(),
+			headers: { Accept: "application/json" },
+		})
+		const json = response.data as Record<string, unknown>
+		const entries = Array.isArray(json.entries)
+			? json.entries.map(sanitizeEntry).filter((entry): entry is MarketplaceEntry => entry !== undefined)
+			: []
+		return MarketplaceCatalog.create({ entries })
+	} catch (error) {
+		const detail = error instanceof Error ? error.message : String(error)
+		throw new Error(`Failed to fetch marketplace catalog from ${url}: ${detail}`)
 	}
-	const json = (await response.json()) as Record<string, unknown>
-	const entries = Array.isArray(json.entries)
-		? json.entries.map(sanitizeEntry).filter((entry): entry is MarketplaceEntry => entry !== undefined)
-		: []
-	return MarketplaceCatalog.create({ entries })
 }
 
 function normalizeMatchValue(value: string | undefined): string {

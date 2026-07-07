@@ -2,11 +2,11 @@
 	"name": "claude-dev",
 	"displayName": "%displayName%",
 	"description": "%description%",
-	"version": "0.1.0",
+	"version": "0.1.3",
 	"clineBaseVersion": "4.0.0",
 	"icon": "assets/icons/icon.png",
 	"engines": {
-		"vscode": "^1.84.0"
+		"vscode": "^1.104.0"
 	},
 	"author": {
 		"name": "LingInk Team"
@@ -21,14 +21,14 @@
 	],
 	"keywords": [
 		"lingink",
-		"灵砚",
+		"\u7075\u781a",
 		"academic writing",
 		"paper writing",
 		"research",
 		"literature review",
 		"citation",
-		"论文写作",
-		"学术写作",
+		"\u8bba\u6587\u5199\u4f5c",
+		"\u5b66\u672f\u5199\u4f5c",
 		"mcp",
 		"openrouter",
 		"agent",
@@ -106,7 +106,7 @@
 			}
 		],
 		"viewsContainers": {
-			"activitybar": [
+			"secondarySidebar": [
 				{
 					"id": "claude-dev-ActivityBar",
 					"title": "%activitybar.title%",
