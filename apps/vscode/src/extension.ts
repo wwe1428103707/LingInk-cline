@@ -62,6 +62,7 @@ import { fileExistsAtPath } from "./utils/fs"
 import { checkAndPromptSkillInstall, checkAndPromptARSUpdate } from "./services/skill-installer"
 import { StateManager } from "./core/storage/StateManager"
 import { configureNetworkProxySettingsProvider } from "./shared/net"
+import { EditingSessionService } from "@/integrations/editor/editingSessionService"
 
 // This method is called when the VS Code extension is activated.
 // NOTE: This is VS Code specific - services that should be registered
@@ -587,6 +588,13 @@ ${ctx.cellJson || "{}"}
 		}),
 		vscode.commands.registerCommand(commands.AbortCommit, () => {
 			abortCommitGeneration()
+		}),
+	)
+
+	// Register the reviewChanges command handler
+	context.subscriptions.push(
+		vscode.commands.registerCommand(commands.ReviewChanges, () => {
+			EditingSessionService.getInstance().showReview()
 		}),
 	)
 

@@ -38,6 +38,8 @@ const ClineCommands = {
 	CheckArgument: prefix + ".checkArgument",
 	AddCitations: prefix + ".addCitations",
 	GenerateReviewResponse: prefix + ".generateReviewResponse",
+	// Edit review commands
+	ReviewChanges: prefix + ".reviewChanges",
 }
 
 /**
