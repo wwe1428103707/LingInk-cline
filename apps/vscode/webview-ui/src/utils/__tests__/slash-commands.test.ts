@@ -17,6 +17,25 @@ function createMockMcpServer(overrides: Partial<McpServer> = {}): McpServer {
 }
 
 describe("slash-commands", () => {
+	describe("academic research commands", () => {
+		it("lists academic commands before base commands in the default section", () => {
+			const result = getMatchingSlashCommands("")
+			const defaultCommandNames = result.filter((cmd) => cmd.section === "default").map((cmd) => cmd.name)
+
+			expect(defaultCommandNames.slice(0, 3)).toEqual(["deep-research", "academic-paper", "academic-paper-reviewer"])
+			expect(defaultCommandNames.indexOf("deep-research")).toBeLessThan(defaultCommandNames.indexOf("newtask"))
+		})
+
+		it("validates bundled skill and ARS command names", () => {
+			expect(validateSlashCommand("deep-research")).toBe("full")
+			expect(validateSlashCommand("ars-full")).toBe("full")
+			expect(validateSlashCommand("academic-pipeline")).toBe(null)
+			expect(validateSlashCommand("ars-citation-check")).toBe("full")
+			expect(validateSlashCommand("nature-polishing")).toBe("full")
+			expect(validateSlashCommand("research-topic")).toBe(null)
+		})
+	})
+
 	describe("getMcpPromptCommands", () => {
 		it("should return empty array when no servers provided", () => {
 			const result = getMcpPromptCommands([])
@@ -208,14 +227,14 @@ describe("slash-commands", () => {
 			const text = "/mcp:server:prompt"
 			const match = text.match(slashCommandRegex)
 			expect(match).not.toBeNull()
-			expect(match![2]).toBe("/mcp:server:prompt")
+			expect(match?.[2]).toBe("/mcp:server:prompt")
 		})
 
 		it("should match MCP command in middle of text", () => {
 			const text = "Please run /mcp:server:prompt now"
 			const match = text.match(slashCommandRegex)
 			expect(match).not.toBeNull()
-			expect(match![2]).toBe("/mcp:server:prompt")
+			expect(match?.[2]).toBe("/mcp:server:prompt")
 		})
 
 		it("should not match MCP-like pattern in URL", () => {

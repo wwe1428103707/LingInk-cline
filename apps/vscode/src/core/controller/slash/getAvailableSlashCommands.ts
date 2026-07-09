@@ -9,8 +9,8 @@ import { Controller } from ".."
 export async function getAvailableSlashCommands(controller: Controller, _request: EmptyRequest): Promise<SlashCommandsResponse> {
 	const commands: SlashCommandInfo[] = []
 
-	// Add built-in commands
-	for (const cmd of [...BASE_SLASH_COMMANDS, ...ACADEMIC_SLASH_COMMANDS]) {
+	// Add built-in commands, with academic research shortcuts first in the default section.
+	for (const cmd of [...ACADEMIC_SLASH_COMMANDS, ...BASE_SLASH_COMMANDS]) {
 		commands.push(
 			SlashCommandInfo.create({
 				name: cmd.name,

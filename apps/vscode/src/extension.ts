@@ -60,15 +60,10 @@ import { AuthService, LogoutReason } from "./sdk/auth-service"
 import { checkAndPromptARSUpdate, checkAndPromptSkillInstall } from "./services/skill-installer"
 import { telemetryService } from "./services/telemetry"
 import { LG_TASK_URI_PATH, SharedUriHandler, TASK_URI_PATH } from "./services/uri/SharedUriHandler"
+import { EXPERIMENT_ASSISTANT_PROMPT, OFFICE_ACADEMIC_ASSISTANT_PROMPT } from "./shared/academicShortcutPrompts"
 import { configureNetworkProxySettingsProvider } from "./shared/net"
 import { ShowMessageType } from "./shared/proto/host/window"
 import { fileExistsAtPath } from "./utils/fs"
-
-const EXPERIMENT_ASSISTANT_PROMPT =
-	"/scientific-toolkit-skill 请作为实验助手协助我完成科研计算任务。优先询问任务目标、数据或代码位置、物理量/单位、输入输出格式、期望图表和验证方式；可覆盖 MATLAB/Python 仿真、信号处理、统计分析、机器学习、优化、论文配图与可复现实验流程。不要编造实验参数或结果，必要时先列出假设和需要我补充的信息。"
-
-const OFFICE_ACADEMIC_ASSISTANT_PROMPT =
-	"/office-academic-skill 请作为 Word/PPT 助手协助我制作或修改学术交付物。优先询问用途、受众、时长/页数、模板要求、源文件和输出格式；可覆盖文献阅读报告、组会 PPT、课程汇报、开题/中期/答辩 PPT、DOCX/PPTX 生成与质量检查。默认中文表达，保留英文题名、公式、变量名和参考文献信息，并为关键结论标注来源。"
 
 // This method is called when the VS Code extension is activated.
 // NOTE: This is VS Code specific - services that should be registered
