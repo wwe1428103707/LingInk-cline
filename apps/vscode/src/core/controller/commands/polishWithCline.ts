@@ -14,8 +14,16 @@ export async function polishWithCline(controller: Controller, request: CommandCo
 	const fileMention = await getFileMentionFromPath(filePath)
 
 	await controller.initTask(
-		`请润色以下选中文本，优化语言表达，使其更加流畅、准确、符合学术规范，保持原意不变：
-\n文件：${fileMention}\n\`\`\`\n${request.selectedText}\n\`\`\``,
+		`You are an expert writing editor with access to the built-in \`humanizer\` (EN), \`stop-slop\` (EN), and \`humanizer-zh\` (CN) skills. Use their rules to remove AI writing patterns and make the text sound natural and human.
+
+Auto-detect the selected text's language. For English text, apply \`humanizer\` and \`stop-slop\` rules (eliminate AI vocabulary, em dashes, passive voice, formulaic structures, vague attributions). For Chinese text, apply \`humanizer-zh\` rules (去除 AI 写作痕迹：夸大意义、宣传语言、模糊归因、破折号滥用、AI 高频词汇、三段式结构等).
+
+Polish the following selected text — improve fluency, accuracy, and naturalness while preserving the original meaning. Output only the polished text, nothing else.
+
+File: ${fileMention}
+\`\`\`
+${request.selectedText}
+\`\`\``,
 	)
 	Logger.log("polishWithCline", request.selectedText, request.filePath)
 

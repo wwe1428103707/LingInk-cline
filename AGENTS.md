@@ -1,21 +1,21 @@
 # Repository Guidelines
 
-This file is the AI assistant's reference for working with the LingInk-cline monorepo (Cline — AI coding assistant with VS Code extension + CLI + Hub). For SDK-specific development, see `sdk/AGENTS.md`; for detailed architecture, see `sdk/ARCHITECTURE.md`.
+> **Development Focus**: From this point forward, all development targets the **VS Code extension only**. The CLI app (`apps/cli/`) is on hold — do not modify CLI code, add CLI-specific features, or account for CLI behavior in new changes. SDK packages still serve the VS Code extension and should be improved as needed; just ignore the CLI consumer.
+
+This file is the AI assistant's reference for working with the LingInk-cline monorepo (Cline — VS Code AI coding assistant). For SDK-specific development, see `sdk/AGENTS.md`; for detailed architecture, see `sdk/ARCHITECTURE.md`.
 
 ## Project Overview
 
-**LingInk (Cline)** — AI coding assistant that operates via natural-language task descriptions ("tasks" or "projects"). Multilingual (en/zh), supports multiple LLM providers, runs in VS Code and standalone CLI. The monorepo contains the SDK, apps, plugins, evaluations, and documentation.
+**LingInk (Cline)** — AI coding assistant that operates via natural-language task descriptions ("tasks" or "projects"). Multilingual (en/zh), supports multiple LLM providers, runs as a **VS Code extension**. The monorepo contains the SDK, VS Code extension app, plugins, evaluations, and documentation.
 
 - **Repository**: `@cline/packages` (private monorepo)
 - **License**: Apache 2.0
-- **Stack**: TypeScript (strict), Bun 1.3.13, React (VSCode webview), OpenTUI (CLI)
+- **Stack**: TypeScript (strict), Bun 1.3.13, React (VSCode webview)
 
 ## Architecture & Data Flow
 
-### Layered SDK Design (bottom-up)
-
 ```
-@cline/shared  →  @cline/llms  →  @cline/agents  →  @cline/core  →  apps (CLI / VS Code / Hub)
+@cline/shared  →  @cline/llms  →  @cline/agents  →  @cline/core  →  apps (VS Code / Hub / CLI-on-hold)
 ```
 
 | Layer | Package | Responsibility |
@@ -24,8 +24,7 @@ This file is the AI assistant's reference for working with the LingInk-cline mon
 | 2 | `@cline/llms` | Provider settings/config, model catalogs, provider manifests, handler creation, middleware. Dual entry. |
 | 3 | `@cline/agents` | Stateless agent loop, tool orchestration, hook/extension runtime, event streaming. Pure — no session/storage/state. |
 | 4 | `@cline/core` | Stateful orchestration: session lifecycle, checkpointing, storage, config watching, default tools, plugin loading, telemetry, auth, cron. Exposes `@cline/core/hub`, `@cline/core/hub/daemon-entry`. |
-| 5 | Apps | `apps/cli` (commander + OpenTUI), `apps/vscode` (extension), `apps/cline-hub` (dashboard HTTP server). Each consumes `@cline/core`. |
-
+| 5 | Apps | `apps/vscode` (extension), `apps/cline-hub` (dashboard), `apps/cli` (on hold). Each consumes `@cline/core`. |
 ### Key Runtime Flows
 
 - **Session lifecycle**: `ClineCore.create()` → `createRuntimeHost()` → `ClineCore.start(input)` → `host.startSession()`. Sessions run via `AgentRuntime` loop. Events via `subscribe()` pattern.
@@ -48,13 +47,13 @@ This file is the AI assistant's reference for working with the LingInk-cline mon
 | Path | Purpose |
 |---|---|
 | `sdk/packages/` | SDK packages: `shared/`, `llms/`, `agents/`, `core/`, `sdk/` |
-| `apps/cli/` | CLI app (commander + OpenTUI) |
+| `apps/cli/` | CLI app — **on hold**, do not modify |
 | `apps/vscode/` | VS Code extension (React webview UI) |
 | `apps/cline-hub/` | Cline Hub dashboard server |
 | `plugins/` | Plugins (e.g. academic-research-skills) |
 | `evals/` | Benchmarks, smoke tests, E2E evaluations |
 | `docs/` | Mintlify MDX documentation site (~80+ files) |
-| `.github/workflows/` | CI/CD pipelines (sdk-test, sdk-publish, cli-publish, ext-vscode-*) |
+| `.github/workflows/` | CI/CD pipelines (sdk-test, sdk-publish, ext-vscode-*) — CLI publish pipelines are on hold |
 | `.clinerules/` | Repository rules, workflows, AI guidance |
 | `.claude/` / `.cline/` | AI agent skill configs |
 
@@ -69,13 +68,13 @@ bun install
 # Build (SDK packages only)
 bun run build:sdk
 
-# Full build (clean → install → build SDK → build CLI)
-bun run build
+# Full build — builds SDK only (CLI build is on hold)
+bun run build:sdk
 
 # Type checking (all workspaces parallel)
 bun run types
 
-# Test (parallel across SDK packages + CLI + hub)
+# Test (parallel across SDK packages + hub)
 bun run test
 
 # Unit tests (5 packages in parallel bash)
@@ -98,10 +97,7 @@ bun run fix
 # Model definitions generation
 bun run build:models
 
-# CLI dev mode
-bun run cli
-
-# Release (SDK packages + CLI + VS Code)
+# Release (SDK packages + VS Code extension)
 bun run release
 ```
 
@@ -146,7 +142,7 @@ Run: `bun run format` / `bun run lint` / `bun run fix`
 
 ### Async Patterns
 
-- **CLI entry**: top-level async IIFE (`void (async () => { … })()`) — never top-level `await`
+- **CLI entry** (legacy): top-level async IIFE (`void (async () => { … })()`) — never top-level `await`
 - **Fatal error handlers**: `process.on("uncaughtException")` / `"unhandledRejection"` route through cleanup + `process.exit(1)`
 - **Signal handling**: SIGINT/SIGTERM forward to `abortActiveRuntime()` + exit
 - **Avoid `asyncio.run()`** equivalent — Bun/Node support top-level await directly
@@ -164,12 +160,12 @@ Run: `bun run format` / `bun run lint` / `bun run fix`
 ### Error Handling
 
 - Typed errors where possible; throw `Error` subclasses
-- Wrapped fatal errors at process level (CLI), never swallowed
+- Wrapped fatal errors at process level, never swallowed
 - Abort-safe: `isAbortInProgress()` check before marking rejection as handled
 
 ### Testing Patterns
 
-- **Vitest** — primary framework (unit + e2e across SDK + CLI)
+- **Vitest** — primary framework (unit + e2e)
 - **Mocha** + `@vscode/test-cli` — VS Code extension host tests
 - **Bun test** (`bun:test`) — Node-side VS Code unit tests
 - **Playwright** — VS Code extension E2E
@@ -193,17 +189,14 @@ Test layers:
 - PostHog for product analytics
 
 ### Release Process
-
-- SDK packages: `bun run release` → `sdk/scripts/release.ts`
-- Git tags: `sdk/shared/vX.Y.Z`, `sdk/llms/vX.Y.Z`, `cli-vX.Y.Z`, `vX.Y.Z` (VS Code)
-- VSIX for marketplace, npm for CLI, SDK packages published individually
+- **SDK packages**: `bun run release` → `sdk/scripts/release.ts`
+- Git tags: `sdk/shared/vX.Y.Z`, `sdk/llms/vX.Y.Z`, `vX.Y.Z` (VS Code) — CLI tags no longer used
+- VSIX for marketplace, SDK packages published individually. CLI npm publishing is on hold.
 - Nightly builds via `publish-nightly.mjs`
 
 ## Important Files
-
 | File | Purpose |
 |---|---|
-| `apps/cli/src/index.ts` | CLI shebang entrypoint → `main.ts` (runCli) |
 | `apps/vscode/src/extension.ts` | VS Code extension activation |
 | `apps/cline-hub/src/server.ts` | Cline Hub HTTP server |
 | `sdk/packages/core/src/index.ts` | `ClineCore` main class + re-exports |
@@ -227,8 +220,6 @@ Test layers:
 
 ## Testing & QA
 
-### Running Tests
-
 ```sh
 # All tests
 bun run test
@@ -241,10 +232,6 @@ bun run test:e2e
 
 # Single package
 bun -F @cline/core test:unit
-bun -F @cline/cli test:unit
-
-# Interactive CLI E2E
-bun run test:e2e:interactive
 
 # Full CI gate (lint → format → build → typecheck → check-publish)
 bun run check
@@ -256,20 +243,19 @@ bun run check
 - VS Code mocha tests: `c8` (lcov + html)
 - VS Code webview-ui: `vitest --coverage` (v8 provider)
 - SDK packages: no coverage target configured
-
 ### Pre-commit Checks
 
 - Gitleaks secret scanning (`gitleaks git --pre-commit --redact --staged --verbose`)
-- `lint-staged`: `bun run types` + `biome check` on staged files in `sdk/` + `apps/{cli,cline-hub,examples}/`
+- `lint-staged`: `bun run types` + `biome check` on staged files in `sdk/` + `apps/{vscode,cline-hub,examples}/`
 
 ### CI Pipelines
 
 In `.github/workflows/`:
 - `sdk-test.yml` / `sdk-publish.yml` — SDK CI + npm publish
-- `cli-publish.yml` — CLI npm publish
 - `ext-vscode-test.yml` / `ext-vscode-test-e2e.yml` — VS Code extension CI
 - `ext-vscode-publish-stable.yml` / `ext-vscode-publish-legacy.yml` / `ext-vscode-publish-nightly.yml` — VS Code marketplace
 - `repo-label-issues.yml` — issue labeling
+CLI publish pipelines (`cli-publish.yml`) are on hold.
 
 ### VS Code Dev Extensions (Required)
 

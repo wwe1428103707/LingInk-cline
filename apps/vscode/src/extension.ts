@@ -351,6 +351,15 @@ export async function activate(context: vscode.ExtensionContext) {
 					}
 					actions.push(improveAction)
 
+					// Polish with LingInk (Always available)
+					const polishAction = new vscode.CodeAction("Polish Article (CN/EN)", vscode.CodeActionKind.RefactorRewrite)
+					polishAction.command = {
+						command: commands.PolishText,
+						title: "Polish Article (CN/EN)",
+						arguments: [expandedRange],
+					}
+					actions.push(polishAction)
+
 					// Fix with LingInk (Only if diagnostics exist)
 					if (context.diagnostics.length > 0) {
 						const fixAction = new vscode.CodeAction("Fix with LingInk", vscode.CodeActionKind.QuickFix)

@@ -681,6 +681,7 @@ export class Controller {
 					directories: [
 						...resolveSkillsConfigSearchPaths(workspaceRoot),
 						path.join(HostProvider.get().extensionFsPath, "bundled-skills", "lingink-ars"),
+						path.join(HostProvider.get().extensionFsPath, "bundled-skills", "polish-skills"),
 					],
 					includePluginSkills: true,
 					cwd: workspaceRoot,

@@ -36,7 +36,7 @@
 	"command.cline.jupyterGenerateCell": "使用 LingInk 灵砚生成研究笔记单元格",
 	"command.cline.jupyterExplainCell": "使用 LingInk 灵砚解释笔记单元格",
 	"command.cline.jupyterImproveCell": "使用 LingInk 灵砚改进笔记单元格",
-	"command.cline.polishText": "润色选中文本",
+	"command.cline.polishText": "文章润色 (中/英)",
 	"command.cline.checkArgument": "检查论证逻辑",
 	"command.cline.addCitations": "补充引用来源",
 	"command.cline.generateReviewResponse": "生成审稿回应",

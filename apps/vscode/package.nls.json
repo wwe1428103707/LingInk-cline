@@ -36,7 +36,7 @@
 	"command.cline.jupyterGenerateCell": "Generate Research Notebook Cell with LingInk",
 	"command.cline.jupyterExplainCell": "Explain Notebook Cell with LingInk",
 	"command.cline.jupyterImproveCell": "Improve Notebook Cell with LingInk",
-	"command.cline.polishText": "Polish Selected Text",
+	"command.cline.polishText": "Polish Article (CN/EN)",
 	"command.cline.checkArgument": "Check Argument Logic",
 	"command.cline.addCitations": "Suggest Citations",
 	"command.cline.generateReviewResponse": "Generate Review Response",
