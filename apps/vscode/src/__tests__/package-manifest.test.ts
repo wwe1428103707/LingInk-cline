@@ -3,9 +3,31 @@ import "should"
 import path from "node:path"
 
 const manifestPath = path.resolve(import.meta.dir, "..", "..", "package.json")
+const nlsPath = path.resolve(import.meta.dir, "..", "..", "package.nls.json")
+const zhNlsPath = path.resolve(import.meta.dir, "..", "..", "package.nls.zh-cn.json")
+const extensionPath = path.resolve(import.meta.dir, "..", "extension.ts")
+const registryPath = path.resolve(import.meta.dir, "..", "registry.ts")
 
-async function readManifest(): Promise<any> {
+interface PackageManifest {
+	contributes: {
+		commands: Array<{ command: string }>
+		views: Record<string, unknown[]>
+		viewsContainers: {
+			activitybar: unknown[]
+			secondarySidebar: unknown[]
+		}
+	}
+	engines: {
+		vscode: string
+	}
+}
+
+async function readManifest(): Promise<PackageManifest> {
 	return JSON.parse(await Bun.file(manifestPath).text())
+}
+
+async function readNls(filePath: string): Promise<Record<string, string>> {
+	return JSON.parse(await Bun.file(filePath).text())
 }
 
 describe("VS Code package manifest", () => {
@@ -55,5 +77,26 @@ describe("VS Code package manifest", () => {
 				icon: "assets/icons/icon.svg",
 			},
 		])
+	})
+
+	it("keeps shortcut command contributions synchronized with registry and activation handlers", async () => {
+		const manifest = await readManifest()
+		const enNls = await readNls(nlsPath)
+		const zhNls = await readNls(zhNlsPath)
+		const registrySource = await Bun.file(registryPath).text()
+		const extensionSource = await Bun.file(extensionPath).text()
+		const commandIds = manifest.contributes.commands.map((command: { command: string }) => command.command)
+
+		for (const shortcut of [
+			{ id: "cline.polishText", registryKey: "PolishText" },
+			{ id: "cline.experimentAssistant", registryKey: "ExperimentAssistant" },
+			{ id: "cline.officeAcademicAssistant", registryKey: "OfficeAcademicAssistant" },
+		]) {
+			commandIds.should.containEql(shortcut.id)
+			enNls.should.have.property(`command.${shortcut.id}`)
+			zhNls.should.have.property(`command.${shortcut.id}`)
+			registrySource.should.containEql(`${shortcut.registryKey}: prefix + ".${shortcut.id.replace("cline.", "")}"`)
+			extensionSource.should.containEql(`registerCommand(commands.${shortcut.registryKey}`)
+		}
 	})
 })

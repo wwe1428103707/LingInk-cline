@@ -17,7 +17,9 @@
 
 	"activitybar.title": "LingInk 灵砚",
 
-	"command.cline.installAcademicSkills": "Install Academic Research Skills (ARS)",
+	"command.cline.installAcademicSkills": "Install Built-in Academic Skills",
+	"command.cline.experimentAssistant": "Experiment Assistant",
+	"command.cline.officeAcademicAssistant": "Word/PPT Assistant",
 	"command.cline.plusButtonClicked": "New Writing Task",
 	"command.cline.mcpButtonClicked": "MCP Servers",
 	"command.cline.marketplaceButtonClicked": "Customize",

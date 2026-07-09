@@ -2,7 +2,7 @@
 	"name": "claude-dev",
 	"displayName": "%displayName%",
 	"description": "%description%",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"clineBaseVersion": "4.0.0",
 	"icon": "assets/icons/icon.png",
 	"engines": {
@@ -135,6 +135,18 @@
 				"command": "cline.installAcademicSkills",
 				"title": "%command.cline.installAcademicSkills%",
 				"icon": "$(book)"
+			},
+			{
+				"command": "cline.experimentAssistant",
+				"title": "%command.cline.experimentAssistant%",
+				"category": "LingInk",
+				"icon": "$(beaker)"
+			},
+			{
+				"command": "cline.officeAcademicAssistant",
+				"title": "%command.cline.officeAcademicAssistant%",
+				"category": "LingInk",
+				"icon": "$(preview)"
 			},
 			{
 				"command": "cline.plusButtonClicked",

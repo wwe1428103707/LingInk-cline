@@ -1,9 +1,11 @@
 import {
 	BookOpenTextIcon,
 	FileTextIcon,
+	FlaskConicalIcon,
 	HighlighterIcon,
 	type LucideIcon,
 	MessageSquareReplyIcon,
+	PresentationIcon,
 	SparklesIcon,
 } from "lucide-react"
 import React from "react"
@@ -19,6 +21,8 @@ const iconMap: Record<string, LucideIcon> = {
 	LiteratureIcon: BookOpenTextIcon,
 	PolishIcon: HighlighterIcon,
 	ReviewIcon: MessageSquareReplyIcon,
+	ExperimentIcon: FlaskConicalIcon,
+	PresentationIcon: PresentationIcon,
 }
 
 const renderIcon = (iconName?: string) => {

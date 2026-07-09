@@ -259,74 +259,74 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 							))}
 						</div>
 					</div>
-					</div>
+				</div>
 
-					<div>
-						<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
-							{t("settings.features.section.network", "Network")}
-						</div>
-						<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-3">
-							<div className="flex flex-col gap-2">
-								<label className="text-xs text-foreground/90" htmlFor="network-proxy-mode">
-									{t("settings.networkProxy.mode", "Proxy mode")}
-								</label>
-								<select
-									className="w-full bg-(--vscode-dropdown-background) text-(--vscode-dropdown-foreground) border border-(--vscode-dropdown-border) rounded-sm px-2 py-1 text-xs"
-									id="network-proxy-mode"
-									onChange={(event) =>
-										updateSetting("networkProxyMode", event.currentTarget.value as "vscode" | "custom" | "off")
-									}
-									value={networkProxyMode ?? "vscode"}>
-									<option value="vscode">{t("settings.networkProxy.mode.vscode", "Use VS Code proxy settings")}</option>
-									<option value="custom">{t("settings.networkProxy.mode.custom", "Use LingInk proxy")}</option>
-									<option value="off">{t("settings.networkProxy.mode.off", "Disable LingInk proxy")}</option>
-								</select>
-								<p className="text-xs text-description">
-									{t(
-										"settings.networkProxy.desc",
-										"Applies to LingInk network requests such as Academic Research Skills update checks and downloads.",
-									)}
-								</p>
-							</div>
-							{networkProxyMode === "custom" && (
-								<div className="flex flex-col gap-2">
-									<label className="text-xs text-foreground/90" htmlFor="network-proxy-url">
-										{t("settings.networkProxy.url", "Proxy URL")}
-									</label>
-									<VSCodeTextField
-										className="w-full"
-										id="network-proxy-url"
-										onBlur={(event) => {
-											const input = event.currentTarget as HTMLInputElement
-											updateSetting("networkProxyUrl", input.value)
-										}}
-										onInput={(event) => {
-											const input = event.currentTarget as HTMLInputElement
-											setProxyUrlDraft(input.value)
-										}}
-										onKeyDown={(event) => {
-											const input = event.currentTarget as HTMLInputElement
-											if (event.key === "Enter") {
-												updateSetting("networkProxyUrl", input.value)
-											}
-										}}
-										placeholder="http://127.0.0.1:7890"
-										value={proxyUrlDraft}
-									/>
-								</div>
-							)}
-						</div>
-					</div>
-
-				{/* LingInk ARS Skills */}
 				<div>
 					<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
-						灵砚 Academic Research Skills
+						{t("settings.features.section.network", "Network")}
 					</div>
+					<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-3">
+						<div className="flex flex-col gap-2">
+							<label className="text-xs text-foreground/90" htmlFor="network-proxy-mode">
+								{t("settings.networkProxy.mode", "Proxy mode")}
+							</label>
+							<select
+								className="w-full bg-(--vscode-dropdown-background) text-(--vscode-dropdown-foreground) border border-(--vscode-dropdown-border) rounded-sm px-2 py-1 text-xs"
+								id="network-proxy-mode"
+								onChange={(event) =>
+									updateSetting("networkProxyMode", event.currentTarget.value as "vscode" | "custom" | "off")
+								}
+								value={networkProxyMode ?? "vscode"}>
+								<option value="vscode">
+									{t("settings.networkProxy.mode.vscode", "Use VS Code proxy settings")}
+								</option>
+								<option value="custom">{t("settings.networkProxy.mode.custom", "Use LingInk proxy")}</option>
+								<option value="off">{t("settings.networkProxy.mode.off", "Disable LingInk proxy")}</option>
+							</select>
+							<p className="text-xs text-description">
+								{t(
+									"settings.networkProxy.desc",
+									"Applies to LingInk network requests such as Academic Research Skills update checks and downloads.",
+								)}
+							</p>
+						</div>
+						{networkProxyMode === "custom" && (
+							<div className="flex flex-col gap-2">
+								<label className="text-xs text-foreground/90" htmlFor="network-proxy-url">
+									{t("settings.networkProxy.url", "Proxy URL")}
+								</label>
+								<VSCodeTextField
+									className="w-full"
+									id="network-proxy-url"
+									onBlur={(event) => {
+										const input = event.currentTarget as HTMLInputElement
+										updateSetting("networkProxyUrl", input.value)
+									}}
+									onInput={(event) => {
+										const input = event.currentTarget as HTMLInputElement
+										setProxyUrlDraft(input.value)
+									}}
+									onKeyDown={(event) => {
+										const input = event.currentTarget as HTMLInputElement
+										if (event.key === "Enter") {
+											updateSetting("networkProxyUrl", input.value)
+										}
+									}}
+									placeholder="http://127.0.0.1:7890"
+									value={proxyUrlDraft}
+								/>
+							</div>
+						)}
+					</div>
+				</div>
+
+				{/* LingInk bundled academic skills */}
+				<div>
+					<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">灵砚内置学术技能</div>
 					<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-2">
 						<p className="text-xs text-muted-foreground">
-							安装 deep-research、academic-paper、academic-paper-reviewer、academic-pipeline 四个学术研究
-							Skill，支持文献综述、论文写作、同行评审等完整科研流程。
+							安装 bundled-skills 目录下的全部内置技能，包括 ARS 学术研究技能、润色技能、实验助手和 Word/PPT
+							助手，支持文献综述、论文写作、MATLAB/Python 仿真分析、论文配图、阅读报告和组会/开题/中期/答辩 PPT。
 						</p>
 						{skillsInstalled === true ? (
 							<div className="flex items-center gap-2">
@@ -349,11 +349,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 									setInstallingSkills(true)
 									PLATFORM_CONFIG.postMessage({ type: "installSkills" })
 								}}>
-								{installingSkills
-									? "安装中..."
-									: skillsInstalled === null
-										? "检查中..."
-										: "📥 安装学术研究技能包"}
+								{installingSkills ? "安装中..." : skillsInstalled === null ? "检查中..." : "📥 安装内置学术技能"}
 							</VSCodeButton>
 						)}
 						{installSuccess && <p className="text-xs text-green-500 mt-1">✓ 安装成功！重启 LingInk 会话后即可使用</p>}

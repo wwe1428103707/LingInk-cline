@@ -19,6 +19,7 @@ import path from "node:path"
 import type { ExtensionContext } from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
 import { vscodeHostBridgeClient } from "@/hosts/vscode/hostbridge/client/host-grpc-client"
+import { EditingSessionService } from "@/integrations/editor/editingSessionService"
 import { createStorageContext } from "@/shared/storage/storage-context"
 import { readTextFromClipboard, writeTextToClipboard } from "@/utils/env"
 import { initialize, tearDown } from "./common"
@@ -33,6 +34,7 @@ import { polishWithCline } from "./core/controller/commands/polishWithCline"
 import { sendAddToInputEvent } from "./core/controller/ui/subscribeToAddToInput"
 import { sendShowWebviewEvent } from "./core/controller/ui/subscribeToShowWebview"
 import { HookDiscoveryCache } from "./core/hooks/HookDiscoveryCache"
+import { StateManager } from "./core/storage/StateManager"
 import {
 	cleanupMcpMarketplaceCatalogFromGlobalState,
 	cleanupOldApiKey,
@@ -55,14 +57,18 @@ import { VscodeWebviewProvider } from "./hosts/vscode/VscodeWebviewProvider"
 import { exportVSCodeStorageToSharedFiles } from "./hosts/vscode/vscode-to-file-migration"
 import { ExtensionRegistryInfo } from "./registry"
 import { AuthService, LogoutReason } from "./sdk/auth-service"
+import { checkAndPromptARSUpdate, checkAndPromptSkillInstall } from "./services/skill-installer"
 import { telemetryService } from "./services/telemetry"
 import { LG_TASK_URI_PATH, SharedUriHandler, TASK_URI_PATH } from "./services/uri/SharedUriHandler"
+import { configureNetworkProxySettingsProvider } from "./shared/net"
 import { ShowMessageType } from "./shared/proto/host/window"
 import { fileExistsAtPath } from "./utils/fs"
-import { checkAndPromptSkillInstall, checkAndPromptARSUpdate } from "./services/skill-installer"
-import { StateManager } from "./core/storage/StateManager"
-import { configureNetworkProxySettingsProvider } from "./shared/net"
-import { EditingSessionService } from "@/integrations/editor/editingSessionService"
+
+const EXPERIMENT_ASSISTANT_PROMPT =
+	"/scientific-toolkit-skill 请作为实验助手协助我完成科研计算任务。优先询问任务目标、数据或代码位置、物理量/单位、输入输出格式、期望图表和验证方式；可覆盖 MATLAB/Python 仿真、信号处理、统计分析、机器学习、优化、论文配图与可复现实验流程。不要编造实验参数或结果，必要时先列出假设和需要我补充的信息。"
+
+const OFFICE_ACADEMIC_ASSISTANT_PROMPT =
+	"/office-academic-skill 请作为 Word/PPT 助手协助我制作或修改学术交付物。优先询问用途、受众、时长/页数、模板要求、源文件和输出格式；可覆盖文献阅读报告、组会 PPT、课程汇报、开题/中期/答辩 PPT、DOCX/PPTX 生成与质量检查。默认中文表达，保留英文题名、公式、变量名和参考文献信息，并为关键结论标注来源。"
 
 // This method is called when the VS Code extension is activated.
 // NOTE: This is VS Code specific - services that should be registered
@@ -97,15 +103,11 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	})
 
-	// 4.5 Auto-detect ARS skills and prompt user to install if missing
-	checkAndPromptSkillInstall().catch((err) =>
-		Logger.warn("[Activate] Skill installer check failed:", err),
-	)
+	// 4.5 Auto-detect bundled academic skills and prompt user to install if missing
+	checkAndPromptSkillInstall().catch((err) => Logger.warn("[Activate] Skill installer check failed:", err))
 	// 4.6 Auto-check ARS skills update (non-blocking, with delay)
 	setTimeout(() => {
-		checkAndPromptARSUpdate().catch((err) =>
-			Logger.warn("[Activate] ARS update check failed:", err),
-		)
+		checkAndPromptARSUpdate().catch((err) => Logger.warn("[Activate] ARS update check failed:", err))
 	}, 10_000)
 
 	// 5. Register services and commands specific to VS Code
@@ -164,7 +166,17 @@ export async function activate(context: vscode.ExtensionContext) {
 	)
 	context.subscriptions.push(vscode.commands.registerCommand(commands.SettingsButton, () => sendSettingsButtonClickedEvent()))
 	context.subscriptions.push(vscode.commands.registerCommand(commands.HistoryButton, () => sendHistoryButtonClickedEvent()))
-	context.subscriptions.push(vscode.commands.registerCommand(commands.InstallAcademicSkills, () => checkAndPromptSkillInstall()))
+	context.subscriptions.push(
+		vscode.commands.registerCommand(commands.InstallAcademicSkills, () => checkAndPromptSkillInstall()),
+	)
+	context.subscriptions.push(
+		vscode.commands.registerCommand(commands.ExperimentAssistant, () => startAssistantTask(EXPERIMENT_ASSISTANT_PROMPT)),
+	)
+	context.subscriptions.push(
+		vscode.commands.registerCommand(commands.OfficeAcademicAssistant, () =>
+			startAssistantTask(OFFICE_ACADEMIC_ASSISTANT_PROMPT),
+		),
+	)
 	context.subscriptions.push(vscode.commands.registerCommand(commands.AccountButton, () => sendAccountButtonClickedEvent()))
 	context.subscriptions.push(vscode.commands.registerCommand(commands.WorktreesButton, () => sendWorktreesButtonClickedEvent()))
 
@@ -785,6 +797,11 @@ export async function deactivate() {
 		// VSCode-specific services
 		disposeVscodeCommentReviewController()
 	}
+}
+
+async function startAssistantTask(prompt: string): Promise<void> {
+	const activeWebview = await showWebview(false)
+	await activeWebview.controller.initTask(prompt)
 }
 
 // TODO: Find a solution for automatically removing DEV related content from production builds.

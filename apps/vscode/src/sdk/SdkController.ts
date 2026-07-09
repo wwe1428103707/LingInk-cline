@@ -40,6 +40,7 @@ import type { ITerminalManager } from "@/integrations/terminal/types"
 import { ExtensionRegistryInfo } from "@/registry"
 import { OcaAuthService } from "@/services/auth/oca/OcaAuthService"
 import { UrlContentFetcher } from "@/services/browser/UrlContentFetcher"
+import { getBundledRuntimeSkillDirectories } from "@/services/bundled-skills"
 import { ClineError } from "@/services/error/ClineError"
 import { McpHub } from "@/services/mcp/McpHub"
 import { telemetryService } from "@/services/telemetry"
@@ -675,14 +676,12 @@ export class Controller {
 		}
 		this.userInstructionServiceRoot = workspaceRoot
 		this.userInstructionService = (async () => {
+			const extensionFsPath = HostProvider.get().extensionFsPath
+			const bundledSkillDirectories = await getBundledRuntimeSkillDirectories(extensionFsPath)
 			const service = createUserInstructionConfigService({
 				workflows: { workspacePath: workspaceRoot },
 				skills: {
-					directories: [
-						...resolveSkillsConfigSearchPaths(workspaceRoot),
-						path.join(HostProvider.get().extensionFsPath, "bundled-skills", "lingink-ars"),
-						path.join(HostProvider.get().extensionFsPath, "bundled-skills", "polish-skills"),
-					],
+					directories: [...resolveSkillsConfigSearchPaths(workspaceRoot), ...bundledSkillDirectories],
 					includePluginSkills: true,
 					cwd: workspaceRoot,
 				},

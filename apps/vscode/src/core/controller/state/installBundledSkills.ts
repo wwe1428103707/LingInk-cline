@@ -8,7 +8,7 @@ import { Logger } from "@/shared/services/Logger"
 import { Controller } from ".."
 
 /**
- * Installs bundled Academic Research Skills into the current workspace.
+ * Installs bundled academic skills into the current workspace.
  * Called from the Settings page in the webview.
  */
 export async function installBundledSkills(_controller: Controller, _request: EmptyRequest): Promise<Empty> {
@@ -26,7 +26,7 @@ export async function installBundledSkills(_controller: Controller, _request: Em
 			HostProvider.window
 				.showMessage({
 					type: ShowMessageType.INFORMATION,
-					message: "学术研究技能包已安装。如需重新安装，请先删除工作区中的 .clinerules/skills/ 目录。",
+					message: "内置学术技能已安装。如需重新安装，请先删除工作区中的 .clinerules/skills/ 目录。",
 					options: { items: [] },
 				})
 				.catch(() => {})
@@ -54,7 +54,7 @@ export async function installBundledSkills(_controller: Controller, _request: Em
 		HostProvider.window
 			.showMessage({
 				type: ShowMessageType.INFORMATION,
-				message: `✅ 学术研究技能包已安装到工作区！共 ${fileCount} 个文件。重启 LingInk 会话后即可使用。`,
+				message: `✅ 内置学术技能已安装到工作区！共 ${fileCount} 个文件。重启 LingInk 会话后即可使用。`,
 				options: { items: [] },
 			})
 			.catch(() => {})
@@ -67,7 +67,7 @@ export async function installBundledSkills(_controller: Controller, _request: Em
 		HostProvider.window
 			.showMessage({
 				type: ShowMessageType.ERROR,
-				message: `❌ 安装学术研究技能包失败: ${msg}`,
+				message: `❌ 安装内置学术技能失败: ${msg}`,
 				options: { items: [] },
 			})
 			.catch(() => {})

@@ -1,0 +1,4 @@
+interface:
+  display_name: "LingInk VS Code Shortcuts"
+  short_description: "Add LingInk VS Code commands and quick-win shortcuts safely."
+  default_prompt: "Add or debug a LingInk VS Code shortcut feature."

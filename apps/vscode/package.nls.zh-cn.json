@@ -17,7 +17,9 @@
 
 	"activitybar.title": "LingInk 灵砚",
 
-	"command.cline.installAcademicSkills": "安装学术研究技能 (ARS)",
+	"command.cline.installAcademicSkills": "安装内置学术技能",
+	"command.cline.experimentAssistant": "实验助手",
+	"command.cline.officeAcademicAssistant": "Word/PPT 助手",
 	"command.cline.plusButtonClicked": "新建写作任务",
 	"command.cline.mcpButtonClicked": "MCP 服务器",
 	"command.cline.marketplaceButtonClicked": "自定义",

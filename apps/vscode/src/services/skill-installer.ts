@@ -5,16 +5,12 @@ import * as vscode from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
 import { fetch } from "@/shared/net"
 import { Logger } from "@/shared/services/Logger"
+import { BUNDLED_SKILLS_DIR, getExpectedInstalledSkillFilePaths, getInstallableBundledSkillBundles } from "./bundled-skills"
 
 /**
  * Name of the marker file placed in the workspace skills dir after installation.
  */
 const INSTALL_MARKER = ".lingink-ars-installed"
-
-/**
- * Name of the bundled skills directory inside the extension.
- */
-const BUNDLED_SKILLS_DIR = "bundled-skills"
 
 /**
  * Relative path of the skills root within the extension.
@@ -34,9 +30,9 @@ const GITHUB_API_LATEST_RELEASE = `https://api.github.com/repos/${ARS_GITHUB_REP
 const GITHUB_RELEASES_URL = `https://github.com/${ARS_GITHUB_REPO}/releases`
 
 /**
- * Message shown when ARS skills are not installed.
+ * Message shown when bundled academic skills are not installed.
  */
-const INSTALL_PROMPT_MSG = "灵砚学术研究技能包 (Academic Research Skills) 未在当前工作区安装。是否立即安装？"
+const INSTALL_PROMPT_MSG = "灵砚内置学术技能包未在当前工作区完整安装。是否立即安装？"
 
 export interface UpdateCheckResult {
 	hasUpdate: boolean
@@ -152,25 +148,52 @@ function compareVersions(a: string, b: string): number {
 }
 
 /**
- * Check whether ARS skills are already installed in the given workspace root.
+ * Check whether bundled academic skills are already installed in the given workspace root.
  */
 export async function areSkillsInstalled(workspaceRoot: string): Promise<boolean> {
 	// 1. Check for the marker file
 	const markerPath = path.join(workspaceRoot, ".clinerules", "skills", INSTALL_MARKER)
-	try {
-		await fs.access(markerPath)
-		return true
-	} catch {
-		// marker not found, continue checking
+	const hasMarker = await fs
+		.access(markerPath)
+		.then(() => true)
+		.catch(() => false)
+
+	const extensionFsPath = HostProvider.get().extensionFsPath
+	const requiredSkillPaths = await getExpectedInstalledSkillFilePaths(extensionFsPath, workspaceRoot)
+	if (requiredSkillPaths.length === 0) {
+		return hasMarker
 	}
 
-	// 2. Check if at least one ARS skill SKILL.md exists
+	const allRequiredSkillsExist = (
+		await Promise.all(
+			requiredSkillPaths.map((skillPath) =>
+				fs
+					.access(skillPath)
+					.then(() => true)
+					.catch(() => false),
+			),
+		)
+	).every(Boolean)
+
+	if (hasMarker && allRequiredSkillsExist) {
+		return true
+	}
+
+	if (allRequiredSkillsExist) {
+		await writeInstallMarker(workspaceRoot)
+		return true
+	}
+
+	// 2. Check if at least one legacy ARS skill SKILL.md exists
 	const drPath = path.join(workspaceRoot, ".clinerules", "skills", "deep-research", "SKILL.md")
 	try {
 		await fs.access(drPath)
-		// Found a skill — write the marker and return true
-		await writeInstallMarker(workspaceRoot)
-		return true
+		if (allRequiredSkillsExist) {
+			// Found a complete legacy install — write the marker and return true
+			await writeInstallMarker(workspaceRoot)
+			return true
+		}
+		return false
 	} catch {
 		return false
 	}
@@ -187,7 +210,7 @@ async function writeInstallMarker(workspaceRoot: string): Promise<void> {
 			JSON.stringify(
 				{
 					installedAt: new Date().toISOString(),
-					source: "lingink-ars",
+					source: "bundled-skills",
 					version: getBundledVersion(),
 				},
 				null,
@@ -201,34 +224,34 @@ async function writeInstallMarker(workspaceRoot: string): Promise<void> {
 }
 
 /**
- * Install bundled ARS skills into the current workspace.
+ * Install all bundled academic skills into the current workspace.
  * Copies from the extension's bundled directory to the workspace .clinerules/skills/.
  */
 export async function installBundledSkills(workspaceRoot: string): Promise<string> {
 	const extensionFsPath = HostProvider.get().extensionFsPath
-	const srcDir = path.join(extensionFsPath, ARS_SKILLS_RELATIVE)
-
-	// Verify source exists
-	try {
-		await fs.access(srcDir)
-	} catch {
-		throw new Error(`Bundled ARS skills not found at: ${srcDir}`)
-	}
+	const bundles = await getInstallableBundledSkillBundles(extensionFsPath)
 
 	const dstDir = path.join(workspaceRoot, ".clinerules", "skills")
 
 	// Create destination
 	await fs.mkdir(dstDir, { recursive: true })
 
-	// Copy bundled skills recursively
-	const result = await copyRecursive(srcDir, dstDir, ["plugin.js", "plugin.ts", "skills"])
+	let copied = 0
+	let skipped = 0
+	for (const bundle of bundles) {
+		const targetDir = bundle.installMode === "copyDirectory" ? path.join(dstDir, bundle.directoryName) : dstDir
+		await fs.mkdir(targetDir, { recursive: true })
+		const result = await copyRecursive(bundle.sourcePath, targetDir, bundle.skipNames ?? [])
+		copied += result.copied
+		skipped += result.skipped
+	}
 
 	// Write marker
 	await writeInstallMarker(workspaceRoot)
 
-	Logger.log(`[SkillInstaller] Installed ARS skills to ${dstDir} (${result.copied} copied, ${result.skipped} skipped)`)
+	Logger.log(`[SkillInstaller] Installed bundled skills to ${dstDir} (${copied} copied, ${skipped} skipped)`)
 
-	if (result.copied === 0) {
+	if (copied === 0) {
 		throw new Error("安装过程中没有复制任何文件，请检查扩展包内容")
 	}
 
@@ -261,7 +284,6 @@ export async function downloadAndInstallUpdate(workspaceRoot: string): Promise<s
 	// Extract to a temp directory using tar + gzip (Node.js built-in zlib)
 	const { execSync } = await import("node:child_process")
 	const tmpDir = path.join(workspaceRoot, ".clinerules", ".ars-update-tmp")
-	const extractDir = path.join(tmpDir, tag.replace(/^v/, ""))
 
 	try {
 		// Clean any previous temp
@@ -290,12 +312,10 @@ export async function downloadAndInstallUpdate(workspaceRoot: string): Promise<s
 			sourceDir = extractedPath
 		}
 
-		// Remove old installed skills
 		const dstDir = path.join(workspaceRoot, ".clinerules", "skills")
-		await fs.rm(dstDir, { recursive: true, force: true })
 		await fs.mkdir(dstDir, { recursive: true })
 
-		// Copy new version
+		// Copy the updated ARS files without removing other bundled skills.
 		const result = await copyRecursive(sourceDir, dstDir, ["node_modules", ".git", ".github"])
 
 		// Write marker with updated version
@@ -396,16 +416,16 @@ export async function checkAndPromptSkillInstall(): Promise<void> {
 	const action = await vscode.window.showInformationMessage(
 		INSTALL_PROMPT_MSG,
 		{ modal: false },
-		"📥 安装学术研究技能包",
+		"📥 安装内置学术技能",
 		"📖 了解更多",
 	)
 
-	if (action === "📥 安装学术研究技能包") {
+	if (action === "📥 安装内置学术技能") {
 		try {
 			const dstDir = await installBundledSkills(workspaceRoot)
 			const fileCount = countFiles(dstDir)
 			const countMsg = fileCount > 0 ? `共 ${fileCount} 个文件` : "文件已安装"
-			vscode.window.showInformationMessage(`✅ 学术研究技能包已安装到工作区！${countMsg}\n重启 LingInk 会话后即可使用。`)
+			vscode.window.showInformationMessage(`✅ 内置学术技能已安装到工作区！${countMsg}\n重启 LingInk 会话后即可使用。`)
 		} catch (error) {
 			const msg = error instanceof Error ? error.message : String(error)
 			Logger.error(`[SkillInstaller] Installation failed: ${msg}`)
@@ -438,7 +458,7 @@ export async function checkAndPromptARSUpdate(): Promise<void> {
 	}
 
 	const action = await vscode.window.showInformationMessage(
-		`📦 学术研究技能包有新版本可用: v${result.currentVersion} → v${result.latestVersion}\n${result.releaseNotes ? result.releaseNotes.slice(0, 200) + "…" : ""}`,
+		`📦 学术研究技能包有新版本可用: v${result.currentVersion} → v${result.latestVersion}\n${result.releaseNotes ? `${result.releaseNotes.slice(0, 200)}…` : ""}`,
 		{ modal: false },
 		"⬆️ 立即升级",
 		"📖 查看发布说明",
