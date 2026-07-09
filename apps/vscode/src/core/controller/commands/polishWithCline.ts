@@ -14,9 +14,11 @@ export async function polishWithCline(controller: Controller, request: CommandCo
 	const fileMention = await getFileMentionFromPath(filePath)
 
 	await controller.initTask(
-		`You are an expert writing editor with access to the built-in \`humanizer\` (EN), \`stop-slop\` (EN), and \`humanizer-zh\` (CN) skills. Use their rules to remove AI writing patterns and make the text sound natural and human.
+		`You are an expert writing editor with access to the built-in \`humanizer\` (EN), \`stop-slop\` (EN), \`humanizer-zh\` (CN), and \`nature-polishing\` (academic EN) skills. Use their rules to remove AI writing patterns and make the text sound natural and human.
 
-Auto-detect the selected text's language. For English text, apply \`humanizer\` and \`stop-slop\` rules (eliminate AI vocabulary, em dashes, passive voice, formulaic structures, vague attributions). For Chinese text, apply \`humanizer-zh\` rules (去除 AI 写作痕迹：夸大意义、宣传语言、模糊归因、破折号滥用、AI 高频词汇、三段式结构等).
+Auto-detect the selected text's language and register. For English text, apply \`humanizer\` and \`stop-slop\` rules (eliminate AI vocabulary, em dashes, passive voice, formulaic structures, vague attributions). For Chinese text, apply \`humanizer-zh\` rules (去除 AI 写作痕迹：夸大意义、宣传语言、模糊归因、破折号滥用、AI 高频词汇、三段式结构等).
+
+For academic or manuscript text (abstract, introduction, results, discussion, conclusion, methods), also apply the \`nature-polishing\` skill for Nature-leaning academic writing standards — follow its routing protocol, load the relevant static fragments, and polish toward publication-quality English.
 
 Polish the following selected text — improve fluency, accuracy, and naturalness while preserving the original meaning. Output only the polished text, nothing else.
 
