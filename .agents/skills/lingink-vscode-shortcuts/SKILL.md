@@ -42,6 +42,14 @@ For webview Quick Wins:
 - Add icon mapping in `QuickWinCard.tsx` only if using a new icon key.
 - Reuse the same canonical prompt text as the command-palette entry when both surfaces launch the same assistant.
 
+For the homepage academic shortcut grid:
+
+- Add the item to `apps/vscode/webview-ui/src/components/welcome/AcademicQuickTasks.tsx`.
+- Import the Lucide icon directly in that component and set it on the `academicTasks` entry.
+- Use the same slash-skill prompt as the command-palette entry when the shortcut launches a bundled-skill assistant.
+- If the feature should appear across all first-run/home surfaces, update both `AcademicQuickTasks.tsx` and `quickWinTasks.ts`; these are separate lists.
+- When renaming a card's slash shortcut, also update `apps/vscode/src/shared/slashCommands.ts` so the chat slash-command autocomplete and validation use the same name and description.
+
 For bundled skill shortcuts:
 
 - Add runtime-search directories in `apps/vscode/src/services/bundled-skills.ts`.

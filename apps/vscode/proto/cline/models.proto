@@ -885,3 +885,54 @@ message ModelsApiConfiguration {
   optional string academic_mode_cline_pass_model_id = 292;
   optional OpenRouterModelInfo academic_mode_cline_pass_model_info = 293;
 }
+
+// Provider identifiers used in API configuration
+enum ApiProvider {
+  ANTHROPIC = 0;
+  BEDROCK = 1;
+  VERTEX = 2;
+  OPENAI = 3;
+  OPENAI_NATIVE = 4;
+  OPENROUTER = 5;
+  OLLAMA = 6;
+  LMSTUDIO = 7;
+  GEMINI = 8;
+  OPENAI_CODEX = 9;
+  REQUESTY = 10;
+  TOGETHER = 11;
+  DEEPSEEK = 12;
+  QWEN = 13;
+  MISTRAL = 14;
+  VSCODE_LM = 15;
+  CLINE = 16;
+  CLINE_PASS = 17;
+  LITELLM = 18;
+  MOONSHOT = 19;
+  NEBIUS = 20;
+  FIREWORKS = 21;
+  ASKSAGE = 22;
+  XAI = 23;
+  SAMBANOVA = 24;
+  CEREBRAS = 25;
+  SAPAICORE = 26;
+  GROQ = 27;
+  POOLSIDE = 28;
+  HUGGINGFACE = 29;
+  HUAWEI_CLOUD_MAAS = 30;
+  DIFY = 31;
+  BASETEN = 32;
+  VERCEL_AI_GATEWAY = 33;
+  V0 = 34;
+  ZAI = 35;
+  ZAI_CODING_PLAN = 36;
+  OCA = 37;
+  AIHUBMIX = 38;
+  MINIMAX = 39;
+  HICAP = 40;
+  NOUS_RESEARCH = 41;
+  WANDB = 42;
+  XIAOMI = 43;
+  CLAUDE_CODE = 44;
+  DOUBAO = 45;
+  QWEN_CODE = 46;
+}

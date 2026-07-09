@@ -62,8 +62,8 @@ export const ACADEMIC_SLASH_COMMANDS: SlashCommand[] = [
 		cliCompatible: true,
 	},
 	{
-		name: "english-polish",
-		description: "学术英文润色：对选中文本进行学术英语润色和表达优化",
+		name: "article-polish",
+		description: "文章润色：优化中英文学术表达、逻辑衔接和行文风格",
 		section: "default",
 		cliCompatible: true,
 	},
