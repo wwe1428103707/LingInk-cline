@@ -106,6 +106,26 @@ export const ToolPresets = {
 		enableSpawnAgent: false,
 		enableAgentTeams: false,
 	},
+
+	/**
+	 * Subagent preset (read-only research agent).
+	 * Mirrors Cline's official subagent constraints: can read, search, run
+	 * read-only commands, and use skills; cannot edit files, fetch web content,
+	 * ask follow-up questions, submit, or spawn nested subagents.
+	 */
+	subagent: {
+		enableReadFiles: true,
+		enableSearch: true,
+		enableBash: true,
+		enableWebFetch: false,
+		enableApplyPatch: false,
+		enableEditor: false,
+		enableSkills: true,
+		enableAskQuestion: false,
+		enableSubmitAndExit: false,
+		enableSpawnAgent: false,
+		enableAgentTeams: false,
+	},
 } as const satisfies Record<string, ToolPresetConfig>;
 
 /**

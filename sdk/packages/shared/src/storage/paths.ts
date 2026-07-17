@@ -336,6 +336,9 @@ export function resolveAgentConfigSearchPaths(
 		workspacePath
 			? join(workspacePath, CLINE_CONFIG_DIR, AGENT_CONFIG_DIRECTORY_NAME)
 			: "",
+		workspacePath
+			? join(workspacePath, DEPRECATED_CONFIG_DIR, AGENT_CONFIG_DIRECTORY_NAME)
+			: "",
 		resolveAgentsConfigDirPath(),
 	]);
 }

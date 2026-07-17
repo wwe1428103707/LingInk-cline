@@ -758,6 +758,7 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 
 	const stateManager = StateManager.get()
 	const globalUseAutoCondense = stateManager.getGlobalSettingsKey("useAutoCondense") ?? false
+	const globalSubagentsEnabled = stateManager.getGlobalSettingsKey("subagentsEnabled") ?? true
 	const enableCheckpoints = stateManager.getGlobalSettingsKey("enableCheckpointsSetting") ?? true
 	const useAutoCondense = input.taskSettings?.useAutoCondense ?? globalUseAutoCondense
 
@@ -796,7 +797,7 @@ export async function buildSessionConfig(input: SessionConfigInput): Promise<Cor
 		checkpoint: {
 			enabled: enableCheckpoints,
 		},
-		enableSpawnAgent: false,
+		enableSpawnAgent: input.taskSettings?.subagentsEnabled ?? globalSubagentsEnabled,
 		enableAgentTeams: false,
 		...(useAutoCondense
 			? {

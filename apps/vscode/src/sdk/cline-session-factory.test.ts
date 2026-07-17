@@ -34,7 +34,10 @@ const mocks = vi.hoisted(() => {
 				apiKey: "test-key",
 			})),
 			getGlobalSettingsKey: vi.fn((key: string): boolean | undefined => {
-				if (key === "subagentsEnabled" || key === "useAutoCondense") {
+				if (key === "subagentsEnabled") {
+					return true
+				}
+				if (key === "useAutoCondense") {
 					return false
 				}
 				return undefined
@@ -81,7 +84,10 @@ beforeEach(() => {
 		apiKey: "test-key",
 	})
 	mocks.stateManager.getGlobalSettingsKey.mockImplementation((key: string) => {
-		if (key === "subagentsEnabled" || key === "useAutoCondense") {
+		if (key === "subagentsEnabled") {
+			return true
+		}
+		if (key === "useAutoCondense") {
 			return false
 		}
 		return undefined
@@ -109,7 +115,7 @@ function makeBaseConfig(overrides: Partial<CoreSessionConfig> = {}): CoreSession
 		systemPrompt: "",
 		mode: "act",
 		enableTools: true,
-		enableSpawnAgent: false,
+		enableSpawnAgent: true,
 		enableAgentTeams: false,
 		...overrides,
 	}
@@ -642,7 +648,7 @@ describe("buildSessionConfig", () => {
 	})
 
 	it("honors an explicitly selected non-default chat output language", async () => {
-		mocks.stateManager.getGlobalSettingsKey.mockImplementation((key: string) => {
+		mocks.stateManager.getGlobalSettingsKey.mockImplementation((key: string): any => {
 			if (key === "preferredLanguage") {
 				return "English"
 			}
@@ -714,6 +720,30 @@ describe("buildSessionConfig", () => {
 			enabled: true,
 			strategy: "basic",
 		})
+	})
+
+	it("enables spawn_agent by default and respects the subagentsEnabled setting", async () => {
+		mocks.stateManager.getApiConfiguration.mockReturnValue({
+			actModeApiProvider: "anthropic",
+			actModeApiModelId: "claude-sonnet-4-6",
+			apiKey: "test-key",
+		} as any)
+
+		const defaultConfig = await buildSessionConfig({ cwd: "/tmp/workspace" })
+		expect(defaultConfig.enableSpawnAgent).toBe(true)
+
+		mocks.stateManager.getGlobalSettingsKey.mockImplementation((key: string) => {
+			if (key === "subagentsEnabled") {
+				return false
+			}
+			if (key === "useAutoCondense") {
+				return false
+			}
+			return undefined
+		})
+
+		const disabledConfig = await buildSessionConfig({ cwd: "/tmp/workspace" })
+		expect(disabledConfig.enableSpawnAgent).toBe(false)
 	})
 })
 

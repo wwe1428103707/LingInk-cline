@@ -1,7 +1,6 @@
 import type { AgentEvent, AgentTool } from "@cline/shared";
 import {
 	createBuiltinTools,
-	resolveToolPresetName,
 	type ToolExecutors,
 	ToolPresets,
 } from "../../../extensions/tools";
@@ -130,18 +129,16 @@ export function createSessionSpawnTool(
 		rootSessionId,
 	);
 	const createSubAgentTools = () => {
+		// Subagents are read-only research agents per Cline's official docs.
+		// They get a fixed read-only preset and cannot recursively spawn nested
+		// subagents, regardless of the parent config.
 		const tools: AgentTool[] = config.enableTools
 			? createBuiltinTools({
 					cwd: config.cwd,
-					...ToolPresets[resolveToolPresetName({ mode: config.mode })],
+					...ToolPresets.subagent,
 					executors: toolExecutors,
 				})
 			: [];
-		if (config.enableSpawnAgent) {
-			tools.push(
-				createSessionSpawnTool(deps, config, rootSessionId, toolExecutors),
-			);
-		}
 		return filterDisabledTools(tools);
 	};
 

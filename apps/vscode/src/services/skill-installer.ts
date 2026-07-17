@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs"
 import * as fsSync from "node:fs"
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
@@ -224,8 +225,15 @@ async function writeInstallMarker(workspaceRoot: string): Promise<void> {
 }
 
 /**
+ * File extensions recognized as agent config files.
+ */
+const AGENT_CONFIG_EXTENSIONS = new Set([".md", ".yaml", ".yml"])
+
+/**
  * Install all bundled academic skills into the current workspace.
  * Copies from the extension's bundled directory to the workspace .clinerules/skills/.
+ * Also flattens any bundled `agents/` definitions into .clinerules/agents/ so the
+ * SDK configured-agent loader can surface them as subagent tools.
  */
 export async function installBundledSkills(workspaceRoot: string): Promise<string> {
 	const extensionFsPath = HostProvider.get().extensionFsPath
@@ -246,6 +254,10 @@ export async function installBundledSkills(workspaceRoot: string): Promise<strin
 		skipped += result.skipped
 	}
 
+	// Flatten bundled agent definitions into .clinerules/agents/ so the SDK
+	// configured-agent loader discovers them as subagent tools.
+	await installBundledAgentConfigs(workspaceRoot, bundles)
+
 	// Write marker
 	await writeInstallMarker(workspaceRoot)
 
@@ -256,6 +268,81 @@ export async function installBundledSkills(workspaceRoot: string): Promise<strin
 	}
 
 	return dstDir
+}
+
+/**
+ * Recursively scan each bundle for `agents/` directories and copy recognized
+ * agent config files into `.clinerules/agents/`. Bundled copies win on name
+ * collision; a warning is logged when an existing file is overwritten.
+ */
+async function installBundledAgentConfigs(
+	workspaceRoot: string,
+	bundles: Awaited<ReturnType<typeof getInstallableBundledSkillBundles>>,
+): Promise<void> {
+	const agentsDstDir = path.join(workspaceRoot, ".clinerules", "agents")
+	await fs.mkdir(agentsDstDir, { recursive: true })
+
+	for (const bundle of bundles) {
+		const agents = await collectAgentConfigFiles(bundle.sourcePath, bundle.skipNames ?? [])
+		for (const srcPath of agents) {
+			const fileName = path.basename(srcPath)
+			const dstPath = path.join(agentsDstDir, fileName)
+			try {
+				const exists = await fs
+					.access(dstPath)
+					.then(() => true)
+					.catch(() => false)
+				if (exists) {
+					Logger.warn(`[SkillInstaller] Overwriting existing agent config: ${fileName}`)
+				}
+				await fs.copyFile(srcPath, dstPath)
+			} catch (error) {
+				const msg = error instanceof Error ? error.message : String(error)
+				Logger.error(`[SkillInstaller] Failed to copy agent config ${srcPath}: ${msg}`)
+			}
+		}
+	}
+}
+
+/**
+ * Recursively collect agent config files from `agents/` subdirectories under `src`.
+ */
+async function collectAgentConfigFiles(src: string, skipNames: string[]): Promise<string[]> {
+	const configs: string[] = []
+
+	let entries: Dirent[]
+	try {
+		entries = await fs.readdir(src, { withFileTypes: true })
+	} catch {
+		return configs
+	}
+
+	for (const entry of entries) {
+		if (skipNames.includes(entry.name)) {
+			continue
+		}
+
+		const srcPath = path.join(src, entry.name)
+		if (entry.isDirectory()) {
+			if (entry.name === "agents") {
+				const agentEntries = await fs.readdir(srcPath, { withFileTypes: true })
+				for (const agentEntry of agentEntries) {
+					if (!agentEntry.isFile()) {
+						continue
+					}
+					const ext = path.extname(agentEntry.name).toLowerCase()
+					if (AGENT_CONFIG_EXTENSIONS.has(ext)) {
+						configs.push(path.join(srcPath, agentEntry.name))
+					}
+				}
+			} else {
+				const sub = await collectAgentConfigFiles(srcPath, skipNames)
+				configs.push(...sub)
+			}
+		}
+	}
+
+	return configs
 }
 
 /**

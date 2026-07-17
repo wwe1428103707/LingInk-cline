@@ -104,9 +104,9 @@ function normalizeAgentName(name: string): string {
 	return name.trim().toLowerCase();
 }
 
-function isYamlFile(fileName: string): boolean {
+function isAgentConfigFile(fileName: string): boolean {
 	const extension = extname(fileName).toLowerCase();
-	return extension === ".yml" || extension === ".yaml";
+	return extension === ".yml" || extension === ".yaml" || extension === ".md";
 }
 
 export function parseConfiguredAgentConfig(
@@ -168,7 +168,7 @@ export function loadConfiguredAgentConfigs(input: {
 		}
 
 		for (const entry of entries) {
-			if (!entry.isFile() || !isYamlFile(entry.name)) {
+			if (!entry.isFile() || !isAgentConfigFile(entry.name)) {
 				continue;
 			}
 
