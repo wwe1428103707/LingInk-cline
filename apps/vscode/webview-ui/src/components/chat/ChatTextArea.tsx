@@ -19,6 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { usePlatform } from "@/context/PlatformContext"
 import { useNormalizedApiConfiguration } from "@/hooks/useNormalizedApiConfiguration"
+import { useTranslation } from "@/i18n"
 import { cn } from "@/lib/utils"
 import { FileServiceClient, StateServiceClient } from "@/services/grpc-client"
 import {
@@ -285,6 +286,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [searchLoading, setSearchLoading] = useState(false)
 		const [, metaKeyChar] = useMetaKeyDetection(platform)
 		const { selectedProvider, selectedModelId } = useNormalizedApiConfiguration(mode)
+		const { t } = useTranslation()
 
 		// Fetch git commits when Git is selected or when typing a hash
 		useEffect(() => {
@@ -1454,12 +1456,16 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					onDrop={onDrop}>
 					{showDimensionError && (
 						<div className="absolute inset-2.5 bg-[rgba(var(--vscode-errorForeground-rgb),0.1)] border-2 border-error rounded-xs flex items-center justify-center z-10 pointer-events-none">
-							<span className="text-error font-bold text-xs text-center">Image dimensions exceed 7500px</span>
+							<span className="text-error font-bold text-xs text-center">
+								{t("chat.error.imageTooLarge", "Image dimensions exceed 7500px")}
+							</span>
 						</div>
 					)}
 					{showUnsupportedFileError && (
 						<div className="absolute inset-2.5 bg-[rgba(var(--vscode-errorForeground-rgb),0.1)] border-2 border-error rounded-xs flex items-center justify-center z-10 pointer-events-none">
-							<span className="text-error font-bold text-xs">Files other than images are currently disabled</span>
+							<span className="text-error font-bold text-xs">
+								{t("chat.error.unsupportedFile", "Files other than images are currently disabled")}
+							</span>
 						</div>
 					)}
 					{showSlashCommandsMenu && (
@@ -1558,7 +1564,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							boxSizing: "border-box",
 							backgroundColor: "transparent",
 							color: "var(--vscode-input-foreground)",
-							//border: "1px solid var(--vscode-input-border)",
 							borderRadius: 2,
 							fontFamily: "var(--vscode-font-family)",
 							fontSize: "var(--vscode-editor-font-size)",
@@ -1568,16 +1573,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							overflowY: "scroll",
 							scrollbarWidth: "none",
 							// Since we have maxRows, when text is long enough it starts to overflow the bottom padding, appearing behind the thumbnails. To fix this, we use a transparent border to push the text up instead. (https://stackoverflow.com/questions/42631947/maintaining-a-padding-inside-of-text-area/52538410#52538410)
-							// borderTop: "9px solid transparent",
 							borderLeft: 0,
 							borderRight: 0,
 							borderTop: 0,
 							borderBottom: `${thumbnailsHeight}px solid transparent`,
 							borderColor: "transparent",
-							// borderRight: "54px solid transparent",
-							// borderLeft: "9px solid transparent", // NOTE: react-textarea-autosize doesn't calculate correct height when using borderLeft/borderRight so we need to use horizontal padding instead
 							// Instead of using boxShadow, we use a div with a border to better replicate the behavior when the textarea is focused
-							// boxShadow: "0px 0px 0px 1px var(--vscode-input-border)",
 							padding: "9px 28px 9px 9px",
 							cursor: "text",
 							flex: 1,
@@ -1593,8 +1594,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						value={inputValue}
 					/>
 					{!inputValue && selectedImages.length === 0 && selectedFiles.length === 0 && (
-						<div className="text-xs absolute bottom-5 left-6.5 right-16 text-(--vscode-input-placeholderForeground)/50 whitespace-nowrap overflow-hidden text-ellipsis pointer-events-none z-1">
-							Type @ for context, / for slash commands & workflows, hold shift to drag in files/images
+						<div className="text-xs absolute bottom-5 left-6.5 right-16 text-input-placeholder/50 whitespace-nowrap overflow-hidden text-ellipsis pointer-events-none z-1">
+							{t(
+								"chat.hint.input",
+								"Type @ for context, / for slash commands & workflows, hold shift to drag in files/images",
+							)}
 						</div>
 					)}
 					{(selectedImages.length > 0 || selectedFiles.length > 0) && (
@@ -1618,7 +1622,10 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						className="absolute flex items-end bottom-4.5 right-5 z-10 h-8 text-xs"
 						style={{ height: textAreaBaseHeight }}>
 						<div className="flex flex-row items-center">
+							{/* biome-ignore lint/a11y/useSemanticElements: icon-only send control must stay a div to keep the existing input-icon-button styling */}
 							<div
+								aria-disabled={sendingDisabled}
+								aria-label={t("chat.sendMessage", "Send message")}
 								className={cn("input-icon-button", { disabled: sendingDisabled }, "codicon codicon-send text-sm")}
 								data-testid="send-button"
 								onClick={() => {
@@ -1627,6 +1634,15 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										onSend()
 									}
 								}}
+								onKeyDown={(e) => {
+									if ((e.key === "Enter" || e.key === " ") && !sendingDisabled) {
+										e.preventDefault()
+										setIsTextAreaFocused(false)
+										onSend()
+									}
+								}}
+								role="button"
+								tabIndex={0}
 							/>
 						</div>
 					</div>
@@ -1637,11 +1653,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						{/* ButtonGroup - always in DOM but visibility controlled */}
 						<ButtonGroup className="absolute top-0 left-0 right-0 ease-in-out w-full h-5 z-10 flex items-center">
 							<Tooltip>
-								<TooltipContent>Add Context</TooltipContent>
+								<TooltipContent>{t("chat.attachContext", "Add Context")}</TooltipContent>
 								<TooltipTrigger>
 									<VSCodeButton
 										appearance="icon"
-										aria-label="Add Context"
+										aria-label={t("chat.attachContext", "Add Context")}
 										className="p-0 m-0 flex items-center"
 										data-testid="context-button"
 										onClick={handleContextButtonClick}>
@@ -1653,11 +1669,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							</Tooltip>
 
 							<Tooltip>
-								<TooltipContent>Add Files & Images</TooltipContent>
+								<TooltipContent>{t("chat.addFilesImages", "Add Files & Images")}</TooltipContent>
 								<TooltipTrigger>
 									<VSCodeButton
 										appearance="icon"
-										aria-label="Add Files & Images"
+										aria-label={t("chat.addFilesImages", "Add Files & Images")}
 										className="p-0 m-0 flex items-center"
 										data-testid="files-button"
 										disabled={shouldDisableFilesAndImages}
@@ -1684,14 +1700,16 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										onClick={handleModelButtonClick}
 										role="button"
 										tabIndex={0}
-										title="Open API Settings">
+										title={t("chat.openApiSettings", "Open API Settings")}>
 										<ModelButtonContent className="text-xs">{modelDisplayName}</ModelButtonContent>
 									</ModelDisplayButton>
 								</ModelButtonWrapper>
 							</ModelContainer>
 						</ButtonGroup>
 					</div>
-					<ModeSwitchContainer data-testid="mode-switch" title={`Toggle w/ ${togglePlanActKeys}`}>
+					<ModeSwitchContainer
+						data-testid="mode-switch"
+						title={t("chat.toggleMode", "Toggle w/ {keys}", { keys: togglePlanActKeys })}>
 						{(["plan", "academic", "act"] as Mode[]).map((m) => (
 							<ModeSwitchOption
 								active={mode === m}

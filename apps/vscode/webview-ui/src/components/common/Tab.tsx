@@ -36,14 +36,53 @@ export const TabList = forwardRef<
 >(({ children, className, value, onValueChange, ...props }, ref) => {
 	const handleTabSelect = useCallback(
 		(tabValue: string) => {
-			console.log("Tab selected:", tabValue)
 			onValueChange(tabValue)
 		},
 		[onValueChange],
 	)
 
+	// Standard tablist keyboard navigation: ArrowLeft/ArrowRight moves the active
+	// tab (wrapping around), Home/End jump to the first/last tab. Focus follows
+	// the newly activated tab.
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent<HTMLDivElement>) => {
+			const tabValues = React.Children.toArray(children)
+				.filter(React.isValidElement)
+				.map((child) => (child as React.ReactElement<{ value: string }>).props.value)
+
+			if (tabValues.length === 0) {
+				return
+			}
+
+			const currentIndex = tabValues.indexOf(value)
+			let nextIndex: number
+
+			switch (e.key) {
+				case "ArrowRight":
+					nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % tabValues.length
+					break
+				case "ArrowLeft":
+					nextIndex = currentIndex < 0 ? tabValues.length - 1 : (currentIndex - 1 + tabValues.length) % tabValues.length
+					break
+				case "Home":
+					nextIndex = 0
+					break
+				case "End":
+					nextIndex = tabValues.length - 1
+					break
+				default:
+					return
+			}
+
+			e.preventDefault()
+			handleTabSelect(tabValues[nextIndex])
+			e.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]')[nextIndex]?.focus()
+		},
+		[children, value, handleTabSelect],
+	)
+
 	return (
-		<div className={`flex ${className}`} ref={ref} role="tablist" {...props}>
+		<div className={`flex ${className}`} onKeyDown={handleKeyDown} ref={ref} role="tablist" {...props}>
 			{React.Children.map(children, (child) => {
 				if (React.isValidElement(child)) {
 					// Make sure we're passing the correct props to the TabTrigger

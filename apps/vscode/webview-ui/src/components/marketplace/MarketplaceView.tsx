@@ -21,6 +21,7 @@ import {
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react"
 import { Switch } from "@/components/ui/switch"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useTranslation } from "@/i18n"
 import { MarketplaceServiceClient, McpServiceClient } from "@/services/grpc-client"
 import { Tab, TabContent, TabList, TabTrigger } from "../common/Tab"
 import ViewHeader from "../common/ViewHeader"
@@ -46,55 +47,56 @@ type PrimitiveConfig = {
 	icon: LucideIcon
 }
 
-const PRIMITIVES: PrimitiveConfig[] = [
+const getPrimitives = (t: (key: string, defaultValue: string) => string): PrimitiveConfig[] => [
 	{
 		type: "skill",
-		label: "Skills",
-		singular: "skill",
-		plural: "skills",
-		title: "Skills",
+		label: t("marketplace.skills", "Skills"),
+		singular: t("marketplace.skills.singular", "skill"),
+		plural: t("marketplace.skills.plural", "skills"),
+		title: t("marketplace.skills", "Skills"),
 		description: (
 			<>
-				Reusable instruction sets that LingInk loads on demand for specific tasks, without staying in context for unrelated
-				work. Browse more at <VSCodeLink href="https://agentskills.io/">Agent Skills</VSCodeLink>.
+				{t(
+					"marketplace.skills.desc",
+					"Reusable instruction sets that LingInk loads on demand for specific tasks, without staying in context for unrelated work.",
+				)}{" "}
+				{t("marketplace.skills.browseMore", "Browse more at")}{" "}
+				<VSCodeLink href="https://agentskills.io/">Agent Skills</VSCodeLink>.
 			</>
 		),
 		icon: SparklesIcon,
 	},
 	{
 		type: "mcp",
-		label: "MCP",
-		singular: "MCP server",
-		plural: "MCP servers",
-		title: "MCP Servers",
+		label: t("marketplace.mcp", "MCP"),
+		singular: t("marketplace.mcp.singular", "MCP server"),
+		plural: t("marketplace.mcp.plural", "MCP servers"),
+		title: t("mcp.title", "MCP Servers"),
 		description: (
 			<>
-				Connect LingInk to external APIs, local tools, and hosted services through{" "}
-				<VSCodeLink href="https://modelcontextprotocol.io/">MCP</VSCodeLink> servers.
+				{t("marketplace.mcp.desc", "Connect LingInk to external APIs, local tools, and hosted services through")}{" "}
+				<VSCodeLink href="https://modelcontextprotocol.io/">MCP</VSCodeLink> {t("marketplace.mcp.descSuffix", "servers")}.
 			</>
 		),
 		icon: PlugIcon,
 	},
 	{
 		type: "plugin",
-		label: "Plugins",
-		singular: "plugin",
-		plural: "plugins",
-		title: "Plugins",
+		label: t("marketplace.plugins", "Plugins"),
+		singular: t("marketplace.plugins.singular", "plugin"),
+		plural: t("marketplace.plugins.plural", "plugins"),
+		title: t("marketplace.plugins", "Plugins"),
 		description: (
 			<>
-				<VSCodeLink href="https://docs.cline.bot/sdk/plugins">Plugins</VSCodeLink> are extensions for capabilities more
-				complex than a single MCP server or skill, including custom tools, hooks, rules, slash commands, or bundled
-				skills.
+				<VSCodeLink href="https://docs.cline.bot/sdk/plugins">{t("marketplace.plugins", "Plugins")}</VSCodeLink>{" "}
+				{t(
+					"marketplace.plugins.desc",
+					"are extensions for capabilities more complex than a single MCP server or skill, including custom tools, hooks, rules, slash commands, or bundled skills.",
+				)}
 			</>
 		),
 		icon: PuzzleIcon,
 	},
-]
-
-const MARKETPLACE_SECTIONS: Array<{ type: MarketplaceSectionType; label: string }> = [
-	{ type: "installed", label: "Installed" },
-	{ type: "marketplace", label: "Marketplace" },
 ]
 
 function isPrimitiveType(value: string): value is PrimitiveType {
@@ -109,8 +111,8 @@ function installArgs(entry: MarketplaceEntry): string[] {
 	return entry.install?.args ?? []
 }
 
-function getPrimitive(type: PrimitiveType): PrimitiveConfig {
-	return PRIMITIVES.find((primitive) => primitive.type === type) ?? PRIMITIVES[0]
+function getPrimitive(primitives: PrimitiveConfig[], type: PrimitiveType): PrimitiveConfig {
+	return primitives.find((primitive) => primitive.type === type) ?? primitives[0]
 }
 
 function sourceLabel(entry: MarketplaceLocalInstalledEntry): string | undefined {
@@ -204,7 +206,8 @@ const MarketplaceStyles = () => (
 			border: 0;
 			border-bottom: 2px solid transparent;
 			background: transparent;
-			color: var(--vscode-descriptionForeground);
+			color: var(--vscode-foreground);
+			opacity: 0.7;
 			font: inherit;
 			font-size: var(--vscode-font-size);
 			display: flex;
@@ -218,13 +221,13 @@ const MarketplaceStyles = () => (
 
 		.marketplace-tab:hover {
 			background: var(--vscode-list-hoverBackground);
-			color: var(--vscode-foreground);
+			opacity: 1;
 		}
 
 		.marketplace-tab[aria-selected="true"] {
 			background: var(--vscode-list-activeSelectionBackground);
-			color: var(--vscode-list-activeSelectionForeground);
-			border-bottom-color: var(--vscode-list-activeSelectionForeground, var(--vscode-foreground));
+			opacity: 1;
+			border-bottom-color: var(--vscode-foreground);
 		}
 
 		.marketplace-tab-label {
@@ -989,6 +992,7 @@ const CatalogEntryRow = ({
 }
 
 const MarketplaceView = ({ initialType = "skill", onDone }: MarketplaceViewProps) => {
+	const { t } = useTranslation()
 	const { environment, remoteConfigSettings } = useExtensionState()
 	const [activeType, setActiveType] = useState<PrimitiveType>(initialType)
 	const [activeSection, setActiveSection] = useState<MarketplaceSectionType>("installed")
@@ -1056,7 +1060,12 @@ const MarketplaceView = ({ initialType = "skill", onDone }: MarketplaceViewProps
 		}
 	}, [activeSection, mcpMarketplaceDisabled])
 
-	const primitive = getPrimitive(activeType)
+	const primitives = getPrimitives(t)
+	const marketplaceSections: Array<{ type: MarketplaceSectionType; label: string }> = [
+		{ type: "installed", label: t("marketplace.tab.installed", "Installed") },
+		{ type: "marketplace", label: t("marketplace.tab.marketplace", "Marketplace") },
+	]
+	const primitive = getPrimitive(primitives, activeType)
 	const searchedCatalogEntries = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase()
 		return catalogEntries.filter(
@@ -1229,11 +1238,11 @@ const MarketplaceView = ({ initialType = "skill", onDone }: MarketplaceViewProps
 	return (
 		<Tab className="marketplace-view">
 			<MarketplaceStyles />
-			<ViewHeader environment={environment} onDone={onDone} title="Customize" />
+			<ViewHeader environment={environment} onDone={onDone} title={t("marketplace.title", "Customize")} />
 
 			<div className="marketplace-shell">
 				<TabList className="marketplace-nav" onValueChange={handleTabChange} value={activeType}>
-					{PRIMITIVES.map((item) => (
+					{primitives.map((item) => (
 						<TabTrigger className="marketplace-tab" key={item.type} value={item.type}>
 							<item.icon aria-hidden className="h-4 w-4 shrink-0" />
 							<span className="marketplace-tab-label">{item.label}</span>
@@ -1248,7 +1257,7 @@ const MarketplaceView = ({ initialType = "skill", onDone }: MarketplaceViewProps
 							className="marketplace-subnav"
 							onValueChange={handleSectionTabChange}
 							value={currentSection}>
-							{MARKETPLACE_SECTIONS.map((section) => (
+							{marketplaceSections.map((section) => (
 								<TabTrigger
 									className="marketplace-subtab"
 									disabled={mcpMarketplaceDisabled && section.type === "marketplace"}

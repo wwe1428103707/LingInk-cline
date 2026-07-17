@@ -1,11 +1,17 @@
-import { heroui } from "@heroui/react"
-
-/** @type {import('tailwindcss').Config} */
+/**
+ * NOTE: This file is NOT loaded by Tailwind.
+ * The app uses Tailwind v4 CSS-first configuration — the live theme lives in
+ * `src/theme.css` (imported from `src/index.css`), where all colors map to
+ * `var(--vscode-*)` variables. This file is only referenced by the shadcn CLI
+ * (`components.json`) when generating new `ui/` primitives. Do not edit it
+ * expecting runtime effects; update `src/theme.css` instead.
+ *
+ * @type {import('tailwindcss').Config} */
 
 export default {
 	content: {
 		relative: true,
-		files: ["./src/**/*.{jsx,tsx,mdx}", "./node_modules/@heroui/theme/dist/**/*.{ts,tsx}"],
+		files: ["./src/**/*.{jsx,tsx,mdx}"],
 	},
 	theme: {
 		extend: {
@@ -102,16 +108,5 @@ export default {
 		},
 	},
 	darkMode: "class",
-	plugins: [
-		heroui({
-			defaultTheme: "vscode",
-			themes: {
-				vscode: {
-					colors: {
-						background: "",
-					},
-				},
-			},
-		}),
-	],
+	plugins: [],
 }

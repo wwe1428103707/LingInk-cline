@@ -42,7 +42,7 @@ interface ChatViewProps {
 
 // Use constants from the imported module
 const MAX_IMAGES_AND_FILES_PER_MESSAGE = CHAT_CONSTANTS.MAX_IMAGES_AND_FILES_PER_MESSAGE
-const QUICK_WINS_HISTORY_THRESHOLD = 3
+const QUICK_WINS_HISTORY_THRESHOLD = CHAT_CONSTANTS.QUICK_WINS_HISTORY_THRESHOLD
 
 const sameUserMessage = (left: ClineMessage, right: ClineMessage) => {
 	const leftImages = left.images ?? []
@@ -313,9 +313,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				onError: (error: any) => {
 					console.error("Error in showWebview subscription:", error)
 				},
-				onComplete: () => {
-					console.log("showWebview subscription completed")
-				},
+				onComplete: () => {},
 			},
 		)
 
@@ -347,9 +345,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 				onError: (error: any) => {
 					console.error("Error in addToInput subscription:", error)
 				},
-				onComplete: () => {
-					console.log("addToInput subscription completed")
-				},
+				onComplete: () => {},
 			},
 		)
 
@@ -427,7 +423,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					/>
 				)}
 			</div>
-			<footer className="bg-(--vscode-sidebar-background) flex flex-col" style={{ gridRow: "2" }}>
+			<footer className="bg-sidebar-background flex flex-col" style={{ gridRow: "2" }}>
 				<AutoApproveBar />
 				<ActionButtons
 					chatState={chatState}

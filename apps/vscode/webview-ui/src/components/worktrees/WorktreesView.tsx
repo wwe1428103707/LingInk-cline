@@ -12,8 +12,9 @@ import { AlertCircle, Check, ExternalLink, FolderOpen, GitBranch, GitMerge, Load
 import { memo, useCallback, useEffect, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useTranslation } from "@/i18n"
 import { FileServiceClient, TaskServiceClient, WorktreeServiceClient } from "@/services/grpc-client"
-import { getEnvironmentColor } from "@/utils/environmentColors"
+import ViewHeader from "../common/ViewHeader"
 import CreateWorktreeModal from "./CreateWorktreeModal"
 import DeleteWorktreeModal from "./DeleteWorktreeModal"
 
@@ -22,6 +23,7 @@ type WorktreesViewProps = {
 }
 
 const WorktreesView = ({ onDone }: WorktreesViewProps) => {
+	const { t } = useTranslation()
 	const { environment } = useExtensionState()
 	const [worktrees, setWorktrees] = useState<WorktreeProto[]>([])
 	const [isLoading, setIsLoading] = useState(true)
@@ -238,27 +240,23 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 
 	return (
 		<div className="fixed inset-0 flex flex-col overflow-hidden">
-			{/* Sticky Header with title and Done button */}
-			<div className="flex-none flex justify-between items-center px-5 py-3 border-b border-[var(--vscode-panel-border)]">
-				<h3 className="m-0" style={{ color: getEnvironmentColor(environment) }}>
-					Worktrees
-				</h3>
-				<VSCodeButton onClick={onDone}>Done</VSCodeButton>
-			</div>
+			<ViewHeader environment={environment} onDone={onDone} title={t("viewHeader.worktrees", "Worktrees")} />
 
 			{/* Scrollable Content */}
 			<div className="flex-1 overflow-y-auto p-5">
 				{/* Description */}
 				<p className="text-sm text-[var(--vscode-descriptionForeground)] m-0 mb-4">
-					Git worktrees let you work on multiple branches at the same time, each in its own folder. Open worktrees in
-					their own windows so LingInk can work on multiple tasks in parallel.{" "}
+					{t(
+						"worktrees.description",
+						"Git worktrees let you work on multiple branches at the same time, each in its own folder. Open worktrees in their own windows so LingInk can work on multiple tasks in parallel.",
+					)}{" "}
 					<a
 						className="text-[var(--vscode-textLink-foreground)] hover:text-[var(--vscode-textLink-activeForeground)]"
 						href="https://docs.cline.bot/features/worktrees"
 						rel="noopener noreferrer"
 						style={{ fontSize: "inherit" }}
 						target="_blank">
-						Learn more
+						{t("common.learnMore", "Learn more")}
 					</a>
 				</p>
 
@@ -273,35 +271,39 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 						{hasWorktreeInclude ? (
 							<p className="text-sm text-[var(--vscode-testing-iconPassed)] m-0">
 								<Check className="w-4 h-4 inline-block align-text-bottom mr-1" />
-								.worktreeinclude detected.{" "}
+								{t("worktrees.includeDetected", ".worktreeinclude detected.")}{" "}
 								<a
 									className="text-[var(--vscode-textLink-foreground)] hover:text-[var(--vscode-textLink-activeForeground)]"
 									href="https://docs.cline.bot/features/worktrees#worktreeinclude"
 									rel="noopener noreferrer"
 									style={{ fontSize: "inherit" }}
 									target="_blank">
-									Learn more
+									{t("common.learnMore", "Learn more")}
 								</a>
 							</p>
 						) : (
 							<div className="flex flex-col gap-2">
 								<p className="text-sm text-[var(--vscode-descriptionForeground)] m-0">
-									<strong>Tip:</strong> Create a{" "}
+									<strong>{t("worktrees.includeTip.strong", "Tip:")}</strong>{" "}
+									{t("worktrees.includeTip.create", "Create a")}{" "}
 									<code className="bg-[var(--vscode-textCodeBlock-background)] px-1 rounded">
 										.worktreeinclude
 									</code>{" "}
-									file to automatically copy files like{" "}
+									{t("worktrees.includeTip.body", "file to automatically copy files like")}{" "}
 									<code className="bg-[var(--vscode-textCodeBlock-background)] px-1 rounded">
 										node_modules/
 									</code>{" "}
-									to new worktrees, so you don't have to reinstall dependencies.{" "}
+									{t(
+										"worktrees.includeTip.tail",
+										"to new worktrees, so you don't have to reinstall dependencies.",
+									)}{" "}
 									<a
 										className="text-[var(--vscode-textLink-foreground)] hover:text-[var(--vscode-textLink-activeForeground)]"
 										href="https://docs.cline.bot/features/worktrees#worktreeinclude"
 										rel="noopener noreferrer"
 										style={{ fontSize: "inherit" }}
 										target="_blank">
-										Learn more
+										{t("common.learnMore", "Learn more")}
 									</a>
 								</p>
 								{hasGitignore && (
@@ -312,10 +314,10 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 										{isCreatingWorktreeInclude ? (
 											<>
 												<Loader2 className="w-3 h-3 mr-1 animate-spin" />
-												Creating...
+												{t("worktrees.creating", "Creating...")}
 											</>
 										) : (
-											"Create from .gitignore"
+											t("worktrees.createFromGitignore", "Create from .gitignore")
 										)}
 									</VSCodeButton>
 								)}
@@ -328,24 +330,34 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 				{isLoading ? (
 					<div className="flex items-center justify-center min-h-32 py-8">
 						<Loader2 className="w-6 h-6 animate-spin text-[var(--vscode-descriptionForeground)]" />
-						<span className="ml-2 text-[var(--vscode-descriptionForeground)]">Loading...</span>
+						<span className="ml-2 text-[var(--vscode-descriptionForeground)]">
+							{t("common.loading", "Loading...")}
+						</span>
 					</div>
 				) : isMultiRoot ? (
 					<div className="flex flex-col items-center justify-center min-h-32 py-8 text-center">
 						<AlertCircle className="w-8 h-8 text-[var(--vscode-inputValidation-warningForeground)] mb-2 shrink-0" />
-						<p className="text-[var(--vscode-foreground)] font-medium mb-1">Multi-folder workspace detected</p>
+						<p className="text-[var(--vscode-foreground)] font-medium mb-1">
+							{t("worktrees.multiRootTitle", "Multi-folder workspace detected")}
+						</p>
 						<p className="text-[var(--vscode-descriptionForeground)] text-sm">
-							Worktrees are not supported when multiple folders are open in the same workspace. Please open a single
-							repository folder to use this feature.
+							{t(
+								"worktrees.multiRootDesc",
+								"Worktrees are not supported when multiple folders are open in the same workspace. Please open a single repository folder to use this feature.",
+							)}
 						</p>
 					</div>
 				) : isSubfolder ? (
 					<div className="flex flex-col items-center justify-center min-h-32 py-8 text-center">
 						<AlertCircle className="w-8 h-8 text-[var(--vscode-inputValidation-warningForeground)] mb-2 shrink-0" />
-						<p className="text-[var(--vscode-foreground)] font-medium mb-1">Subfolder of a git repository</p>
+						<p className="text-[var(--vscode-foreground)] font-medium mb-1">
+							{t("worktrees.subfolderTitle", "Subfolder of a git repository")}
+						</p>
 						<p className="text-[var(--vscode-descriptionForeground)] text-sm">
-							You have a subfolder open instead of the repository root. Please open the root folder to use
-							worktrees:
+							{t(
+								"worktrees.subfolderDesc",
+								"You have a subfolder open instead of the repository root. Please open the root folder to use worktrees:",
+							)}
 						</p>
 						<code className="mt-2 px-2 py-1 bg-[var(--vscode-textCodeBlock-background)] rounded text-sm break-all">
 							{gitRootPath}
@@ -355,7 +367,10 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 					<div className="flex flex-col items-center justify-center min-h-32 py-8 text-center">
 						<AlertCircle className="w-8 h-8 text-[var(--vscode-descriptionForeground)] mb-2 shrink-0" />
 						<p className="text-[var(--vscode-descriptionForeground)]">
-							Worktrees require a git repository. Please initialize git to use worktrees.
+							{t(
+								"worktrees.noGitRepo",
+								"Worktrees require a git repository. Please initialize git to use worktrees.",
+							)}
 						</p>
 					</div>
 				) : error ? (
@@ -363,13 +378,15 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 						<AlertCircle className="w-8 h-8 text-[var(--vscode-errorForeground)] mb-2 shrink-0" />
 						<p className="text-[var(--vscode-errorForeground)]">{error}</p>
 						<VSCodeButton appearance="secondary" className="mt-3" onClick={loadWorktrees}>
-							Retry
+							{t("common.retry", "Retry")}
 						</VSCodeButton>
 					</div>
 				) : worktrees.length === 0 ? (
 					<div className="flex flex-col items-center justify-center min-h-32 py-8 text-center">
 						<GitBranch className="w-8 h-8 text-[var(--vscode-descriptionForeground)] mb-2 shrink-0" />
-						<p className="text-[var(--vscode-descriptionForeground)]">No worktrees found.</p>
+						<p className="text-[var(--vscode-descriptionForeground)]">
+							{t("worktrees.noWorktrees", "No worktrees found.")}
+						</p>
 					</div>
 				) : (
 					<>
@@ -397,11 +414,14 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 												<Tooltip>
 													<TooltipTrigger asChild>
 														<span className="text-xs px-1.5 py-0.5 rounded bg-[var(--vscode-badge-background)] text-[var(--vscode-badge-foreground)] cursor-help">
-															Primary
+															{t("worktrees.badge.primary", "Primary")}
 														</span>
 													</TooltipTrigger>
 													<TooltipContent side="bottom">
-														The original worktree where your .git directory lives.
+														{t(
+															"worktrees.badge.primaryTip",
+															"The original worktree where your .git directory lives.",
+														)}
 													</TooltipContent>
 												</Tooltip>
 											)}
@@ -409,17 +429,20 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 												<Tooltip>
 													<TooltipTrigger asChild>
 														<span className="text-xs px-1.5 py-0.5 rounded bg-[var(--vscode-button-background)] text-[var(--vscode-button-foreground)] cursor-help">
-															Current
+															{t("worktrees.badge.current", "Current")}
 														</span>
 													</TooltipTrigger>
 													<TooltipContent side="bottom">
-														This is the worktree currently open in this window.
+														{t(
+															"worktrees.badge.currentTip",
+															"This is the worktree currently open in this window.",
+														)}
 													</TooltipContent>
 												</Tooltip>
 											)}
 											{worktree.isLocked && (
 												<span className="text-xs px-1.5 py-0.5 rounded bg-[var(--vscode-inputValidation-warningBackground)] text-[var(--vscode-inputValidation-warningForeground)]">
-													Locked
+													{t("worktrees.badge.locked", "Locked")}
 												</span>
 											)}
 										</div>
@@ -435,7 +458,9 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 																<FolderOpen className="w-4 h-4" />
 															</VSCodeButton>
 														</TooltipTrigger>
-														<TooltipContent side="bottom">Open in current window</TooltipContent>
+														<TooltipContent side="bottom">
+															{t("worktrees.openCurrentWindow", "Open in current window")}
+														</TooltipContent>
 													</Tooltip>
 													<Tooltip>
 														<TooltipTrigger asChild>
@@ -445,7 +470,9 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 																<ExternalLink className="w-4 h-4" />
 															</VSCodeButton>
 														</TooltipTrigger>
-														<TooltipContent side="bottom">Open in new window</TooltipContent>
+														<TooltipContent side="bottom">
+															{t("worktrees.openNewWindow", "Open in new window")}
+														</TooltipContent>
 													</Tooltip>
 												</>
 											)}
@@ -460,7 +487,7 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 															</VSCodeButton>
 														</TooltipTrigger>
 														<TooltipContent side="bottom">
-															Merge into {getMainBranch()}
+															{t("worktrees.mergeInto", "Merge into")} {getMainBranch()}
 														</TooltipContent>
 													</Tooltip>
 													<Tooltip>
@@ -471,7 +498,9 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 																<Trash2 className="w-4 h-4 text-[var(--vscode-errorForeground)]" />
 															</VSCodeButton>
 														</TooltipTrigger>
-														<TooltipContent side="bottom">Delete this worktree</TooltipContent>
+														<TooltipContent side="bottom">
+															{t("worktrees.deleteThis", "Delete this worktree")}
+														</TooltipContent>
 													</Tooltip>
 												</>
 											)}
@@ -497,7 +526,7 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 					}}>
 					<VSCodeButton disabled={isLoading} onClick={() => setShowCreateForm(true)} style={{ width: "100%" }}>
 						<Plus className="w-4 h-4 mr-1" />
-						New Worktree
+						{t("worktrees.newWorktree", "New Worktree")}
 					</VSCodeButton>
 				</div>
 			)}
@@ -535,7 +564,7 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 
 						<div className="flex items-center gap-2 mb-2">
 							<GitMerge className="w-5 h-5 text-[var(--vscode-testing-iconPassed)]" />
-							<h4 className="m-0 pr-6">Merge Worktree</h4>
+							<h4 className="m-0 pr-6">{t("worktrees.mergeModal.title", "Merge Worktree")}</h4>
 						</div>
 
 						{/* Success state */}
@@ -546,7 +575,7 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 									<p className="text-sm m-0">{mergeResult.message}</p>
 								</div>
 								<div className="flex justify-end">
-									<VSCodeButton onClick={closeMergeModal}>Done</VSCodeButton>
+									<VSCodeButton onClick={closeMergeModal}>{t("common.done", "Done")}</VSCodeButton>
 								</div>
 							</div>
 						) : mergeResult?.hasConflicts ? (
@@ -555,9 +584,11 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 								<div className="flex items-start gap-2 p-3 rounded bg-[var(--vscode-inputValidation-warningBackground)] border border-[var(--vscode-inputValidation-warningBorder)]">
 									<AlertCircle className="w-5 h-5 flex-shrink-0 text-[var(--vscode-inputValidation-warningForeground)] mt-0.5" />
 									<div>
-										<p className="text-sm font-medium m-0 mb-1">Merge conflicts detected</p>
+										<p className="text-sm font-medium m-0 mb-1">
+											{t("worktrees.mergeModal.conflictsTitle", "Merge conflicts detected")}
+										</p>
 										<p className="text-sm text-[var(--vscode-descriptionForeground)] m-0 mb-2">
-											The following files have conflicts:
+											{t("worktrees.mergeModal.conflictsBody", "The following files have conflicts:")}
 										</p>
 										<ul className="m-0 pl-4 text-sm font-mono text-[var(--vscode-descriptionForeground)]">
 											{mergeResult.conflictingFiles.slice(0, 3).map((file) => (
@@ -565,7 +596,9 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 											))}
 											{mergeResult.conflictingFiles.length > 3 && (
 												<li className="text-[var(--vscode-descriptionForeground)]">
-													...and {mergeResult.conflictingFiles.length - 3} more
+													{t("worktrees.mergeModal.moreConflicts", "...and {count} more", {
+														count: mergeResult.conflictingFiles.length - 3,
+													})}
 												</li>
 											)}
 										</ul>
@@ -574,10 +607,10 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 
 								<div className="flex flex-col gap-2">
 									<VSCodeButton onClick={handleAskClineToResolve} style={{ width: "100%" }}>
-										Ask LingInk to Resolve
+										{t("worktrees.mergeModal.askLingInk", "Ask LingInk to Resolve")}
 									</VSCodeButton>
 									<VSCodeButton appearance="secondary" onClick={closeMergeModal} style={{ width: "100%" }}>
-										I'll Resolve Manually
+										{t("worktrees.mergeModal.resolveManually", "I'll Resolve Manually")}
 									</VSCodeButton>
 								</div>
 							</div>
@@ -585,11 +618,11 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 							/* Default state - confirm merge */
 							<div className="flex flex-col gap-4">
 								<p className="text-sm text-[var(--vscode-descriptionForeground)] m-0">
-									This will merge branch{" "}
+									{t("worktrees.mergeModal.willMerge", "This will merge branch")}{" "}
 									<code className="bg-[var(--vscode-textCodeBlock-background)] px-1 rounded">
 										{mergeWorktree.branch}
 									</code>{" "}
-									into{" "}
+									{t("worktrees.mergeModal.into", "into")}{" "}
 									<code className="bg-[var(--vscode-textCodeBlock-background)] px-1 rounded">
 										{getMainBranch()}
 									</code>
@@ -601,7 +634,9 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 										checked={deleteAfterMerge}
 										onChange={(e) => setDeleteAfterMerge((e.target as HTMLInputElement).checked)}
 									/>
-									<span className="text-sm">Delete worktree after successful merge</span>
+									<span className="text-sm">
+										{t("worktrees.mergeModal.deleteAfter", "Delete worktree after successful merge")}
+									</span>
 								</label>
 
 								{mergeError && (
@@ -613,18 +648,18 @@ Please help me resolve these merge conflicts, then complete the merge, and delet
 
 								<div className="flex justify-end gap-2">
 									<VSCodeButton appearance="secondary" disabled={isMerging} onClick={closeMergeModal}>
-										Cancel
+										{t("common.cancel", "Cancel")}
 									</VSCodeButton>
 									<VSCodeButton disabled={isMerging} onClick={handleMergeWorktree}>
 										{isMerging ? (
 											<>
 												<Loader2 className="w-4 h-4 mr-1 animate-spin" />
-												Merging...
+												{t("worktrees.mergeModal.merging", "Merging...")}
 											</>
 										) : (
 											<>
 												<GitMerge className="w-4 h-4 mr-1" />
-												Merge
+												{t("worktrees.mergeModal.merge", "Merge")}
 											</>
 										)}
 									</VSCodeButton>

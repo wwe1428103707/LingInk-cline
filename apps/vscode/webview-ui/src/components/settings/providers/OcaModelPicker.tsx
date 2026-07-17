@@ -3,11 +3,11 @@ import { Mode } from "@shared/storage/types"
 import { VSCodeButton, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import React, { useMemo } from "react"
 import { useDynamicProviderSelection } from "@/hooks/useDynamicProviderSelection"
-import { VSC_BUTTON_BACKGROUND, VSC_BUTTON_FOREGROUND, VSC_DESCRIPTION_FOREGROUND, VSC_FOREGROUND } from "@/utils/vscStyles"
+import { t } from "@/i18n"
+import { VSC_BUTTON_BACKGROUND, VSC_BUTTON_FOREGROUND } from "@/utils/vscStyles"
 import { ModelInfoView } from "../common/ModelInfoView"
 import ThinkingBudgetSlider from "../ThinkingBudgetSlider"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
-import { t } from "@/i18n"
 
 interface OcaModelPickerProps {
 	apiConfiguration: ApiConfiguration | undefined
@@ -44,8 +44,16 @@ const OcaModelPicker: React.FC<OcaModelPickerProps> = ({
 				await handleModeFieldsChange(
 					{
 						ocaModelId: { plan: "planModeOcaModelId", act: "actModeOcaModelId", academic: "academicModeOcaModelId" },
-						ocaModelInfo: { plan: "planModeOcaModelInfo", act: "actModeOcaModelInfo", academic: "academicModeOcaModelInfo" },
-						ocaReasoningEffort: { plan: "planModeOcaReasoningEffort", act: "actModeOcaReasoningEffort", academic: "academicModeOcaReasoningEffort" },
+						ocaModelInfo: {
+							plan: "planModeOcaModelInfo",
+							act: "actModeOcaModelInfo",
+							academic: "academicModeOcaModelInfo",
+						},
+						ocaReasoningEffort: {
+							plan: "planModeOcaReasoningEffort",
+							act: "actModeOcaReasoningEffort",
+							academic: "academicModeOcaReasoningEffort",
+						},
 					},
 					{
 						ocaModelId: newModelId,
@@ -64,7 +72,11 @@ const OcaModelPicker: React.FC<OcaModelPickerProps> = ({
 	const handleReasoningEffortChange = async (newValue: string) => {
 		await handleModeFieldsChange(
 			{
-				ocaReasoningEffort: { plan: "planModeOcaReasoningEffort", act: "actModeOcaReasoningEffort", academic: "academicModeOcaReasoningEffort" },
+				ocaReasoningEffort: {
+					plan: "planModeOcaReasoningEffort",
+					act: "actModeOcaReasoningEffort",
+					academic: "academicModeOcaReasoningEffort",
+				},
 			},
 			{
 				ocaReasoningEffort: newValue,
@@ -78,8 +90,16 @@ const OcaModelPicker: React.FC<OcaModelPickerProps> = ({
 			await handleModeFieldsChange(
 				{
 					ocaModelId: { plan: "planModeOcaModelId", act: "actModeOcaModelId", academic: "academicModeOcaModelId" },
-					ocaModelInfo: { plan: "planModeOcaModelInfo", act: "actModeOcaModelInfo", academic: "academicModeOcaModelInfo" },
-					ocaReasoningEffort: { plan: "planModeOcaReasoningEffort", act: "actModeOcaReasoningEffort", academic: "academicModeOcaReasoningEffort" },
+					ocaModelInfo: {
+						plan: "planModeOcaModelInfo",
+						act: "actModeOcaModelInfo",
+						academic: "academicModeOcaModelInfo",
+					},
+					ocaReasoningEffort: {
+						plan: "planModeOcaReasoningEffort",
+						act: "actModeOcaReasoningEffort",
+						academic: "academicModeOcaReasoningEffort",
+					},
 				},
 				{
 					ocaModelId: pendingModelId,
@@ -176,8 +196,8 @@ const OcaModelPicker: React.FC<OcaModelPickerProps> = ({
 					style={{
 						fontSize: 14,
 						fontWeight: 500,
-						background: "var(--vscode-button-background, #0078d4)",
-						color: "var(--vscode-button-foreground, #fff)",
+						background: `var(${VSC_BUTTON_BACKGROUND})`,
+						color: `var(${VSC_BUTTON_FOREGROUND})`,
 						minWidth: 0,
 						margin: 0,
 					}}>
@@ -185,7 +205,7 @@ const OcaModelPicker: React.FC<OcaModelPickerProps> = ({
 				</VSCodeButton>
 			</div>
 			{lastRefreshedText ? (
-				<div className="text-[11px] text-(--vscode-descriptionForeground) mt-0 mb-2">
+				<div className="text-[11px] text-description mt-0 mb-2">
 					{t("oca.lastRefreshed", "Last refreshed at {lastRefreshedText}", { lastRefreshedText })}
 				</div>
 			) : null}
@@ -239,23 +259,21 @@ const OcaRestrictivePopup: React.FC<{
 		<div
 			aria-labelledby="oca-popup-title"
 			aria-modal="true"
-			className={`p-6 max-w-[600px] w-[90%] rounded-[8px] [box-shadow:0_4px_24px_0_var(--vscode-widget-shadow,rgba(0,0,0,.4))] [border:1px_solid_var(--vscode-focusBorder,#007acc)] [background:var(--vscode-editor-background,#252526)] [color:var(${VSC_FOREGROUND},#cccccc)] [font-family:var(--vscode-font-family,sans-serif)] [font-size:var(--vscode-font-size,13px)] flex flex-col max-h-[80vh]`}
+			className={`p-6 max-w-[600px] w-[90%] rounded-[8px] [box-shadow:0_4px_24px_0_var(--vscode-widget-shadow,rgba(0,0,0,.4))] [border:1px_solid_var(--vscode-focusBorder,#007acc)] [background:var(--vscode-editor-background,#252526)] text-foreground [font-family:var(--vscode-font-family,sans-serif)] [font-size:var(--vscode-font-size,13px)] flex flex-col max-h-[80vh]`}
 			role="dialog">
-			<h2 className={`mt-0 [color:var(${VSC_FOREGROUND},#111)] font-bold`} id="oca-popup-title">
+			<h2 className="mt-0 text-foreground font-bold" id="oca-popup-title">
 				Acknowledgement Required
 			</h2>
-			<h4 className={`mb-2 [color:var(${VSC_DESCRIPTION_FOREGROUND},#b3b3b3)] font-semibold`}>
-				Disclaimer: Prohibited Data Submission
-			</h4>
-			<div className="overflow-y-auto flex-1 pr-2 mb-4 text-[13px] leading-normal text-(--vscode-foreground,#222) mask-[linear-gradient(to_bottom,black_96%,transparent_100%)]">
+			<h4 className="mb-2 text-description font-semibold">Disclaimer: Prohibited Data Submission</h4>
+			<div className="overflow-y-auto flex-1 pr-2 mb-4 text-[13px] leading-normal text-foreground mask-[linear-gradient(to_bottom,black_96%,transparent_100%)]">
 				{bannerText && <div dangerouslySetInnerHTML={{ __html: bannerText }} />}
 			</div>
 			<div className="text-right">
 				<VSCodeButton
 					onClick={onAcknowledge}
 					style={{
-						background: `var(${VSC_BUTTON_BACKGROUND}, #0e639c)`,
-						color: `var(${VSC_BUTTON_FOREGROUND}, #fff)`,
+						background: `var(${VSC_BUTTON_BACKGROUND})`,
+						color: `var(${VSC_BUTTON_FOREGROUND})`,
 					}}
 					type="button">
 					I acknowledge and agree

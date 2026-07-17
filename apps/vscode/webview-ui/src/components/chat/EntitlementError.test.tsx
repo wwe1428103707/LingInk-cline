@@ -17,8 +17,8 @@ vi.mock("@/services/grpc-client", () => ({
 	},
 }))
 
-const getSubscribeHref = () => screen.getByRole("link", { name: /get clinepass/i }).getAttribute("href")
-const querySubscribeLink = () => screen.queryByRole("link", { name: /get clinepass/i })
+const getSubscribeHref = () => screen.getByRole("link", { name: "Get LingInk Pass" }).getAttribute("href")
+const querySubscribeLink = () => screen.queryByRole("link", { name: "Get LingInk Pass" })
 
 describe("EntitlementError", () => {
 	beforeEach(() => {
@@ -28,7 +28,7 @@ describe("EntitlementError", () => {
 
 	it("shows friendly copy with the backend detail as muted support text", () => {
 		render(<EntitlementError message="Error 403: the user is not subscribed to required model plan" />)
-		expect(screen.getByText("This model requires a ClinePass subscription.")).toBeInTheDocument()
+		expect(screen.getByText("This model requires a LingInk Pass subscription.")).toBeInTheDocument()
 		expect(screen.getByText("Error 403: the user is not subscribed to required model plan")).toBeInTheDocument()
 	})
 

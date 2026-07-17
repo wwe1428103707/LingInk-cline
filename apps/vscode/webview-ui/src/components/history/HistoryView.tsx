@@ -8,8 +8,8 @@ import { GroupedVirtuoso } from "react-virtuoso"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useTranslation } from "@/i18n"
 import { TaskServiceClient } from "@/services/grpc-client"
-import { t } from "@/i18n"
 import { formatSize } from "@/utils/format"
 import ViewHeader from "../common/ViewHeader"
 import HistoryViewItem from "./HistoryViewItem"
@@ -26,19 +26,10 @@ const isToday = (timestamp: number): boolean => {
 	return today.toDateString() === date.toDateString()
 }
 
-const HISTORY_FILTERS = {
-	newest: "Newest",
-	oldest: "Oldest",
-	mostExpensive: "Most Expensive",
-	mostTokens: "Most Tokens",
-	mostRelevant: "Most Relevant",
-	workspaceOnly: "Workspace Only",
-	favoritesOnly: "Favorites Only",
-}
-
 const HISTORY_PAGE_SIZE = 50
 
 const HistoryView = ({ onDone }: HistoryViewProps) => {
+	const { t } = useTranslation()
 	const extensionStateContext = useExtensionState()
 	const { taskHistory, onRelinquishControl, environment } = extensionStateContext
 	const [searchQuery, setSearchQuery] = useState("")
@@ -72,7 +63,6 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			isLoadingHistoryRef.current = true
 			setIsLoadingHistory(true)
 			try {
-				const startedAt = performance.now()
 				const response = await TaskServiceClient.getTaskHistory(
 					GetTaskHistoryRequest.create({
 						favoritesOnly: showFavoritesOnly,
@@ -82,9 +72,6 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						limit: HISTORY_PAGE_SIZE,
 						offset,
 					}),
-				)
-				console.log(
-					`[HistoryPerf] getTaskHistory offset=${offset} tasks=${response.tasks?.length ?? 0} hasMore=${response.hasMore} took ${Math.round(performance.now() - startedAt)}ms`,
 				)
 				if (requestId !== historyRequestIdRef.current) {
 					return
@@ -186,9 +173,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 
 	const fetchTotalTasksSize = useCallback(async () => {
 		try {
-			const startedAt = performance.now()
 			const response = await TaskServiceClient.getTotalTasksSize(EmptyRequest.create({}))
-			console.log(`[HistoryPerf] getTotalTasksSize took ${Math.round(performance.now() - startedAt)}ms`)
 			if (response && typeof response.value === "number") {
 				setTotalTasksSize?.(response.value || 0)
 			}
@@ -341,10 +326,10 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 
 		const groups: { tasks: any[]; label: string }[] = []
 		if (todayTasks.length > 0) {
-			groups.push({ tasks: todayTasks, label: "Today" })
+			groups.push({ tasks: todayTasks, label: t("history.date.today", "Today") })
 		}
 		if (olderTasks.length > 0) {
-			groups.push({ tasks: olderTasks, label: "Older" })
+			groups.push({ tasks: olderTasks, label: t("history.date.older", "Older") })
 		}
 
 		return {
@@ -352,7 +337,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			groupCounts: groups.map((g) => g.tasks.length),
 			groupLabels: groups.map((g) => g.label),
 		}
-	}, [taskHistorySearchResults, sortOption])
+	}, [taskHistorySearchResults, sortOption, t])
 
 	// Calculate total size of selected items
 	const selectedItemsSize = useMemo(() => {
@@ -374,6 +359,16 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		[taskHistorySearchResults],
 	)
 
+	const historyFilters = {
+		newest: t("history.filter.newest", "Newest"),
+		oldest: t("history.filter.oldest", "Oldest"),
+		mostExpensive: t("history.filter.mostExpensive", "Most Expensive"),
+		mostTokens: t("history.filter.mostTokens", "Most Tokens"),
+		mostRelevant: t("history.filter.mostRelevant", "Most Relevant"),
+		workspaceOnly: t("history.filter.workspaceOnly", "Workspace Only"),
+		favoritesOnly: t("history.filter.favoritesOnly", "Favorites Only"),
+	}
+
 	return (
 		<div className="fixed overflow-hidden inset-0 flex flex-col w-full">
 			{/* HEADER */}
@@ -394,7 +389,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								setSortOption("mostRelevant")
 							}
 						}}
-						placeholder="Fuzzy search history..."
+						placeholder={t("history.searchPlaceholder", "Fuzzy search history...")}
 						value={searchQuery}>
 						<div className="codicon codicon-search opacity-80 mt-0.5 !text-sm" slot="start" />
 						{searchQuery && (
@@ -437,7 +432,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							<FunnelIcon className="!size-2 text-foreground" />
 						</SelectTrigger>
 						<SelectContent position="popper">
-							{Object.entries(HISTORY_FILTERS).map(([key, value]) => {
+							{Object.entries(historyFilters).map(([key, value]) => {
 								const isSortOption = ["newest", "oldest", "mostExpensive", "mostTokens", "mostRelevant"].includes(
 									key,
 								)
@@ -483,7 +478,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						Footer: () =>
 							hasMoreTasks ? (
 								<div className="px-4 py-3 text-center text-xs text-description">
-									{isLoadingHistory ? "Loading..." : ""}
+									{isLoadingHistory ? t("common.loading", "Loading...") : ""}
 								</div>
 							) : null,
 					}}
@@ -515,31 +510,34 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			<div className="p-2.5 border-t border-t-border-panel">
 				<div className="flex gap-2.5 mb-2.5">
 					<Button className="flex-1" onClick={() => handleBatchHistorySelect(true)} variant="secondary">
-						Select All
+						{t("history.selectAll", "Select All")}
 					</Button>
 					<Button className="flex-1" onClick={() => handleBatchHistorySelect(false)} variant="secondary">
-						Select None
+						{t("history.selectNone", "Select None")}
 					</Button>
 				</div>
 				{selectedItems.length > 0 ? (
 					<Button
-						aria-label="Delete selected items"
+						aria-label={t("history.deleteSelected", "Delete Selected")}
 						className="w-full"
 						onClick={() => {
 							handleDeleteSelectedHistoryItems(selectedItems)
 						}}
 						variant="danger">
-						Delete {selectedItems.length > 1 ? selectedItems.length : ""} Selected
+						{selectedItems.length > 1
+							? t("history.deleteSelectedCount", "Delete {count} Selected", { count: selectedItems.length })
+							: t("history.deleteSelected", "Delete Selected")}
 						{selectedItemsSize > 0 ? ` (${formatSize(selectedItemsSize)})` : ""}
 					</Button>
 				) : (
 					<Button
-						aria-label="Delete all history"
+						aria-label={t("history.deleteAll", "Delete All History")}
 						className="w-full"
 						disabled={deleteAllDisabled || (taskHistory.length === 0 && tasks.length === 0)}
 						onClick={handleDeleteAllHistory}
 						variant="danger">
-						Delete All History{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
+						{t("history.deleteAll", "Delete All History")}
+						{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
 					</Button>
 				)}
 			</div>

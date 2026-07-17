@@ -13,6 +13,7 @@ import {
 	WorkflowIcon,
 } from "lucide-react"
 import React from "react"
+import { useTranslation } from "@/i18n"
 import {
 	ACADEMIC_PIPELINE_PROMPT,
 	ARTICLE_POLISH_PROMPT,
@@ -39,97 +40,110 @@ interface AcademicQuickTasksProps {
 	onSelectTask: (prompt: string) => void
 }
 
-const academicTasks: AcademicTask[] = [
-	{
-		id: "topic-selection",
-		icon: LightbulbIcon,
-		title: "选题引导",
-		description: "研究选题建议与方向分析",
-		slashCommand: RESEARCH_TOPIC_PROMPT,
-	},
-	{
-		id: "lit-review",
-		icon: BookOpenTextIcon,
-		title: "文献检索综述",
-		description: "检索文献并生成结构化综述",
-		slashCommand: LITERATURE_REVIEW_PROMPT,
-	},
-	{
-		id: "academic-pipeline",
-		icon: WorkflowIcon,
-		title: "科研全流程",
-		description: "研究、写作、审稿、修订与定稿",
-		slashCommand: ACADEMIC_PIPELINE_PROMPT,
-	},
-	{
-		id: "experiment-assistant",
-		icon: FlaskConicalIcon,
-		title: "实验助手",
-		description: "MATLAB/Python 仿真、信号处理、统计、机器学习与论文配图",
-		slashCommand: EXPERIMENT_ASSISTANT_PROMPT,
-	},
-	{
-		id: "office-academic-assistant",
-		icon: PresentationIcon,
-		title: "Word/PPT 助手",
-		description: "文献阅读报告、组会 PPT、开题/中期/答辩 PPT",
-		slashCommand: OFFICE_ACADEMIC_ASSISTANT_PROMPT,
-	},
-	{
-		id: "paper-structure",
-		icon: GitBranchIcon,
-		title: "论文结构重组",
-		description: "优化论文大纲和章节结构",
-		slashCommand: PAPER_STRUCTURE_PROMPT,
-	},
-	{
-		id: "article-polish",
-		icon: LanguagesIcon,
-		title: "文章润色",
-		description: "中英文学术表达、逻辑衔接与行文风格优化",
-		slashCommand: ARTICLE_POLISH_PROMPT,
-	},
-	{
-		id: "logic-scan",
-		icon: ScanSearchIcon,
-		title: "漏洞扫描",
-		description: "检查论证逻辑漏洞和缺陷",
-		slashCommand: LOGIC_SCAN_PROMPT,
-	},
-	{
-		id: "peer-review",
-		icon: MessagesSquareIcon,
-		title: "模拟审稿",
-		description: "以审稿人视角全面评审论文",
-		slashCommand: PEER_REVIEW_PROMPT,
-	},
-	{
-		id: "citation-check",
-		icon: LinkIcon,
-		title: "引用核查",
-		description: "检查引用格式和论证支撑",
-		slashCommand: CITATION_CHECK_PROMPT,
-	},
-	{
-		id: "format-check",
-		icon: ClipboardCheckIcon,
-		title: "投稿格式检查",
-		description: "检查目标期刊投稿格式要求",
-		slashCommand: FORMAT_CHECK_PROMPT,
-	},
-]
-
 const AcademicQuickTasks: React.FC<AcademicQuickTasksProps> = ({ onSelectTask }) => {
+	const { t } = useTranslation()
+
+	const academicTasks: AcademicTask[] = [
+		{
+			id: "topic-selection",
+			icon: LightbulbIcon,
+			title: t("welcome.academic.topicSelection.title", "Topic Selection"),
+			description: t("welcome.academic.topicSelection.description", "Research topic suggestions and direction analysis"),
+			slashCommand: RESEARCH_TOPIC_PROMPT,
+		},
+		{
+			id: "lit-review",
+			icon: BookOpenTextIcon,
+			title: t("welcome.academic.litReview.title", "Literature Review"),
+			description: t("welcome.academic.litReview.description", "Search literature and generate a structured review"),
+			slashCommand: LITERATURE_REVIEW_PROMPT,
+		},
+		{
+			id: "academic-pipeline",
+			icon: WorkflowIcon,
+			title: t("welcome.academic.pipeline.title", "Full Research Pipeline"),
+			description: t("welcome.academic.pipeline.description", "Research, writing, review, revision, and finalization"),
+			slashCommand: ACADEMIC_PIPELINE_PROMPT,
+		},
+		{
+			id: "experiment-assistant",
+			icon: FlaskConicalIcon,
+			title: t("welcome.academic.experiment.title", "Experiment Assistant"),
+			description: t(
+				"welcome.academic.experiment.description",
+				"MATLAB/Python simulation, signal processing, statistics, machine learning, and paper figures",
+			),
+			slashCommand: EXPERIMENT_ASSISTANT_PROMPT,
+		},
+		{
+			id: "office-academic-assistant",
+			icon: PresentationIcon,
+			title: t("welcome.academic.office.title", "Word/PPT Assistant"),
+			description: t(
+				"welcome.academic.office.description",
+				"Literature reading reports, group meeting slides, and proposal/midterm/defense PPTs",
+			),
+			slashCommand: OFFICE_ACADEMIC_ASSISTANT_PROMPT,
+		},
+		{
+			id: "paper-structure",
+			icon: GitBranchIcon,
+			title: t("welcome.academic.paperStructure.title", "Paper Restructuring"),
+			description: t("welcome.academic.paperStructure.description", "Optimize paper outline and chapter structure"),
+			slashCommand: PAPER_STRUCTURE_PROMPT,
+		},
+		{
+			id: "article-polish",
+			icon: LanguagesIcon,
+			title: t("welcome.academic.articlePolish.title", "Article Polishing"),
+			description: t(
+				"welcome.academic.articlePolish.description",
+				"Improve Chinese/English academic expression, logical flow, and writing style",
+			),
+			slashCommand: ARTICLE_POLISH_PROMPT,
+		},
+		{
+			id: "logic-scan",
+			icon: ScanSearchIcon,
+			title: t("welcome.academic.logicScan.title", "Logic Scan"),
+			description: t("welcome.academic.logicScan.description", "Check for logical gaps and flaws in argumentation"),
+			slashCommand: LOGIC_SCAN_PROMPT,
+		},
+		{
+			id: "peer-review",
+			icon: MessagesSquareIcon,
+			title: t("welcome.academic.peerReview.title", "Mock Peer Review"),
+			description: t("welcome.academic.peerReview.description", "Review your paper from a reviewer's perspective"),
+			slashCommand: PEER_REVIEW_PROMPT,
+		},
+		{
+			id: "citation-check",
+			icon: LinkIcon,
+			title: t("welcome.academic.citationCheck.title", "Citation Check"),
+			description: t("welcome.academic.citationCheck.description", "Check citation format and argument support"),
+			slashCommand: CITATION_CHECK_PROMPT,
+		},
+		{
+			id: "format-check",
+			icon: ClipboardCheckIcon,
+			title: t("welcome.academic.formatCheck.title", "Submission Format Check"),
+			description: t("welcome.academic.formatCheck.description", "Check formatting requirements of the target journal"),
+			slashCommand: FORMAT_CHECK_PROMPT,
+		},
+	]
+
 	return (
 		<div className="px-4 pt-4 pb-2 select-none">
-			<h2 className="text-sm font-medium mb-3 text-center text-foreground/70">科研快捷任务</h2>
+			<h2 className="text-sm font-medium mb-3 text-center text-foreground/70">
+				{t("welcome.academic.heading", "Academic Quick Tasks")}
+			</h2>
 			<div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
 				{academicTasks.map((task) => {
 					const Icon = task.icon
 
 					return (
 						<button
-							className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-(--vscode-panel-border) bg-white/2 hover:bg-(--vscode-list-hoverBackground) hover:border-(--vscode-focusBorder) transition-all duration-150 ease-in-out cursor-pointer text-left group"
+							className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-border-panel bg-foreground/5 hover:bg-list-hover hover:border-(--vscode-focusBorder) focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all duration-150 ease-in-out cursor-pointer text-left group"
 							key={task.id}
 							onClick={() => onSelectTask(task.slashCommand)}
 							type="button">
@@ -141,7 +155,7 @@ const AcademicQuickTasks: React.FC<AcademicQuickTasksProps> = ({ onSelectTask })
 							<span className="text-xs font-medium text-(--vscode-editor-foreground) text-center leading-tight">
 								{task.title}
 							</span>
-							<span className="text-[10px] text-(--vscode-descriptionForeground) text-center leading-tight line-clamp-2">
+							<span className="text-[10px] text-description text-center leading-tight line-clamp-2">
 								{task.description}
 							</span>
 						</button>

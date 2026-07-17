@@ -25,16 +25,16 @@ vi.mock("../utils/settingsHandlers", () => ({
 }))
 
 describe("FeatureSettingsSection", () => {
-	it("renders Hooks feature toggle", () => {
+	it("renders Auto Compact toggle in the Agent section", () => {
 		const { container } = render(<FeatureSettingsSection renderSectionHeader={() => null} />)
 
-		expect(screen.getByText("Hooks")).toBeTruthy()
+		expect(screen.getByText("Auto Compact")).toBeTruthy()
 
-		const advancedSection = container.querySelector("#advanced-features")
 		const agentSection = container.querySelector("#agent-features")
+		const editorSection = container.querySelector("#optional-features")
 
-		expect(advancedSection?.querySelector("#Hooks")).toBeTruthy()
-		expect(agentSection?.querySelector("#Hooks")).toBeNull()
+		expect(agentSection?.querySelector('[id="Auto Compact"]')).toBeTruthy()
+		expect(editorSection?.querySelector('[id="Auto Compact"]')).toBeNull()
 	})
 
 	it("renders Feature Tips toggle in the Editor section", () => {
@@ -49,15 +49,15 @@ describe("FeatureSettingsSection", () => {
 		expect(agentSection?.querySelector('[id="Feature Tips"]')).toBeNull()
 	})
 
-	it("calls updateSetting with hooksEnabled when toggled", () => {
+	it("calls updateSetting with useAutoCondense when toggled", () => {
 		const { container } = render(<FeatureSettingsSection renderSectionHeader={() => null} />)
 
-		const hooksSwitch = container.querySelector("#Hooks")
-		expect(hooksSwitch).toBeTruthy()
+		const autoCompactSwitch = container.querySelector('[id="Auto Compact"]')
+		expect(autoCompactSwitch).toBeTruthy()
 
-		fireEvent.click(hooksSwitch as Element)
+		fireEvent.click(autoCompactSwitch as Element)
 
-		expect(mockUpdateSetting).toHaveBeenCalledWith("hooksEnabled", true)
+		expect(mockUpdateSetting).toHaveBeenCalledWith("useAutoCondense", true)
 	})
 
 	it("calls updateSetting with showFeatureTips when toggled", () => {

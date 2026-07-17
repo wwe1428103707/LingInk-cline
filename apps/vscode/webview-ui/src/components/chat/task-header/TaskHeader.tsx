@@ -6,6 +6,7 @@ import { getModeSpecificFields } from "@/components/settings/utils/providerUtils
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useNormalizedApiConfiguration } from "@/hooks/useNormalizedApiConfiguration"
 import { useProviderUsageCostDisplay } from "@/hooks/useProviderUsageCostDisplay"
+import { useTranslation } from "@/i18n"
 import { cn } from "@/lib/utils"
 import { getEnvironmentColor } from "@/utils/environmentColors"
 import CopyTaskButton from "./buttons/CopyTaskButton"
@@ -50,6 +51,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 		setExpandTaskHeader: setIsTaskExpanded,
 		environment,
 	} = useExtensionState()
+	const { t } = useTranslation()
 
 	const [isHighlightedTextExpanded, setIsHighlightedTextExpanded] = useState(false)
 	const [isTextOverflowing, setIsTextOverflowing] = useState(false)
@@ -125,7 +127,11 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 				}}>
 				{/* Task Title */}
 				<div
-					aria-label={isTaskExpanded ? "Collapse task header" : "Expand task header"}
+					aria-label={
+						isTaskExpanded
+							? t("chat.taskHeader.collapse", "Collapse task header")
+							: t("chat.taskHeader.expand", "Expand task header")
+					}
 					className="flex justify-between items-center cursor-pointer"
 					onClick={toggleTaskExpanded}
 					onKeyDown={(e) => {

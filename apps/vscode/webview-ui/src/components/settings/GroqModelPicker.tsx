@@ -43,7 +43,11 @@ const GroqModelPicker: React.FC<GroqModelPickerProps> = ({ isPopup, currentMode 
 		handleModeFieldsChange(
 			{
 				groqModelId: { plan: "planModeGroqModelId", act: "actModeGroqModelId", academic: "academicModeGroqModelId" },
-				groqModelInfo: { plan: "planModeGroqModelInfo", act: "actModeGroqModelInfo", academic: "academicModeGroqModelInfo" },
+				groqModelInfo: {
+					plan: "planModeGroqModelInfo",
+					act: "actModeGroqModelInfo",
+					academic: "academicModeGroqModelInfo",
+				},
 			},
 			{
 				groqModelId: newModelId,
@@ -269,7 +273,7 @@ const GroqModelPicker: React.FC<GroqModelPickerProps> = ({ isPopup, currentMode 
 			{hasInfo ? (
 				<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 			) : (
-				<p className="text-xs mt-0 text-(--vscode-descriptionForeground)">
+				<p className="text-xs mt-0 text-description">
 					The extension automatically fetches the latest list of models available on{" "}
 					<VSCodeLink className="inline text-inherit" href="https://console.groq.com/docs/models">
 						Groq.

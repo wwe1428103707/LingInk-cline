@@ -164,8 +164,6 @@ const ContextWindow: React.FC<ContextWindowProgressProps> = ({
 								/>
 							</HoverCardContent>
 							<HoverCardTrigger asChild>
-								{/* TODO: Re-add role="slider", aria-value*, onKeyDown, onClick, and tabIndex
-								    when click-to-set-threshold is implemented. See PR #9348 for context. */}
 								<div
 									className="relative w-full text-foreground context-window-progress brightness-100"
 									onFocus={handleFocus}

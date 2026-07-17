@@ -1,10 +1,10 @@
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import { useRef, useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useTranslation } from "@/i18n"
 import { getAsVar, VSC_TITLEBAR_INACTIVE_FOREGROUND } from "@/utils/vscStyles"
 import AutoApproveModal from "./AutoApproveModal"
-import { ACTION_METADATA } from "./constants"
-import { t } from "@/i18n"
+import { getActionMetadata } from "./constants"
 
 interface AutoApproveBarProps {
 	style?: React.CSSProperties
@@ -12,6 +12,8 @@ interface AutoApproveBarProps {
 
 const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 	const { autoApprovalSettings, yoloModeToggled, navigateToSettings } = useExtensionState()
+	const { t } = useTranslation()
+	const actionMetadata = getActionMetadata(t)
 
 	const [isModalVisible, setIsModalVisible] = useState(false)
 	const buttonRef = useRef<HTMLDivElement>(null)
@@ -30,7 +32,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			(key) => autoApprovalSettings.actions[key as keyof typeof autoApprovalSettings.actions],
 		)
 		const enabledActions = enabledActionsNames.map((action) => {
-			return ACTION_METADATA.flatMap((a) => [a, a.subAction]).find((a) => a?.id === action)
+			return actionMetadata.flatMap((a) => [a, a.subAction]).find((a) => a?.id === action)
 		})
 
 		// Filter out parent actions if their subaction is also enabled (show only subaction)
@@ -103,9 +105,9 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 				<div className="pt-4 pb-3.5 px-3.5">
 					<div className="text-sm mb-1">{t("autoApprove.yolo", "Auto-approve: YOLO")}</div>
 					<div className="text-muted-foreground text-xs">
-						YOLO mode is enabled.{" "}
+						{t("autoApprove.yolo.enabled", "YOLO mode is enabled.")}{" "}
 						<span className="underline cursor-pointer hover:text-foreground" onClick={handleNavigateToFeatures}>
-							Disable it in Settings
+							{t("autoApprove.yolo.disable", "Disable it in Settings")}
 						</span>
 						.
 					</div>
@@ -145,7 +147,11 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			/>
 
 			<div
-				aria-label={isModalVisible ? t("autoApprove.close", "Close auto-approve settings") : t("autoApprove.open", "Open auto-approve settings")}
+				aria-label={
+					isModalVisible
+						? t("autoApprove.close", "Close auto-approve settings")
+						: t("autoApprove.open", "Open auto-approve settings")
+				}
 				className="group cursor-pointer pt-3 pb-3.5 pr-2 px-3.5 flex items-center justify-between gap-0"
 				onClick={() => {
 					setIsModalVisible((prev) => !prev)
@@ -167,7 +173,7 @@ const AutoApproveBar = ({ style }: AutoApproveBarProps) => {
 			</div>
 
 			<AutoApproveModal
-				ACTION_METADATA={ACTION_METADATA}
+				ACTION_METADATA={actionMetadata}
 				buttonRef={buttonRef}
 				isVisible={isModalVisible}
 				setIsVisible={setIsModalVisible}

@@ -87,7 +87,7 @@ const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod
 	const resetsAtFormatted = formatResetsAt(resetsAt)
 
 	return (
-		<div className="border-none rounded-md mb-2 bg-(--vscode-textBlockQuote-background)" style={{ padding: "10px 12px" }}>
+		<div className="border-none rounded-md mb-2 bg-quote" style={{ padding: "10px 12px" }}>
 			<div className="mb-3">
 				<div className="text-error mb-2" style={{ fontSize: "calc(var(--vscode-font-size) + 2px)" }}>
 					{displayMessage}
@@ -109,7 +109,7 @@ const SpendLimitError: React.FC<SpendLimitErrorProps> = ({ message, budgetPeriod
 						</div>
 					)}
 
-					<div className="text-(--vscode-descriptionForeground) mt-2 text-xs inline-flex items-center">
+					<div className="text-description mt-2 text-xs inline-flex items-center">
 						<span className="codicon codicon-organization mr-1" />
 						Limits set by your organization.
 					</div>

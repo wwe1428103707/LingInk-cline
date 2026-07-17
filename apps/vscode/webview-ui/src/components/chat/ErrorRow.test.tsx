@@ -85,36 +85,12 @@ describe("ErrorRow", () => {
 		const clineignoreMessage = { ...mockMessage, text: "/path/to/file.txt" }
 		render(<ErrorRow errorType="clineignore_error" message={clineignoreMessage} />)
 
-		expect(screen.getByText(/Cline tried to access/)).toBeInTheDocument()
+		expect(screen.getByText(/LingInk tried to access/)).toBeInTheDocument()
 		expect(screen.getByText("/path/to/file.txt")).toBeInTheDocument()
 	})
 
 	describe("API error handling", () => {
-		it("renders credit limit error when balance error is detected", async () => {
-			const mockClineError = {
-				message: "Insufficient credits",
-				isErrorType: vi.fn((type) => type === "balance"),
-				_error: {
-					details: {
-						current_balance: 0,
-						total_spent: 10.5,
-						total_promotions: 5.0,
-						message: "You have run out of credits.",
-						buy_credits_url: "https://app.cline.bot/dashboard",
-					},
-				},
-			}
-
-			const { ClineError } = await import("../../../../src/services/error/ClineError")
-			vi.mocked(ClineError.parse).mockReturnValue(mockClineError as any)
-
-			render(<ErrorRow apiRequestFailedMessage="Insufficient credits error" errorType="error" message={mockMessage} />)
-
-			expect(screen.getByTestId("credit-limit-error")).toBeInTheDocument()
-			expect(screen.getByText("You have run out of credits.")).toBeInTheDocument()
-		})
-
-		it("does not show Cline credits CTA for non-Cline balance errors without a provider URL", async () => {
+		it("does not show LingInk credits CTA for non-Cline balance errors without a provider URL", async () => {
 			const mockClineError = {
 				message: "Not enough credits available",
 				providerId: "zai",
@@ -228,7 +204,7 @@ describe("ErrorRow", () => {
 			render(<ErrorRow apiRequestFailedMessage={rawMessage} errorType="error" message={mockMessage} />)
 
 			expect(screen.getByTestId("org-cline-pass-restriction-error")).toBeInTheDocument()
-			expect(screen.getByText(/Organization accounts cannot use ClinePass subscriptions/)).toBeInTheDocument()
+			expect(screen.getByText(/Organization accounts cannot use LingInk Pass subscriptions/)).toBeInTheDocument()
 			expect(screen.queryByText(rawMessage)).not.toBeInTheDocument()
 
 			fireEvent.click(screen.getByText("Switch to personal account"))
@@ -258,24 +234,6 @@ describe("ErrorRow", () => {
 			expect(screen.queryByText(formattedMessage)).not.toBeInTheDocument()
 		})
 
-		it("renders friendly logged-out message and sign in button when user is not signed in", async () => {
-			const mockClineError = {
-				message: "Authentication failed",
-				isErrorType: vi.fn((type) => type === "auth"),
-				providerId: "cline",
-				_error: {},
-			}
-
-			const { ClineError } = await import("../../../../src/services/error/ClineError")
-			vi.mocked(ClineError.parse).mockReturnValue(mockClineError as any)
-
-			render(<ErrorRow apiRequestFailedMessage="Authentication failed" errorType="error" message={mockMessage} />)
-
-			expect(screen.queryByText("Authentication failed")).not.toBeInTheDocument()
-			expect(screen.getByText(/Whoops looks like you're logged out/)).toBeInTheDocument()
-			expect(screen.getByText("Sign in to Cline")).toBeInTheDocument()
-		})
-
 		it("renders PowerShell troubleshooting link when error mentions PowerShell", async () => {
 			const mockClineError = {
 				message: "PowerShell is not recognized as an internal or external command",
@@ -298,7 +256,7 @@ describe("ErrorRow", () => {
 			expect(screen.getByText("troubleshooting guide")).toBeInTheDocument()
 			expect(screen.getByRole("link", { name: "troubleshooting guide" })).toHaveAttribute(
 				"href",
-				"https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22",
+				"https://code.visualstudio.com/docs/terminal/profiles",
 			)
 		})
 

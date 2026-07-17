@@ -68,7 +68,7 @@ const StyledMarkdown = styled.div<{ forceWrap: boolean }>`
 
 	code:not(pre > code) {
 		font-family: var(--vscode-editor-font-family);
-		color: #f78383;
+		color: var(--color-preformat, #f78383);
 	}
 
 	background-color: ${CODE_BLOCK_BG_COLOR};

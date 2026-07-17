@@ -1,263 +1,340 @@
 # Repository Guidelines
 
-> **Development Focus**: From this point forward, all development targets the **VS Code extension only**. The CLI app (`apps/cli/`) is on hold — do not modify CLI code, add CLI-specific features, or account for CLI behavior in new changes. SDK packages still serve the VS Code extension and should be improved as needed; just ignore the CLI consumer.
+> **Development Focus**: All active development targets the **VS Code extension** (`apps/vscode/`). The CLI app (`apps/cli/`) is **on hold** — do not modify CLI code, add CLI-specific features, or account for CLI behavior in new changes. SDK packages still serve the VS Code extension and should be improved as needed; just ignore the CLI consumer.
 
-This file is the AI assistant's reference for working with the LingInk-cline monorepo (Cline — VS Code AI coding assistant). For SDK-specific development, see `sdk/AGENTS.md`; for detailed architecture, see `sdk/ARCHITECTURE.md`.
+This file is the AI assistant's reference for the **LingInk-cline** monorepo. LingInk （灵砚）is a Chinese-language academic-writing assistant built on top of [Cline](https://github.com/cline/cline). It runs as a VS Code extension and is backed by a layered TypeScript SDK.
+
+For SDK-specific boundaries and change-routing rules, see `sdk/AGENTS.md`. For deep architectural design, see `sdk/ARCHITECTURE.md`.
 
 ## Project Overview
 
-**LingInk (Cline)** — AI coding assistant that operates via natural-language task descriptions ("tasks" or "projects"). Multilingual (en/zh), supports multiple LLM providers, runs as a **VS Code extension**. The monorepo contains the SDK, VS Code extension app, plugins, evaluations, and documentation.
+| Item | Value |
+|------|-------|
+| Product | LingInk （灵砚）— AI academic-writing assistant |
+| Extension package | `claude-dev` v0.1.7, `clineBaseVersion` 4.0.0 |
+| SDK packages | `@cline/{shared,llms,agents,core,sdk}` v0.0.53 |
+| Repository | `@cline/packages` (private monorepo) |
+| License | Apache 2.0 |
+| Runtime | Bun 1.3.13 primary; Node.js >=22 for host/compat |
+| Package manager | `bun@1.3.13` (workspaces) |
+| Language | Source code and comments in English; user-facing docs/specs in Chinese |
 
-- **Repository**: `@cline/packages` (private monorepo)
-- **License**: Apache 2.0
-- **Stack**: TypeScript (strict), Bun 1.3.13, React (VSCode webview)
+## Repository Structure
 
-## Architecture & Data Flow
+Bun workspaces are declared in the root `package.json`:
 
 ```
-@cline/shared  →  @cline/llms  →  @cline/agents  →  @cline/core  →  apps (VS Code / Hub / CLI-on-hold)
+sdk/packages/*            SDK packages
+apps/*                    Applications
+apps/vscode/webview-ui    VS Code webview UI
+apps/vscode/testing-platform
+apps/cline-hub/src/webview
+apps/examples/*
+sdk/examples
+sdk/examples/plugins/*
 ```
 
-| Layer | Package | Responsibility |
-|-------|---------|----------------|
-| 1 | `@cline/shared` | Zod schemas, parse utils, storage paths, prompt builders, LLM gateway, hooks, agent types, remote config. Dual entry (`index.ts` + `index.browser.ts`). |
-| 2 | `@cline/llms` | Provider settings/config, model catalogs, provider manifests, handler creation, middleware. Dual entry. |
-| 3 | `@cline/agents` | Stateless agent loop, tool orchestration, hook/extension runtime, event streaming. Pure — no session/storage/state. |
-| 4 | `@cline/core` | Stateful orchestration: session lifecycle, checkpointing, storage, config watching, default tools, plugin loading, telemetry, auth, cron. Exposes `@cline/core/hub`, `@cline/core/hub/daemon-entry`. |
-| 5 | Apps | `apps/vscode` (extension), `apps/cline-hub` (dashboard), `apps/cli` (on hold). Each consumes `@cline/core`. |
-### Key Runtime Flows
+### Key directories
 
-- **Session lifecycle**: `ClineCore.create()` → `createRuntimeHost()` → `ClineCore.start(input)` → `host.startSession()`. Sessions run via `AgentRuntime` loop. Events via `subscribe()` pattern.
-- **Runtime host abstraction**: `RuntimeHost` interface decouples transport from execution. Implementations: `LocalRuntimeHost`, `HubRuntimeHost`, `RemoteRuntimeHost`. Contract: `startSession`/`runTurn`/`stopSession`/`abort`.
-- **Agent loop** (`@cline/agents`): pure tool-call → model-response → tool-result loop. Browser-safe. Wrapped by `@cline/core` with persistence, checkpoint, telemetry.
-- **Checkpointing**: Git-based workspace snapshot + session checkpoint versioning (`session/checkpoint-diff.ts`, `session-versioning-service.ts`).
-- **Context compaction**: Truncation + agentic summarization (`extensions/context/compaction.ts`).
-- **Tool system**: Unified registry (`extensions/tools/`): builtin + MCP + plugin + team tools. Tool approval system, subprocess sandbox.
-- **MCP client**: Full MCP protocol support (stdio/SSE/streamable-http transports) + OAuth + settings file management.
-- **Plugin system**: Sandboxed plugin loading with `AgentExtension` interface providing hooks, MCP servers, tools, rules.
+| Path | Purpose |
+|------|---------|
+| `sdk/packages/shared` | Low-level contracts, schemas, path helpers, hooks, remote-config, storage |
+| `sdk/packages/llms` | Provider configs, model catalogs, handler factory, middleware |
+| `sdk/packages/agents` | Stateless agent runtime loop, tool orchestration, events |
+| `sdk/packages/core` | Stateful orchestration: `ClineCore`, sessions, storage, hub, telemetry, cron |
+| `sdk/packages/sdk` | Public alias package; re-exports `@cline/core` |
+| `apps/vscode` | VS Code extension + React webview UI |
+| `apps/cline-hub` | Bun HTTP/WebSocket dashboard server + hub webview |
+| `apps/cli` | CLI/TUI app — **on hold**, do not modify |
+| `apps/examples` | Standalone SDK/VS Code integration examples |
+| `plugins/academic-research-skills` | Academic-research skill plugin |
+| `evals` | Benchmarks, smoke tests, E2E evaluations |
+| `docs` | Documentation site |
+| `.github/workflows` | CI/CD pipelines |
+| `.husky` | Pre-commit hooks |
+
+## Technology Stack
+
+- **Language**: TypeScript 5.9.3, strict mode, ESM (`"type": "module"`)
+- **Runtime**: Bun 1.3.13; Node.js >=22 for VS Code host and some CI jobs
+- **Build tools**: Bun bundler, `esbuild` (VS Code extension), `tsc --noEmit` for type-checking, Vite (webviews)
+- **UI**: React 18/19, Tailwind CSS v4, HeroUI/Radix/shadcn, Framer Motion, Lucide, Mermaid, Storybook 9
+- **Formatter/Linter**: Biome 2.4.5 only (no Prettier/ESLint)
+- **Testing**: Vitest 4, Bun test, Mocha via `@vscode/test-cli`, Playwright, `@microsoft/tui-test`
+- **Persistence**: SQLite via `better-sqlite3`, file-based storage under `~/.cline/`
+- **Observability**: OpenTelemetry OTLP HTTP exporters, PostHog, Langfuse
+- **Protocol**: MCP (stdio/SSE/streamable-http), gRPC/protobuf for VS Code host bridge
+- **Native deps trusted for install**: `better-sqlite3`, `grpc-tools`
+
+## SDK Architecture
+
+Layered dependency direction (lower layers do not depend on higher layers):
+
+```
+@cline/shared  →  @cline/llms  →  @cline/agents  →  @cline/core  →  apps
+```
+
+| Package | Responsibility | Key exports |
+|---------|----------------|-------------|
+| `@cline/shared` | Schemas, types, path helpers, hooks, remote-config, storage, prompt/parse utilities | `AgentMessage`, `AgentTool`, `ContributionRegistry`, `RemoteConfig`, `ProviderSettings`, `setHomeDirIfUnset` |
+| `@cline/llms` | Provider/model catalogs, manifests, handler creation, middleware | `ModelInfo`, `ProviderInfo`, `createHandler`, `ApiHandler`, `DefaultGateway` |
+| `@cline/agents` | Stateless agent loop, tool orchestration, event streaming | `AgentRuntime`/`Agent`, `AgentRuntimeConfig`, `createAgentRuntime`, `createTool` |
+| `@cline/core` | Stateful orchestration, sessions, hub, storage, telemetry, cron | `ClineCore`, `RuntimeHost`, `LocalRuntimeHost`, `HubRuntimeHost`, `RemoteRuntimeHost`, `DefaultRuntimeBuilder`, `SqliteSessionStore` |
+| `@cline/sdk` | Public SDK entry | Re-exports `@cline/core` |
+
+### Runtime data flow
+
+1. Host calls `ClineCore.create(...)`.
+2. `ClineCore` selects a `RuntimeHost` (`LocalRuntimeHost`, `HubRuntimeHost`, or `RemoteRuntimeHost`).
+3. `RuntimeHost.startSession(...)` runs the stateless `AgentRuntime` loop from `@cline/agents`.
+4. `@cline/agents` calls `@cline/llms` handlers and executes tools.
+5. `@cline/core` persists state, checkpoints, telemetry, and events.
+
+### Key subsystems
+
+- **Checkpointing**: git-based workspace snapshots + session versioning (`session-versioning-service.ts`).
+- **Context compaction**: core-owned truncation/summarization (`extensions/context/compaction.ts`).
+- **Tool system**: unified registry in `core/src/extensions/tools/`; built-in, MCP, plugin, and team tools; subprocess sandbox.
+- **MCP client**: full MCP protocol support + OAuth + settings file management.
+- **Plugin system**: sandboxed `AgentExtension` loading; extensions provide hooks, MCP servers, tools, rules.
+- **Automation/Cron**: file-based recurring/event-driven tasks under `~/.cline/cron/`, orchestrated by `CronService` (`packages/core/src/cron/`).
+- **Hub**: shared local or remote daemon (`packages/core/src/hub/`) with WebSocket command dispatch and host-side client adapters exported from `@cline/core/hub`.
 
 ### Storage
 
-- **File-based** under `~/.cline/` for sessions, providers, hooks, skills, rules, workflows
-- **SQLite** (`better-sqlite3`) for session store, team store, cron
-- Path resolution centralized in `@cline/shared/src/storage/paths.ts`
+- File-based under `~/.cline/` for sessions, providers, hooks, skills, rules, workflows.
+- SQLite (`better-sqlite3`) for session store, team store, and cron store.
+- Path resolution is centralized in `@cline/shared/src/storage/paths.ts`.
 
-## Key Directories
+## Application Architecture
 
-| Path | Purpose |
-|---|---|
-| `sdk/packages/` | SDK packages: `shared/`, `llms/`, `agents/`, `core/`, `sdk/` |
-| `apps/cli/` | CLI app — **on hold**, do not modify |
-| `apps/vscode/` | VS Code extension (React webview UI) |
-| `apps/cline-hub/` | Cline Hub dashboard server |
-| `plugins/` | Plugins (e.g. academic-research-skills) |
-| `evals/` | Benchmarks, smoke tests, E2E evaluations |
-| `docs/` | Mintlify MDX documentation site (~80+ files) |
-| `.github/workflows/` | CI/CD pipelines (sdk-test, sdk-publish, ext-vscode-*) — CLI publish pipelines are on hold |
-| `.clinerules/` | Repository rules, workflows, AI guidance |
-| `.claude/` / `.cline/` | AI agent skill configs |
+### `apps/vscode` — VS Code extension
 
-## Development Commands
+- Entry: `apps/vscode/src/extension.ts` (activation).
+- Cross-platform init lives in `apps/vscode/src/common.ts`.
+- `src/hosts/host-provider.ts` abstracts platform-specific services (webview, diff, terminal, host bridge, callbacks, binaries).
+- `src/hosts/vscode/` contains VS Code-specific implementations.
+- `src/sdk/` contains SDK adapters: session factory, VS Code LM handler, message translation, checkpoint/telemetry coordinators.
+- Webview UI is a separate workspace at `apps/vscode/webview-ui/` (React + Vite).
+- Build pipeline:
+  - `bun scripts/build-proto.mjs` generates protobuf code under `src/generated/` and `src/shared/proto/`.
+  - `bun esbuild.mjs` bundles the extension to `dist/extension.js`.
+  - `cd webview-ui && bun run build` builds the webview assets.
+- Extension manifest: `apps/vscode/package.json` (`claude-dev`, VS Code `^1.104.0`).
 
-Run from **repository root** (or `sdk/` for SDK-specific work):
+### `apps/cline-hub` — Browser dashboard
 
-```sh
-# Install
-bun install
+- Server entry: `apps/cline-hub/src/server.ts` (Bun HTTP + WebSocket).
+- WebSocket `/browser` endpoint handles session attach, send/abort, provider settings, approvals, etc.
+- Webview workspace: `apps/cline-hub/src/webview/` (React + Vite + Tailwind).
 
-# Build (SDK packages only)
-bun run build:sdk
+### `apps/examples`
 
-# Full build — builds SDK only (CLI build is on hold)
-bun run build:sdk
+Self-contained example projects (`quickstart`, `cline-core-cli-agent`, `code-review-bot`, `multi-agent`, `desktop-app`, `vscode`, etc.) that consume `@cline/sdk` or workspace packages.
 
-# Type checking (all workspaces parallel)
-bun run types
+### `apps/cli`
 
-# Test (parallel across SDK packages + hub)
-bun run test
+On hold. Do not modify.
 
-# Unit tests (5 packages in parallel bash)
-bun run test:unit
+## Build, Test & Release Commands
 
-# E2E tests
-bun run test:e2e
+Run from the repository root unless noted.
 
-# Single workspace test
+### Root commands
+
+| Command | Purpose |
+|---------|---------|
+| `bun install` | Install all workspace dependencies |
+| `bun run build:sdk` | Production build of all `sdk/packages/*` |
+| `bun run build` | Clean → install → `build:sdk` → `@cline/cli` build (CLI is on hold but still built here) |
+| `bun run build:apps` | Production build of `apps/**` |
+| `bun run build:models` | Regenerate LLM model definitions via `@cline/llms`, then format |
+| `bun run types` | Parallel `typecheck` across all workspaces |
+| `bun run test` | Parallel tests across SDK packages + CLI + hub |
+| `bun run test:unit` | Focused unit-test subset (agents, llms, core, CLI, hub) |
+| `bun run test:e2e` | Core + CLI e2e tests |
+| `bun run lint` | Biome lint on `sdk/`, `apps/cli/`, `apps/cline-hub/`, `apps/examples/` |
+| `bun run format` | Biome format on the same scope |
+| `bun run fix` | Biome check `--write --unsafe --diagnostic-level=error` |
+| `bun run check` | Full CI gate: lint + `build:sdk` + CLI build + hub webview build + typecheck + `check-publish` |
+| `bun run release` | Run `sdk/scripts/release.ts` |
+
+### SDK package commands
+
+```bash
+bun -F @cline/shared test
+bun -F @cline/llms test
+bun -F @cline/agents test
 bun -F @cline/core test:unit
-
-# Lint / Format / Full check
-bun run lint
-bun run format
-bun run check       # full CI gate
-
-# Fix unsafe issues
-bun run fix
-
-# Model definitions generation
-bun run build:models
-
-# Release (SDK packages + VS Code extension)
-bun run release
+bun -F @cline/core test:e2e
 ```
 
-### Path aliases
+SDK packages must be built (`bun run build:sdk`) before consumers can resolve their `dist/` exports.
 
-- `@/` → `apps/vscode/src/` (VS Code workspace only)
-- `@cline/core/shared/llms/agents` → resolved via workspace packages
+### VS Code extension commands (run from `apps/vscode`)
 
-## Code Conventions & Common Patterns
+| Command | Purpose |
+|---------|---------|
+| `bun run watch` | Parallel esbuild + tsc watch |
+| `bun run package` | Production build: type-check → webview → lint → esbuild |
+| `bun run build:webview` | Generate protos and build the React webview |
+| `bun run check-types` | Type-check extension + webview |
+| `bun run lint` | Biome lint + proto lint |
+| `bun run format` | Format changed files since `main` |
+| `bun run test:unit` | Bun-test node-side suites |
+| `bun run test:vitest` | Vitest SDK-adapter / model-catalog suites |
+| `bun run test:integration` | Extension-host tests via `@vscode/test-cli` |
+| `bun run test:coverage` | Integration tests with `c8` coverage |
+| `bun run test:webview` | Webview UI unit tests |
+| `bun run e2e` | Playwright E2E |
+| `bun run ci:check-all` | Parallel `check-types` + `lint` + `format` |
+| `bun run ci:build` | Protos + webview + esbuild + compile-tests |
 
-### Formatting & Linting
+## Code Style & Conventions
 
-- **Biome 2.4.5** — sole formatter + linter (no Prettier, no ESLint)
-- Indent: **tab** (4-wide in `apps/vscode/`)
-- Line width: 130 (`apps/vscode/`), default for others
-- `organizeImports` + `useSortedAttributes` on save (VS Code)
-- Config: `biome.json` at root, `sdk/biome.json`, `apps/biome.json`
+### Formatting and linting
 
-Run: `bun run format` / `bun run lint` / `bun run fix`
+- **Biome 2.4.5** is the only formatter and linter.
+- Config hierarchy:
+  - Root: `biome.json` (tabs, base rules).
+  - SDK: `sdk/biome.json` (extends root; enforces package entrypoints for cross-package imports).
+  - Apps: `apps/biome.json` (extends `sdk/biome.json`).
+  - VS Code extension: `apps/vscode/biome.jsonc` (root: true; 4-wide tabs, 130-column lines, LF, semicolons `asNeeded`, organize imports, sorted attributes, custom grit plugins).
+- Root `format`/`lint`/`fix`/`check` intentionally **do not** touch `apps/vscode/**`; the VS Code workspace has its own scripts.
 
 ### TypeScript
 
-- Module: ESM (`"type": "module"`)
-- Target: `es2022`, strict mode
-- `isolatedModules: true`, `noEmit: true` (type-check only; Bun/esbuild do compilation)
-- Strict null checks, no unchecked indexed access
-- Dual entry: `.browser.ts` variant for browser-safe exports alongside `index.ts`
+- ESM modules, target `es2022`, strict mode, `isolatedModules: true`, `noEmit: true`.
+- VS Code workspace uses `moduleResolution: Bundler` and `jsx: react`.
+- Dual-entry browser builds: `index.ts` + `index.browser.ts` in `@cline/shared` and `@cline/llms`.
 
 ### Imports
 
-- `node:` protocol preferred for Node builtins (`import { assert } from "node:assert"`)
-- Path alias `@/` for `apps/vscode/src/` deep imports
-- Workspace packages referenced by name (`@cline/core`, `@cline/agents`)
+- Use `node:` protocol for Node builtins (`import { assert } from "node:assert"`).
+- VS Code workspace uses `@/` alias → `apps/vscode/src/`.
+- SDK packages must import through package entrypoints; `sdk/biome.json` blocks deep imports into another package's `src/`.
+- Workspace packages are referenced by name (`@cline/core`, `@cline/agents`).
 
 ### Naming
 
-- **Files**: `kebab-case.ts` (e.g. `session-versioning-service.ts`)
-- **Classes/Interfaces**: PascalCase (`ClineCore`, `AgentRuntime`, `RuntimeHost`)
-- **Functions/variables**: camelCase
-- **Constants**: camelCase (NOT UPPER_SNAKE unless truly immutable env-level constants)
-- **Test files**: `*.test.ts` for unit, `*.e2e.test.ts` for end-to-end
+- Files: `kebab-case.ts`.
+- Classes/interfaces: PascalCase (`ClineCore`, `AgentRuntime`, `RuntimeHost`).
+- Functions/variables/constants: camelCase. Avoid `SCREAMING_SNAKE_CASE` unless it is an env-level constant.
+- Test files: `*.test.ts` (unit), `*.e2e.test.ts` (end-to-end).
 
-### Async Patterns
+### Code organization principles
 
-- **CLI entry** (legacy): top-level async IIFE (`void (async () => { … })()`) — never top-level `await`
-- **Fatal error handlers**: `process.on("uncaughtException")` / `"unhandledRejection"` route through cleanup + `process.exit(1)`
-- **Signal handling**: SIGINT/SIGTERM forward to `abortActiveRuntime()` + exit
-- **Avoid `asyncio.run()`** equivalent — Bun/Node support top-level await directly
-- Subprocess sandbox via tool system
+- **No DI framework** — use factory functions and constructor injection.
+- **No global state library** — services own state via class instances.
+- Keep `@cline/agents` stateless: no session persistence, provider storage, or RPC lifecycle.
+- Keep `@cline/core` generic — no organization/provider-specific logic.
+- Config watchers project file state; avoid thin runtime wrappers that just mirror watcher output.
+- Logging is injectable via `BasicLogger` from `@cline/shared`; do not hardcode logging backends.
+- In `apps/vscode`, do not use `console.log` directly — grit plugins enforce use of the `Logger` service.
 
-### State & Dependency Management
+### Error handling
 
-- **No DI framework** — factory functions + constructor injection
-- **No global state library** — services own state via class instances
-- Global settings: `services/global-settings.ts`
-- Provider auth: `ProviderSettingsManager`
-- Telemetry: OpenTelemetry (OTLP HTTP) + PostHog
-- OAuth flows: Cline account, OpenAI Codex, OCA (device auth + local OAuth server)
+- Prefer typed `Error` subclasses.
+- Fatal process errors route through cleanup + `process.exit(1)`.
+- Abort-safe: check `isAbortInProgress()` before marking a rejection as handled.
 
-### Error Handling
+## Testing Strategy
 
-- Typed errors where possible; throw `Error` subclasses
-- Wrapped fatal errors at process level, never swallowed
-- Abort-safe: `isAbortInProgress()` check before marking rejection as handled
+| Layer | Framework | Config / Entry |
+|-------|-----------|----------------|
+| SDK unit | Vitest | `sdk/packages/*/vitest.config.ts` |
+| CLI unit | Vitest | `apps/cli/vitest.config.ts` |
+| Hub unit | Vitest | `apps/cline-hub/vitest.config.ts` |
+| VS Code node-side | Bun test | `apps/vscode/scripts/run-bun-unit-tests.ts` |
+| VS Code SDK/model-catalog | Vitest | `apps/vscode/vitest.config.ts` |
+| VS Code integration | Mocha via `@vscode/test-cli` | `.vscode-test.mjs`, compiled `.test.js` |
+| VS Code webview UI | Vitest + jsdom + Testing Library | `apps/vscode/webview-ui/package.json` |
+| VS Code E2E | Playwright | `apps/vscode/playwright.config.ts` |
+| Evals / analysis | Vitest / custom runners | `evals/analysis/package.json`, `evals/smoke-tests/run-smoke-tests.ts` |
 
-### Testing Patterns
+### How to run tests
 
-- **Vitest** — primary framework (unit + e2e)
-- **Mocha** + `@vscode/test-cli` — VS Code extension host tests
-- **Bun test** (`bun:test`) — Node-side VS Code unit tests
-- **Playwright** — VS Code extension E2E
-- **pytest** — Python plugin tests (academic-research-skills)
-
-Test layers:
-1. **Unit/Contract** (fast): `*.test.ts`, vitest. `test:unit` for parallel execution
-2. **VSCode Integration** (medium): mocha via `@vscode/test-cli`, compiled `.test.js`
-3. **Smoke Tests** (minutes): real LLM invocation, `pass@k` metrics
-4. **E2E** (hours): full agent benchmarks via custom runners
-
-### Config Watching
-
-- Config watchers use chokidar-based file watching
-- Watcher state kept with config layer — no thin runtime wrappers
-
-### Telemetry
-
-- OpenTelemetry SDK (OTLP HTTP exporters for traces/logs/metrics)
-- Langfuse integration for LLM observability
-- PostHog for product analytics
-
-### Release Process
-- **SDK packages**: `bun run release` → `sdk/scripts/release.ts`
-- Git tags: `sdk/shared/vX.Y.Z`, `sdk/llms/vX.Y.Z`, `vX.Y.Z` (VS Code) — CLI tags no longer used
-- VSIX for marketplace, SDK packages published individually. CLI npm publishing is on hold.
-- Nightly builds via `publish-nightly.mjs`
-
-## Important Files
-| File | Purpose |
-|---|---|
-| `apps/vscode/src/extension.ts` | VS Code extension activation |
-| `apps/cline-hub/src/server.ts` | Cline Hub HTTP server |
-| `sdk/packages/core/src/index.ts` | `ClineCore` main class + re-exports |
-| `sdk/packages/agents/src/index.ts` | `AgentRuntime` |
-| `sdk/packages/llms/src/index.ts` | Provider settings/configs |
-| `sdk/packages/shared/src/index.ts` | Shared contracts + utilities |
-| `package.json` | Root workspace config + scripts |
-| `biome.json` | Root formatter/linter config |
-| `vitest.config.ts` | Root test aggregation (project refs) |
-| `.github/workflows/` | CI/CD pipelines |
-| `.husky/pre-commit` | Pre-commit hook (gitleaks + lint-staged) |
-
-## Runtime/Tooling Preferences
-
-- **Runtime**: Bun 1.3.13 (`bun` only — not Node.js except for VS Code host)
-- **Node**: >=22 (`.nvmrc`, `.tool-versions`, but Bun is the primary runner)
-- **Package manager**: `bun@1.3.13` (workspaces, scripts). Do NOT use `npm`/`yarn`/`pnpm`
-- **Shell development**: Prefer `eval` cells (IPython/JS kernel) over bash scripting for non-trivial logic
-- **Language server**: LSP available for TypeScript (tsserver) — use `lsp` for rename/references/definition
-- **CodeGraph**: `.codegraph/` indexed — use `codegraph_explore` before grep/read loops to locate symbols
-
-## Testing & QA
-
-```sh
-# All tests
+```bash
+# All SDK + CLI + hub tests
 bun run test
 
-# Unit tests only
+# Focused unit subset
 bun run test:unit
 
-# E2E tests
-bun run test:e2e
-
-# Single package
+# Single SDK package
 bun -F @cline/core test:unit
+bun -F @cline/llms test
 
-# Full CI gate (lint → format → build → typecheck → check-publish)
+# VS Code extension (from apps/vscode)
+bun run test:unit
+bun run test:vitest
+bun run test:integration
+bun run test:webview
+bun run e2e
+
+# Full CI gate
 bun run check
 ```
 
 ### Coverage
 
-- No unified coverage across monorepo
-- VS Code mocha tests: `c8` (lcov + html)
-- VS Code webview-ui: `vitest --coverage` (v8 provider)
-- SDK packages: no coverage target configured
-### Pre-commit Checks
+- VS Code integration tests: `c8` → `lcov` + `html`.
+- VS Code webview UI: `@vitest/coverage-v8`.
+- Test-platform orchestrator: `c8`.
+- SDK packages: no configured coverage target.
+- Coverage artifacts are uploaded to Qlty in CI.
 
-- Gitleaks secret scanning (`gitleaks git --pre-commit --redact --staged --verbose`)
-- `lint-staged`: `bun run types` + `biome check` on staged files in `sdk/` + `apps/{vscode,cline-hub,examples}/`
+## Security Considerations
 
-### CI Pipelines
+- **Pre-commit secret scanning**: `.husky/pre-commit` requires `gitleaks` and runs `gitleaks git --pre-commit --redact --staged --verbose`. Install `gitleaks` before committing.
+- **Secret config**: `.gitleaks.toml` extends the default gitleaks rules.
+- **Environment secrets**: Copy `.env.example` to `.env` in `apps/vscode/` for local development. Never commit `.env`, `.secrets`, `secrets.json`, or `*.db`.
+- **Console logging**: In `apps/vscode`, direct `console.log` is blocked by a grit plugin; route through the `Logger` service so sensitive data does not leak.
+- **Hub auth**: The local hub daemon generates a per-process random token stored in the owner discovery record with owner-only file permissions. Clients send it via `Sec-WebSocket-Protocol` or `Authorization: Bearer`; the server validates with constant-time comparison.
+- **MCP / OAuth**: OAuth tokens and MCP settings are persisted under `~/.cline/`; treat that directory as sensitive in local backups.
 
-In `.github/workflows/`:
-- `sdk-test.yml` / `sdk-publish.yml` — SDK CI + npm publish
-- `ext-vscode-test.yml` / `ext-vscode-test-e2e.yml` — VS Code extension CI
-- `ext-vscode-publish-stable.yml` / `ext-vscode-publish-legacy.yml` / `ext-vscode-publish-nightly.yml` — VS Code marketplace
-- `repo-label-issues.yml` — issue labeling
-CLI publish pipelines (`cli-publish.yml`) are on hold.
+## CI/CD & Release
 
-### VS Code Dev Extensions (Required)
+Workflows live in `.github/workflows/`:
+
+| Workflow | Purpose |
+|----------|---------|
+| `sdk-test.yml` | SDK quality gate: build SDK + CLI, typecheck, lint, unit tests on Ubuntu/Windows, SQLite smoke test, TUI e2e, publishability check |
+| `sdk-publish.yml` | Publishes `@cline/{shared,llms,agents,core,sdk}` to npm with trusted publishing (OIDC); tags `sdk/<pkg>/vX.Y.Z` |
+| `ext-vscode-test.yml` | VS Code extension CI: typecheck, lint, format, unit/integration/webview tests, testing-platform orchestrator, Qlty coverage |
+| `ext-vscode-test-e2e.yml` | VS Code E2E with Playwright across Ubuntu/Windows/macOS |
+| `ext-vscode-publish-stable.yml` | Stable/pre-release VSIX to Marketplace + Open VSX, GitHub release, Slack notification |
+| `ext-vscode-publish-nightly.yml` | Timestamped nightly VSIX publish |
+| `ext-vscode-publish-legacy.yml` | Legacy pre-SDK-migration extension publish from `legacy-extension` branch |
+| `cli-publish.yml` | **On hold** — legacy CLI npm/binary publish workflow |
+| `repo-label-issues.yml` / `repo-stale-issues.yml` | Issue automation |
+
+### Release artifacts
+
+- **SDK packages**: published individually to npm in dependency order.
+- **VS Code extension**: packaged as `.vsix` with `vsce --no-dependencies` and published to the VS Code Marketplace and Open VSX.
+- **Nightly builds**: produced by `apps/vscode/scripts/publish-nightly.mjs`.
+
+## Important Files
+
+| File | Purpose |
+|------|---------|
+| `apps/vscode/src/extension.ts` | VS Code extension activation |
+| `apps/vscode/DEVELOPMENT.md` | VS Code dev quick-start and troubleshooting |
+| `apps/cline-hub/src/server.ts` | Cline Hub HTTP/WebSocket server |
+| `sdk/packages/core/src/ClineCore.ts` | Main `ClineCore` orchestrator |
+| `sdk/packages/core/src/runtime/host/runtime-host.ts` | `RuntimeHost` abstraction |
+| `sdk/packages/agents/src/agent-runtime.ts` | Stateless `AgentRuntime` loop |
+| `sdk/packages/llms/src/index.ts` | Provider catalog and handler factory |
+| `sdk/packages/shared/src/index.ts` | Shared contracts and utilities |
+| `package.json` | Root workspace and scripts |
+| `biome.json` / `sdk/biome.json` / `apps/vscode/biome.jsonc` | Format/lint configs |
+| `tsconfig.json` | Root TypeScript config (VS Code workspace paths) |
+| `vitest.config.ts` | Root Vitest project aggregation |
+| `.mcp.json` | MCP config for the bundled `codegraph` stdio server |
+| `.husky/pre-commit` | Pre-commit hook |
+
+## Required VS Code Dev Extensions
 
 - `biome` — formatter/linter
 - `bun-vscode` — Bun tooling
@@ -267,4 +344,4 @@ CLI publish pipelines (`cli-publish.yml`) are on hold.
 
 ## SDK-Specific Notes
 
-For SDK package work, refer to `sdk/AGENTS.md` — this file describes package boundaries, dependency rules, development workflow, and change routing between SDK packages.
+For SDK package boundaries, dependency direction, and change-routing rules, always consult `sdk/AGENTS.md`. For runtime flows and architectural constraints, see `sdk/ARCHITECTURE.md`.

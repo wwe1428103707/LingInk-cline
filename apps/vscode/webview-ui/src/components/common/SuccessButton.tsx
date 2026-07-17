@@ -7,13 +7,13 @@ const SuccessButtonTW: React.FC<SuccessButtonTWProps> = (props) => {
 		<VSCodeButton
 			{...props}
 			className={`
-				bg-[#176f2c]! 
-				border-[#176f2c]! 
+				bg-success-solid!
+				border-success-solid!
 				text-white!
-				hover:bg-[#197f31]! 
-				hover:border-[#197f31]!
-				active:bg-[#156528]! 
-				active:border-[#156528]!
+				hover:bg-success-solid-hover!
+				hover:border-success-solid-hover!
+				active:bg-success-solid-active!
+				active:border-success-solid-active!
 				${props.className || ""}
 			`
 				.replace(/\s+/g, " ")

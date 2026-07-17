@@ -279,14 +279,14 @@ export const OcaProvider = ({ isPopup, currentMode }: OcaProviderProps) => {
 						style={{
 							fontSize: 14,
 							fontWeight: 500,
-							background: `var(${VSC_BUTTON_BACKGROUND}, #0078d4)`,
-							color: `var(${VSC_BUTTON_FOREGROUND}, #fff)`,
+							background: `var(${VSC_BUTTON_BACKGROUND})`,
+							color: `var(${VSC_BUTTON_FOREGROUND})`,
 							minWidth: 0,
 							margin: "12px 0",
 						}}>
 						Sign in with Oracle Code Assist
 					</VSCodeButton>
-					<p className="text-xs mt-0 text-(--vscode-descriptionForeground)">
+					<p className="text-xs mt-0 text-description">
 						Please ask your IT administrator to set up Oracle Code Assist as a model provider. Oracle Employees,
 						please see the{" "}
 						<VSCodeLink

@@ -6,16 +6,31 @@
  * which notifies all useSyncExternalStore subscribers.
  */
 import React, { useEffect, useState } from "react"
-import { loadTranslations } from "./index"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { loadTranslations } from "./index"
 
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [ready, setReady] = useState(false)
 	const { preferredLanguage } = useExtensionState()
 
 	useEffect(() => {
-		loadTranslations(preferredLanguage).then(() => setReady(true))
+		let cancelled = false
+		setReady(false)
+		loadTranslations(preferredLanguage).then(() => {
+			if (!cancelled) {
+				setReady(true)
+			}
+		})
+		return () => {
+			cancelled = true
+		}
 	}, [preferredLanguage])
+
+	// Hold rendering until the active locale's translations are loaded,
+	// otherwise Chinese users see an English flash before the zh-cn chunk arrives.
+	if (!ready) {
+		return null
+	}
 
 	return <>{children}</>
 }

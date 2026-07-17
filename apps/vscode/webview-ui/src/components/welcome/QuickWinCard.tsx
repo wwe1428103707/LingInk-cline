@@ -44,9 +44,7 @@ const QuickWinCard: React.FC<QuickWinCardProps> = ({ task, onExecute }) => {
 				<span className="mb-0 mt-0 block truncate pt-3 font-medium text-(--vscode-editor-foreground) text-sm leading-tight">
 					{task.title}
 				</span>
-				<span className="mt-px block truncate text-(--vscode-descriptionForeground) text-xs leading-tight">
-					{task.description}
-				</span>
+				<span className="mt-px block truncate text-description text-xs leading-tight">{task.description}</span>
 			</span>
 		</button>
 	)

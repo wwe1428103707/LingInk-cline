@@ -17,11 +17,13 @@ export interface QuickWinTask {
 	buttonText?: string
 }
 
-export const quickWinTasks: QuickWinTask[] = [
+type TranslateFn = (key: string, defaultValue: string) => string
+
+export const getQuickWinTasks = (t: TranslateFn): QuickWinTask[] => [
 	{
 		id: "paper_outline",
-		title: "Plan a Paper",
-		description: "Turn a topic into a thesis, outline, and section plan",
+		title: t("welcome.quickWin.paperOutline.title", "Plan a Paper"),
+		description: t("welcome.quickWin.paperOutline.desc", "Turn a topic into a thesis, outline, and section plan"),
 		icon: "OutlineIcon",
 		actionCommand: "lingink/createPaperOutline",
 		prompt: PAPER_PLAN_PROMPT,
@@ -29,8 +31,8 @@ export const quickWinTasks: QuickWinTask[] = [
 	},
 	{
 		id: "literature_review",
-		title: "Review Literature",
-		description: "Organize sources into themes, gaps, and evidence",
+		title: t("welcome.quickWin.litReview.title", "Review Literature"),
+		description: t("welcome.quickWin.litReview.desc", "Organize sources into themes, gaps, and evidence"),
 		icon: "LiteratureIcon",
 		actionCommand: "lingink/createLiteratureReview",
 		prompt: LITERATURE_REVIEW_PROMPT,
@@ -38,8 +40,8 @@ export const quickWinTasks: QuickWinTask[] = [
 	},
 	{
 		id: "polish_abstract",
-		title: "Polish an Abstract",
-		description: "Refine academic tone, clarity, and contribution",
+		title: t("welcome.quickWin.polishAbstract.title", "Polish an Abstract"),
+		description: t("welcome.quickWin.polishAbstract.desc", "Refine academic tone, clarity, and contribution"),
 		icon: "PolishIcon",
 		actionCommand: "lingink/polishAbstract",
 		prompt: ABSTRACT_POLISH_PROMPT,
@@ -47,8 +49,8 @@ export const quickWinTasks: QuickWinTask[] = [
 	},
 	{
 		id: "reviewer_response",
-		title: "Draft Reviewer Response",
-		description: "Prepare point-by-point replies to reviewer comments",
+		title: t("welcome.quickWin.reviewerResponse.title", "Draft Reviewer Response"),
+		description: t("welcome.quickWin.reviewerResponse.desc", "Prepare point-by-point replies to reviewer comments"),
 		icon: "ReviewIcon",
 		actionCommand: "lingink/createReviewerResponse",
 		prompt: REVIEWER_RESPONSE_PROMPT,
@@ -56,8 +58,11 @@ export const quickWinTasks: QuickWinTask[] = [
 	},
 	{
 		id: "experiment_assistant",
-		title: "实验助手",
-		description: "MATLAB/Python 仿真、信号处理、统计、机器学习与论文配图",
+		title: t("welcome.quickWin.experiment.title", "Experiment Assistant"),
+		description: t(
+			"welcome.quickWin.experiment.desc",
+			"MATLAB/Python simulation, signal processing, statistics, machine learning, and paper figures",
+		),
 		icon: "ExperimentIcon",
 		actionCommand: "lingink/startExperimentAssistant",
 		prompt: EXPERIMENT_ASSISTANT_PROMPT,
@@ -65,8 +70,11 @@ export const quickWinTasks: QuickWinTask[] = [
 	},
 	{
 		id: "office_academic_assistant",
-		title: "Word/PPT 助手",
-		description: "文献阅读报告、组会 PPT、开题/中期/答辩 PPT",
+		title: t("welcome.quickWin.office.title", "Word/PPT Assistant"),
+		description: t(
+			"welcome.quickWin.office.desc",
+			"Literature reading reports, group meeting slides, and proposal/midterm/defense PPTs",
+		),
 		icon: "PresentationIcon",
 		actionCommand: "lingink/startOfficeAcademicAssistant",
 		prompt: OFFICE_ACADEMIC_ASSISTANT_PROMPT,

@@ -1,4 +1,3 @@
-import { t } from "@/i18n"
 import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip"
 import {
 	azureOpenAiDefaultApiVersion,
@@ -15,8 +14,8 @@ import { Tooltip } from "@/components/ui/tooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useDynamicProviderSelection } from "@/hooks/useDynamicProviderSelection"
 import { useProviderConfig } from "@/hooks/useProviderConfig"
+import { t } from "@/i18n"
 import { ModelsServiceClient } from "@/services/grpc-client"
-import { getAsVar, VSC_DESCRIPTION_FOREGROUND } from "@/utils/vscStyles"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { BaseUrlField } from "../common/BaseUrlField"
 import { DebouncedTextField } from "../common/DebouncedTextField"
@@ -116,7 +115,11 @@ export const OpenAICompatibleProvider = ({
 	const handleOpenAiModelInfoChange = useCallback(
 		(modelInfo: typeof openAiModelInfoSafeDefaults) => {
 			if (isOpenAiProvider) {
-				handleModeFieldChange({ plan: "planModeOpenAiModelInfo", act: "actModeOpenAiModelInfo", academic: "academicModeOpenAiModelInfo" }, modelInfo, currentMode)
+				handleModeFieldChange(
+					{ plan: "planModeOpenAiModelInfo", act: "actModeOpenAiModelInfo", academic: "academicModeOpenAiModelInfo" },
+					modelInfo,
+					currentMode,
+				)
 			}
 			commitOpenAiSelection(selectedModelId || "", modelInfo)
 		},
@@ -201,7 +204,11 @@ export const OpenAICompatibleProvider = ({
 	const handleOpenAiModelSelection = useCallback(
 		(modelId: string, modelInfo = toOpenAiModelInfo(modelId)) => {
 			if (isOpenAiProvider) {
-				handleModeFieldChange({ plan: "planModeOpenAiModelId", act: "actModeOpenAiModelId", academic: "academicModeOpenAiModelId" }, modelId, currentMode)
+				handleModeFieldChange(
+					{ plan: "planModeOpenAiModelId", act: "actModeOpenAiModelId", academic: "academicModeOpenAiModelId" },
+					modelId,
+					currentMode,
+				)
 			}
 			commitOpenAiSelection(modelId, modelInfo)
 		},
@@ -225,12 +232,13 @@ export const OpenAICompatibleProvider = ({
 				<TooltipTrigger>
 					<div className="mb-2.5">
 						<div className="flex items-center gap-2 mb-1">
-							<span style={{ fontWeight: 500 }}>{t("apiConfig.baseUrl", "Base URL")}</span>
+							<span className="font-medium">{t("apiConfig.baseUrl", "Base URL")}</span>
 							{remoteConfigSettings?.openAiBaseUrl !== undefined && (
 								<i className="codicon codicon-lock text-description text-sm" />
 							)}
 						</div>
 						<DebouncedTextField
+							className="w-full mb-2.5"
 							disabled={remoteConfigSettings?.openAiBaseUrl !== undefined}
 							initialValue={config?.baseUrl || ""}
 							onChange={(value) => {
@@ -243,7 +251,6 @@ export const OpenAICompatibleProvider = ({
 								debouncedRefreshOpenAiModels(value, latestOpenAiApiKeyRef.current)
 							}}
 							placeholder={"Enter base URL..."}
-							style={{ width: "100%", marginBottom: 10 }}
 							type="text"
 						/>
 					</div>
@@ -258,18 +265,13 @@ export const OpenAICompatibleProvider = ({
 			{isRefreshingOpenAiModels && <div role="status">Loading models…</div>}
 			{openAiModelsError && <div role="alert">{openAiModelsError}</div>}
 			{availableOpenAiModels.length > 0 ? (
-				<div
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						gap: 8,
-						marginBottom: 10,
-					}}>
+				<div className="flex flex-col gap-2 mb-2.5">
 					<label htmlFor="openai-compatible-model-picker">
-						<span style={{ fontWeight: 500 }}>{t("apiConfig.modelId", "Model ID")}</span>
+						<span className="font-medium">{t("apiConfig.modelId", "Model ID")}</span>
 					</label>
 					<select
 						aria-label="Model ID"
+						className="w-full"
 						id="openai-compatible-model-picker"
 						onChange={(event) => {
 							const modelId = event.target.value
@@ -281,7 +283,6 @@ export const OpenAICompatibleProvider = ({
 							setIsCustomOpenAiModelEntryVisible(false)
 							handleOpenAiModelSelection(modelId)
 						}}
-						style={{ width: "100%" }}
 						value={selectedModelId && availableOpenAiModels.includes(selectedModelId) ? selectedModelId : ""}>
 						{selectedModelId && !availableOpenAiModels.includes(selectedModelId) && (
 							<option value="">{selectedModelId} (not in current list)</option>
@@ -297,21 +298,21 @@ export const OpenAICompatibleProvider = ({
 					{(isCustomOpenAiModelEntryVisible ||
 						(selectedModelId && !availableOpenAiModels.includes(selectedModelId))) && (
 						<DebouncedTextField
+							className="w-full"
 							initialValue={selectedModelId || ""}
 							onChange={(value) => handleOpenAiModelSelection(value)}
-							placeholder={"Enter Model ID..."}
-							style={{ width: "100%" }}>
-							<span style={{ fontWeight: 500 }}>Custom Model ID</span>
+							placeholder={"Enter Model ID..."}>
+							<span className="font-medium">Custom Model ID</span>
 						</DebouncedTextField>
 					)}
 				</div>
 			) : (
 				<DebouncedTextField
+					className="w-full mb-2.5"
 					initialValue={selectedModelId || ""}
 					onChange={(value) => handleOpenAiModelSelection(value)}
-					placeholder={"Enter Model ID..."}
-					style={{ width: "100%", marginBottom: 10 }}>
-					<span style={{ fontWeight: 500 }}>{t("apiConfig.modelId", "Model ID")}</span>
+					placeholder={"Enter Model ID..."}>
+					<span className="font-medium">{t("apiConfig.modelId", "Model ID")}</span>
 				</DebouncedTextField>
 			)}
 
@@ -321,17 +322,12 @@ export const OpenAICompatibleProvider = ({
 				const headerEntries = Object.entries(headers)
 
 				return (
-					<div style={{ marginBottom: 10 }}>
-						<div
-							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								alignItems: "center",
-							}}>
+					<div className="mb-2.5">
+						<div className="flex justify-between items-center">
 							<Tooltip>
 								<TooltipTrigger>
 									<div className="flex items-center gap-2">
-										<span style={{ fontWeight: 500 }}>Custom Headers</span>
+										<span className="font-medium">Custom Headers</span>
 										{remoteConfigSettings?.openAiHeaders !== undefined && (
 											<i className="codicon codicon-lock text-description text-sm" />
 										)}
@@ -358,8 +354,9 @@ export const OpenAICompatibleProvider = ({
 
 						<div>
 							{headerEntries.map(([key, value], index) => (
-								<div key={index} style={{ display: "flex", gap: 5, marginTop: 5 }}>
+								<div className="flex gap-[5px] mt-[5px]" key={index}>
 									<DebouncedTextField
+										className="w-[40%]"
 										disabled={remoteConfigSettings?.openAiHeaders !== undefined}
 										initialValue={key}
 										onChange={(newValue) => {
@@ -375,9 +372,9 @@ export const OpenAICompatibleProvider = ({
 											}
 										}}
 										placeholder="Header name"
-										style={{ width: "40%" }}
 									/>
 									<DebouncedTextField
+										className="w-[40%]"
 										disabled={remoteConfigSettings?.openAiHeaders !== undefined}
 										initialValue={value}
 										onChange={(newValue) => {
@@ -389,7 +386,6 @@ export const OpenAICompatibleProvider = ({
 											}).catch((error) => handleProviderConfigWriteError("headers", error))
 										}}
 										placeholder="Header value"
-										style={{ width: "40%" }}
 									/>
 									<VSCodeButton
 										appearance="secondary"
@@ -442,27 +438,12 @@ export const OpenAICompatibleProvider = ({
 			</VSCodeCheckbox>
 
 			<div
-				onClick={() => setModelConfigurationSelected((val) => !val)}
-				style={{
-					color: getAsVar(VSC_DESCRIPTION_FOREGROUND),
-					display: "flex",
-					margin: "10px 0",
-					cursor: "pointer",
-					alignItems: "center",
-				}}>
+				className="flex items-center my-2.5 cursor-pointer text-description"
+				onClick={() => setModelConfigurationSelected((val) => !val)}>
 				<span
-					className={`codicon ${modelConfigurationSelected ? "codicon-chevron-down" : "codicon-chevron-right"}`}
-					style={{
-						marginRight: "4px",
-					}}
+					className={`codicon mr-1 ${modelConfigurationSelected ? "codicon-chevron-down" : "codicon-chevron-right"}`}
 				/>
-				<span
-					style={{
-						fontWeight: 700,
-						textTransform: "uppercase",
-					}}>
-					Model Configuration
-				</span>
+				<span className="font-bold uppercase">Model Configuration</span>
 			</div>
 
 			{modelConfigurationSelected && (
@@ -490,8 +471,9 @@ export const OpenAICompatibleProvider = ({
 						Enable R1 messages format
 					</VSCodeCheckbox>
 
-					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
+					<div className="flex gap-2.5 mt-[5px]">
 						<DebouncedTextField
+							className="flex-1"
 							initialValue={
 								openAiModelInfo?.contextWindow
 									? openAiModelInfo.contextWindow.toString()
@@ -501,12 +483,12 @@ export const OpenAICompatibleProvider = ({
 								const modelInfo = openAiModelInfo ? { ...openAiModelInfo } : { ...openAiModelInfoSafeDefaults }
 								modelInfo.contextWindow = Number(value)
 								handleOpenAiModelInfoChange(modelInfo)
-							}}
-							style={{ flex: 1 }}>
-							<span style={{ fontWeight: 500 }}>{t("apiConfig.contextWindowSize", "Context Window Size")}</span>
+							}}>
+							<span className="font-medium">{t("apiConfig.contextWindowSize", "Context Window Size")}</span>
 						</DebouncedTextField>
 
 						<DebouncedTextField
+							className="flex-1"
 							initialValue={
 								openAiModelInfo?.maxTokens
 									? openAiModelInfo.maxTokens.toString()
@@ -516,14 +498,14 @@ export const OpenAICompatibleProvider = ({
 								const modelInfo = openAiModelInfo ? { ...openAiModelInfo } : { ...openAiModelInfoSafeDefaults }
 								modelInfo.maxTokens = Number(value)
 								handleOpenAiModelInfoChange(modelInfo)
-							}}
-							style={{ flex: 1 }}>
-							<span style={{ fontWeight: 500 }}>Max Output Tokens</span>
+							}}>
+							<span className="font-medium">Max Output Tokens</span>
 						</DebouncedTextField>
 					</div>
 
-					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
+					<div className="flex gap-2.5 mt-[5px]">
 						<DebouncedTextField
+							className="flex-1"
 							initialValue={
 								openAiModelInfo?.inputPrice
 									? openAiModelInfo.inputPrice.toString()
@@ -533,12 +515,12 @@ export const OpenAICompatibleProvider = ({
 								const modelInfo = openAiModelInfo ? { ...openAiModelInfo } : { ...openAiModelInfoSafeDefaults }
 								modelInfo.inputPrice = parsePrice(value, openAiModelInfoSafeDefaults.inputPrice ?? 0)
 								handleOpenAiModelInfoChange(modelInfo)
-							}}
-							style={{ flex: 1 }}>
-							<span style={{ fontWeight: 500 }}>{t("apiConfig.inputPrice", "Input Price / 1M tokens")}</span>
+							}}>
+							<span className="font-medium">{t("apiConfig.inputPrice", "Input Price / 1M tokens")}</span>
 						</DebouncedTextField>
 
 						<DebouncedTextField
+							className="flex-1"
 							initialValue={
 								openAiModelInfo?.outputPrice
 									? openAiModelInfo.outputPrice.toString()
@@ -548,13 +530,12 @@ export const OpenAICompatibleProvider = ({
 								const modelInfo = openAiModelInfo ? { ...openAiModelInfo } : { ...openAiModelInfoSafeDefaults }
 								modelInfo.outputPrice = parsePrice(value, openAiModelInfoSafeDefaults.outputPrice ?? 0)
 								handleOpenAiModelInfoChange(modelInfo)
-							}}
-							style={{ flex: 1 }}>
-							<span style={{ fontWeight: 500 }}>{t("apiConfig.outputPrice", "Output Price / 1M tokens")}</span>
+							}}>
+							<span className="font-medium">{t("apiConfig.outputPrice", "Output Price / 1M tokens")}</span>
 						</DebouncedTextField>
 					</div>
 
-					<div style={{ display: "flex", gap: 10, marginTop: "5px" }}>
+					<div className="flex gap-2.5 mt-[5px]">
 						<DebouncedTextField
 							initialValue={
 								openAiModelInfo?.temperature
@@ -566,21 +547,16 @@ export const OpenAICompatibleProvider = ({
 								modelInfo.temperature = parsePrice(value, openAiModelInfoSafeDefaults.temperature ?? 0)
 								handleOpenAiModelInfoChange(modelInfo)
 							}}>
-							<span style={{ fontWeight: 500 }}>Temperature</span>
+							<span className="font-medium">Temperature</span>
 						</DebouncedTextField>
 					</div>
 				</>
 			)}
 
-			<p
-				style={{
-					fontSize: "12px",
-					marginTop: 3,
-					color: "var(--vscode-descriptionForeground)",
-				}}>
-				<span style={{ color: "var(--vscode-errorForeground)" }}>
-					(<span style={{ fontWeight: 500 }}>Note:</span> LingInk uses complex academic writing prompts, so behavior can vary across
-					models. Less capable models may not work as expected.)
+			<p className="text-[12px] mt-[3px] text-description">
+				<span className="text-error">
+					(<span className="font-medium">Note:</span> LingInk uses complex academic writing prompts, so behavior can
+					vary across models. Less capable models may not work as expected.)
 				</span>
 			</p>
 

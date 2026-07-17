@@ -1,6 +1,7 @@
 import * as vscode from "vscode"
 import { getNonce } from "@/core/webview/getNonce"
 import type { EditReviewHunk, EditReviewState } from "@/shared/ExtensionMessage"
+import { Logger } from "@/shared/services/Logger"
 import type { EditReviewAction } from "@/shared/WebviewMessage"
 
 interface EditReviewWebviewPanelCallbacks {
@@ -75,26 +76,33 @@ export class EditReviewWebviewPanel implements vscode.Disposable {
 	private async handleMessage(message: unknown): Promise<void> {
 		const action = parseReviewAction(message)
 		if (!action) {
+			Logger.warn("[EditReviewWebviewPanel] Ignored invalid review action:", message)
 			return
 		}
 
-		if (action.action === "acceptAll") {
-			await this.callbacks.accept()
-		} else if (action.action === "rejectAll") {
-			await this.callbacks.reject()
-		} else if (action.action === "accept") {
-			await this.callbacks.accept(action.filePath)
-		} else if (action.action === "reject") {
-			await this.callbacks.reject(action.filePath)
-		} else if (action.action === "openDiff") {
-			await this.callbacks.openDiff(action.filePath)
-		} else if (action.action === "acceptHunk") {
-			await this.callbacks.acceptHunk(action.hunkId)
-		} else if (action.action === "rejectHunk") {
-			await this.callbacks.rejectHunk(action.hunkId)
-		}
+		try {
+			if (action.action === "acceptAll") {
+				await this.callbacks.accept()
+			} else if (action.action === "rejectAll") {
+				await this.callbacks.reject()
+			} else if (action.action === "accept") {
+				await this.callbacks.accept(action.filePath)
+			} else if (action.action === "reject") {
+				await this.callbacks.reject(action.filePath)
+			} else if (action.action === "openDiff") {
+				await this.callbacks.openDiff(action.filePath)
+			} else if (action.action === "acceptHunk") {
+				await this.callbacks.acceptHunk(action.hunkId)
+			} else if (action.action === "rejectHunk") {
+				await this.callbacks.rejectHunk(action.hunkId)
+			}
 
-		this.refresh()
+			this.refresh()
+		} catch (error) {
+			Logger.error("[EditReviewWebviewPanel] Failed to apply review action:", error)
+			const showErrorMessage = vscode.window.showErrorMessage?.bind(vscode.window)
+			showErrorMessage?.("应用审阅操作失败，请打开输出日志查看详情。")
+		}
 	}
 
 	private render(review: EditReviewState): void {
@@ -316,13 +324,16 @@ function renderReviewHtml(review: EditReviewState, nonce: string): string {
 	<script nonce="${nonce}">
 		const vscode = acquireVsCodeApi();
 		document.addEventListener("click", (event) => {
-			const button = event.target.closest("button[data-action]");
+			const target = event.target;
+			const element = target instanceof Element ? target : target instanceof Node ? target.parentElement : null;
+			const button = element?.closest("button[data-action]");
 			if (!button) return;
-			vscode.postMessage({
-				action: button.dataset.action,
-				filePath: button.dataset.filePath,
-				hunkId: button.dataset.hunkId
-			});
+			const message = { action: button.getAttribute("data-action") };
+			const filePath = button.getAttribute("data-file-path");
+			const hunkId = button.getAttribute("data-hunk-id");
+			if (filePath) message.filePath = filePath;
+			if (hunkId) message.hunkId = hunkId;
+			vscode.postMessage(message);
 		});
 	</script>
 </body>

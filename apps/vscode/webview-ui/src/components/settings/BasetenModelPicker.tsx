@@ -37,8 +37,16 @@ const BasetenModelPicker: React.FC<BasetenModelPickerProps> = ({ isPopup, curren
 
 		handleModeFieldsChange(
 			{
-				basetenModelId: { plan: "planModeBasetenModelId", act: "actModeBasetenModelId", academic: "academicModeBasetenModelId" },
-				basetenModelInfo: { plan: "planModeBasetenModelInfo", act: "actModeBasetenModelInfo", academic: "academicModeBasetenModelInfo" },
+				basetenModelId: {
+					plan: "planModeBasetenModelId",
+					act: "actModeBasetenModelId",
+					academic: "academicModeBasetenModelId",
+				},
+				basetenModelInfo: {
+					plan: "planModeBasetenModelInfo",
+					act: "actModeBasetenModelInfo",
+					academic: "academicModeBasetenModelInfo",
+				},
 			},
 			{
 				basetenModelId: newModelId,
@@ -264,7 +272,7 @@ const BasetenModelPicker: React.FC<BasetenModelPickerProps> = ({ isPopup, curren
 			{hasInfo ? (
 				<ModelInfoView isPopup={isPopup} modelInfo={selectedModelInfo} selectedModelId={selectedModelId} />
 			) : (
-				<p className="text-xs mt-0 text-(--vscode-descriptionForeground)">
+				<p className="text-xs mt-0 text-description">
 					The extension automatically fetches the latest list of models available on{" "}
 					<VSCodeLink className="inline text-inherit" href="https://www.baseten.co/products/model-apis/">
 						Baseten.

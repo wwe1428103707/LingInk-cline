@@ -648,7 +648,7 @@ const TabsContainer = styled.div`
 	display: flex;
 	gap: 0;
 	margin-bottom: 12px;
-	border-bottom: 1px solid #333;
+	border-bottom: 1px solid var(--color-border-panel);
 `
 
 const Tab = styled.div<{ active: boolean }>`

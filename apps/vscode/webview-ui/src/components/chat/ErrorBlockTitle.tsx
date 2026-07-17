@@ -29,7 +29,7 @@ export const ErrorBlockTitle = ({
 	const icon =
 		apiReqCancelReason != null ? (
 			apiReqCancelReason === "user_cancelled" ? (
-				getIconSpan("error", "text-(--vscode-descriptionForeground)")
+				getIconSpan("error", "text-description")
 			) : (
 				getIconSpan("error", "text-(--vscode-errorForeground)")
 			)

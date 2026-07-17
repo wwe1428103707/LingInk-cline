@@ -4,11 +4,13 @@ import { memo, useEffect, useState } from "react"
 import ClineLogoWhite from "@/assets/ClineLogoWhite"
 import ApiOptions from "@/components/settings/ApiOptions"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useTranslation } from "@/i18n"
 import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { validateApiConfiguration } from "@/utils/validate"
 
 const WelcomeView = memo(() => {
 	const { apiConfiguration, mode } = useExtensionState()
+	const { t } = useTranslation()
 	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
 	const [showApiOptions, setShowApiOptions] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
@@ -39,26 +41,31 @@ const WelcomeView = memo(() => {
 	return (
 		<div className="fixed inset-0 p-0 flex flex-col">
 			<div className="h-full px-5 overflow-auto flex flex-col gap-2.5">
-				<h2 className="text-lg font-semibold">Hi, I'm LingInk</h2>
+				<h2 className="text-lg font-semibold">{t("welcome.intro.greeting", "Hi, I'm LingInk")}</h2>
 				<div className="flex justify-center my-5">
 					<ClineLogoWhite className="size-16" />
 				</div>
 				<p>
-					I help with academic writing tasks using strong language models such as{" "}
+					{t("welcome.intro.description", "I help with academic writing tasks using strong language models such as")}{" "}
 					<VSCodeLink className="inline" href="https://www.anthropic.com/claude/sonnet">
 						Claude Sonnet
 					</VSCodeLink>
-					. I can help plan papers, review literature, polish drafts, inspect argument logic, suggest citations, and
-					prepare reviewer responses <i>(with your permission, of course)</i>.
+					{t(
+						"welcome.intro.descriptionSuffix",
+						". I can help plan papers, review literature, polish drafts, inspect argument logic, suggest citations, and prepare reviewer responses",
+					)}
+					<i>{t("welcome.intro.permissionNote", "(with your permission, of course)")}</i>.
 				</p>
 
-				<p className="text-(--vscode-descriptionForeground)">
-					Sign up for an account to get started for free, or use an API key that provides access to models suited to
-					research and writing.
+				<p className="text-description">
+					{t(
+						"welcome.intro.signupHint",
+						"Sign up for an account to get started for free, or use an API key that provides access to models suited to research and writing.",
+					)}
 				</p>
 
 				<VSCodeButton appearance="primary" className="w-full mt-1" disabled={isLoading} onClick={handleLogin}>
-					Get Started for Free
+					{t("welcome.intro.getStarted", "Get Started for Free")}
 					{isLoading && (
 						<span className="ml-1 animate-spin">
 							<span className="codicon codicon-refresh" />
@@ -71,7 +78,7 @@ const WelcomeView = memo(() => {
 						appearance="secondary"
 						className="mt-2.5 w-full"
 						onClick={() => setShowApiOptions(!showApiOptions)}>
-						Use your own API key
+						{t("welcome.intro.useOwnApiKey", "Use your own API key")}
 					</VSCodeButton>
 				)}
 
@@ -80,7 +87,7 @@ const WelcomeView = memo(() => {
 						<div>
 							<ApiOptions currentMode={mode} showModelOptions={false} />
 							<VSCodeButton className="mt-0.75" disabled={disableLetsGoButton} onClick={handleSubmit}>
-								Let's go!
+								{t("welcome.intro.letsGo", "Let's go!")}
 							</VSCodeButton>
 						</div>
 					)}

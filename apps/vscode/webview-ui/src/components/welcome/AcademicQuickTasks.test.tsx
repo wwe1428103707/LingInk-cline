@@ -16,10 +16,10 @@ describe("AcademicQuickTasks", () => {
 
 		render(<AcademicQuickTasks onSelectTask={onSelectTask} />)
 
-		await user.click(screen.getByRole("button", { name: /选题引导/ }))
-		await user.click(screen.getByRole("button", { name: /科研全流程/ }))
-		await user.click(screen.getByRole("button", { name: /实验助手/ }))
-		await user.click(screen.getByRole("button", { name: /引用核查/ }))
+		await user.click(screen.getByRole("button", { name: /Topic Selection/ }))
+		await user.click(screen.getByRole("button", { name: /Full Research Pipeline/ }))
+		await user.click(screen.getByRole("button", { name: /Experiment Assistant/ }))
+		await user.click(screen.getByRole("button", { name: /Citation Check/ }))
 
 		expect(onSelectTask).toHaveBeenNthCalledWith(1, RESEARCH_TOPIC_PROMPT)
 		expect(onSelectTask).toHaveBeenNthCalledWith(2, ACADEMIC_PIPELINE_PROMPT)

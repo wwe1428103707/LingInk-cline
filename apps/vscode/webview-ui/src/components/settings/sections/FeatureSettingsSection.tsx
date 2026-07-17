@@ -132,7 +132,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 		},
 		{
 			id: "checkpoints",
-			label: t("settings.checkpoints", "论文版本快照"),
+			label: t("settings.checkpoints", "Checkpoints"),
 			description: t("settings.checkpoints.desc", "Save progress at key points for easy rollback"),
 			stateKey: "enableCheckpointsSetting",
 			settingKey: "enableCheckpointsSetting",
@@ -187,7 +187,13 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 				setInstallingSkills(false)
 				const result = data.installSkillsResult
 				if (result && !result.success) {
-					setInstallError(result.error || "安装失败，请查看控制台日志")
+					setInstallError(
+						result.error ||
+							t(
+								"settings.academicSkills.installFailed",
+								"Installation failed. Check the console logs for details.",
+							),
+					)
 					setSkillsInstalled(false)
 				} else {
 					setInstallError(null)
@@ -322,15 +328,21 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 
 				{/* LingInk bundled academic skills */}
 				<div>
-					<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">灵砚内置学术技能</div>
+					<div className="text-xs font-medium text-foreground/80 uppercase tracking-wider mb-3">
+						{t("settings.academicSkills.section", "LingInk Bundled Academic Skills")}
+					</div>
 					<div className="relative p-3 my-3 rounded-md border border-editor-widget-border/50 space-y-2">
 						<p className="text-xs text-muted-foreground">
-							安装 bundled-skills 目录下的全部内置技能，包括 ARS 学术研究技能、润色技能、实验助手和 Word/PPT
-							助手，支持文献综述、论文写作、MATLAB/Python 仿真分析、论文配图、阅读报告和组会/开题/中期/答辩 PPT。
+							{t(
+								"settings.academicSkills.desc",
+								"Install all bundled skills from the bundled-skills directory, including ARS academic research skills, polishing skills, experiment assistant, and Word/PPT assistants. They support literature reviews, paper writing, MATLAB/Python simulation analysis, paper figures, reading reports, and group meeting, proposal, midterm, and defense presentations.",
+							)}
 						</p>
 						{skillsInstalled === true ? (
 							<div className="flex items-center gap-2">
-								<span className="text-xs text-green-500">✓ 已安装</span>
+								<span className="text-xs text-success">
+									{t("settings.academicSkills.installed", "✓ Installed")}
+								</span>
 								<VSCodeButton
 									appearance="secondary"
 									disabled={installingSkills}
@@ -338,7 +350,9 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 										setInstallingSkills(true)
 										PLATFORM_CONFIG.postMessage({ type: "installSkills" })
 									}}>
-									{installingSkills ? "安装中..." : "重新安装"}
+									{installingSkills
+										? t("settings.academicSkills.installing", "Installing...")
+										: t("settings.academicSkills.reinstall", "Reinstall")}
 								</VSCodeButton>
 							</div>
 						) : (
@@ -349,16 +363,29 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 									setInstallingSkills(true)
 									PLATFORM_CONFIG.postMessage({ type: "installSkills" })
 								}}>
-								{installingSkills ? "安装中..." : skillsInstalled === null ? "检查中..." : "📥 安装内置学术技能"}
+								{installingSkills
+									? t("settings.academicSkills.installing", "Installing...")
+									: skillsInstalled === null
+										? t("settings.academicSkills.checking", "Checking...")
+										: t("settings.academicSkills.install", "Install Bundled Academic Skills")}
 							</VSCodeButton>
 						)}
-						{installSuccess && <p className="text-xs text-green-500 mt-1">✓ 安装成功！重启 LingInk 会话后即可使用</p>}
-						{installError && <p className="text-xs text-red-500 mt-1">{installError}</p>}
+						{installSuccess && (
+							<p className="text-xs text-success mt-1">
+								{t(
+									"settings.academicSkills.installSuccess",
+									"✓ Installed successfully! Restart the LingInk session to start using them.",
+								)}
+							</p>
+						)}
+						{installError && <p className="text-xs text-error mt-1">{installError}</p>}
 
 						{/* Check Update */}
 						<div className="flex gap-2 pt-1">
 							<VSCodeButton appearance="secondary" disabled={checking || updating} onClick={handleCheckUpdate}>
-								{checking ? "检查中..." : "🔄 检查更新"}
+								{checking
+									? t("settings.academicSkills.checking", "Checking...")
+									: t("settings.academicSkills.checkUpdate", "Check for Updates")}
 							</VSCodeButton>
 						</div>
 
@@ -369,7 +396,14 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 								) : updateInfo.hasUpdate ? (
 									<>
 										<p className="text-sm font-medium text-(--vscode-terminal-ansiYellow)">
-											📦 有新版本可用: v{updateInfo.currentVersion} → v{updateInfo.latestVersion}
+											{t(
+												"settings.academicSkills.updateAvailable",
+												"📦 New version available: v{currentVersion} → v{latestVersion}",
+												{
+													currentVersion: updateInfo.currentVersion,
+													latestVersion: updateInfo.latestVersion,
+												},
+											)}
 										</p>
 										{updateInfo.releaseNotes && (
 											<p className="text-xs text-description mt-1 line-clamp-3">
@@ -378,18 +412,22 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 										)}
 										<div className="flex gap-2 mt-2">
 											<VSCodeButton appearance="primary" disabled={updating} onClick={handleUpdate}>
-												{updating ? "升级中..." : "⬆️ 升级"}
+												{updating
+													? t("settings.academicSkills.updating", "Updating...")
+													: t("settings.academicSkills.update", "Update")}
 											</VSCodeButton>
 											<VSCodeButton
 												appearance="secondary"
 												onClick={() => window.open(updateInfo.releaseUrl, "_blank")}>
-												📖 发布说明
+												{t("settings.academicSkills.releaseNotes", "Release Notes")}
 											</VSCodeButton>
 										</div>
 									</>
 								) : (
 									<p className="text-sm text-(--vscode-terminal-ansiGreen)">
-										✅ 已是最新版本 (v{updateInfo.currentVersion})
+										{t("settings.academicSkills.upToDate", "✅ Already up to date (v{currentVersion})", {
+											currentVersion: updateInfo.currentVersion,
+										})}
 									</p>
 								)}
 							</div>

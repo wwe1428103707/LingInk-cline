@@ -3,8 +3,8 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useMemo, useState } from "react"
 import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
 import { useClineAuth } from "@/context/ClineAuthContext"
-import { AccountServiceClient, TaskServiceClient } from "@/services/grpc-client"
 import { t } from "@/i18n"
+import { AccountServiceClient, TaskServiceClient } from "@/services/grpc-client"
 
 interface CreditLimitErrorProps {
 	currentBalance: number
@@ -51,7 +51,7 @@ const CreditLimitError: React.FC<CreditLimitErrorProps> = ({
 
 	// We have to divide because the balance is stored in microcredits
 	return (
-		<div className="p-2 border-none rounded-md mb-2 bg-(--vscode-textBlockQuote-background)">
+		<div className="p-2 border-none rounded-md mb-2 bg-quote">
 			<div className="mb-3 font-azeret-mono">
 				<div className="text-error mb-2">{message}</div>
 				<div className="mb-3">
@@ -60,9 +60,15 @@ const CreditLimitError: React.FC<CreditLimitErrorProps> = ({
 							Current Balance: <span className="font-bold">{currentBalance.toFixed(2)}</span>
 						</div>
 					) : null}
-					{totalSpent ? <div className="text-foreground">{t("creditLimit.totalSpent", "Total Spent:")} {totalSpent.toFixed(2)}</div> : null}
+					{totalSpent ? (
+						<div className="text-foreground">
+							{t("creditLimit.totalSpent", "Total Spent:")} {totalSpent.toFixed(2)}
+						</div>
+					) : null}
 					{totalPromotions ? (
-						<div className="text-foreground">{t("creditLimit.totalPromotions", "Total Promotions:")} {totalPromotions.toFixed(2)}</div>
+						<div className="text-foreground">
+							{t("creditLimit.totalPromotions", "Total Promotions:")} {totalPromotions.toFixed(2)}
+						</div>
 					) : null}
 				</div>
 			</div>

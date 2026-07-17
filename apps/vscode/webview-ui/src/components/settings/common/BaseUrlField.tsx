@@ -1,6 +1,6 @@
-import { t } from "@/i18n"
 import { VSCodeCheckbox, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
+import { t } from "@/i18n"
 import { useDebouncedInput } from "../utils/useDebouncedInput"
 
 /**
@@ -45,7 +45,7 @@ export const BaseUrlField = ({
 				<VSCodeCheckbox checked={isEnabled} disabled={disabled} onChange={handleToggle}>
 					{label}
 				</VSCodeCheckbox>
-				{showLockIcon && <i className="codicon codicon-lock text-(--vscode-descriptionForeground) text-sm" />}
+				{showLockIcon && <i className="codicon codicon-lock text-description text-sm" />}
 			</div>
 
 			{isEnabled && (

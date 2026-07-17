@@ -190,7 +190,7 @@ const FileBlock = memo<{ file: Patch; isStreaming: boolean; startLineNumber?: nu
 )
 
 const DiffStats = memo<{ additions: number; deletions: number }>(({ additions, deletions }) => (
-	<div className="text-xs text-gray-500 flex">
+	<div className="text-xs text-description flex">
 		{additions > 0 && <span className="text-success">+{additions}</span>}
 		{additions > 0 && deletions > 0 && <span className="mx-1">·</span>}
 		{deletions > 0 && <span className="text-error">-{deletions}</span>}
@@ -213,11 +213,11 @@ const DiffLine = memo<{ line: string; lineNumber?: number; showLineNumberColumn?
 				className={cn(
 					"flex text-xs font-mono",
 					// Row background tint
-					isAddition && "bg-green-500/10",
-					isDeletion && "bg-red-500/10",
+					isAddition && "bg-diff-added",
+					isDeletion && "bg-diff-removed",
 					// Left indicator bar (the colored stripe)
-					isAddition && "border-l-4 border-l-green-500",
-					isDeletion && "border-l-4 border-l-red-500",
+					isAddition && "border-l-4 border-l-success",
+					isDeletion && "border-l-4 border-l-error",
 					!isAddition && !isDeletion && "border-l-4 border-l-transparent",
 				)}>
 				{/* Line number column - always reserve space to prevent layout shift during streaming */}
@@ -225,8 +225,8 @@ const DiffLine = memo<{ line: string; lineNumber?: number; showLineNumberColumn?
 					<span
 						className={cn(
 							"w-10 min-w-10 text-right pr-2 py-0.5 select-none border-r border-code-block-background/50",
-							isAddition && "text-green-400/60",
-							isDeletion && "text-red-400/60",
+							isAddition && "text-success/60",
+							isDeletion && "text-error/60",
 							!isAddition && !isDeletion && "text-description/50",
 						)}>
 						{lineNumber ?? ""}
@@ -236,8 +236,8 @@ const DiffLine = memo<{ line: string; lineNumber?: number; showLineNumberColumn?
 				<span
 					className={cn(
 						"w-4 min-w-4 text-center py-0.5 select-none",
-						isAddition && "text-green-400",
-						isDeletion && "text-red-400",
+						isAddition && "text-success",
+						isDeletion && "text-error",
 						!isAddition && !isDeletion && "text-description/50",
 					)}>
 					{prefix}
@@ -246,8 +246,8 @@ const DiffLine = memo<{ line: string; lineNumber?: number; showLineNumberColumn?
 				<span
 					className={cn(
 						"flex-1 pr-2 py-0.5 whitespace-nowrap",
-						isAddition && "text-green-400",
-						isDeletion && "text-red-400",
+						isAddition && "text-success",
+						isDeletion && "text-error",
 						!isAddition && !isDeletion && "text-editor-foreground",
 					)}>
 					{code}

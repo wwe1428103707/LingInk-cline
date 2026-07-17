@@ -6,7 +6,7 @@ import styled from "styled-components"
 import { FileServiceClient } from "@/services/grpc-client"
 import { useDebounceEffect } from "@/utils/useDebounceEffect"
 
-const MERMAID_THEME = {
+const MERMAID_THEME_DARK = {
 	background: "#1e1e1e", // VS Code dark theme background
 	textColor: "#ffffff", // Main text color
 	mainBkg: "#2d2d2d", // Background for nodes
@@ -36,45 +36,89 @@ const MERMAID_THEME = {
 	fillType2: "#454545",
 }
 
-mermaid.initialize({
-	startOnLoad: false,
-	securityLevel: "loose",
-	theme: "dark",
-	themeVariables: {
-		...MERMAID_THEME,
-		fontSize: "16px",
-		fontFamily: "var(--vscode-font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif)",
+const MERMAID_THEME_LIGHT = {
+	background: "#ffffff",
+	textColor: "#1f1f1f",
+	mainBkg: "#f3f3f3",
+	nodeBorder: "#919191",
+	lineColor: "#5a5a5a",
+	primaryColor: "#e8e8e8",
+	primaryTextColor: "#1f1f1f",
+	primaryBorderColor: "#919191",
+	secondaryColor: "#f3f3f3",
+	tertiaryColor: "#e0e0e0",
 
-		// Additional styling
-		noteTextColor: "#ffffff",
-		noteBkgColor: "#454545",
-		noteBorderColor: "#888888",
+	// Class diagram specific
+	classText: "#1f1f1f",
 
-		// Improve contrast for special elements
-		critBorderColor: "#ff9580",
-		critBkgColor: "#803d36",
+	// State diagram specific
+	labelColor: "#1f1f1f",
 
-		// Task diagram specific
-		taskTextColor: "#ffffff",
-		taskTextOutsideColor: "#ffffff",
-		taskTextLightColor: "#ffffff",
+	// Sequence diagram specific
+	actorLineColor: "#5a5a5a",
+	actorBkg: "#f3f3f3",
+	actorBorder: "#919191",
+	actorTextColor: "#1f1f1f",
 
-		// Numbers/sections
-		sectionBkgColor: "#2d2d2d",
-		sectionBkgColor2: "#3c3c3c",
+	// Flow diagram specific
+	fillType0: "#f3f3f3",
+	fillType1: "#e8e8e8",
+	fillType2: "#e0e0e0",
+}
 
-		// Alt sections in sequence diagrams
-		altBackground: "#2d2d2d",
+/** VS Code signals the active theme kind via classes on <body> (vscode-dark / vscode-light / vscode-high-contrast*) */
+function isVsCodeDarkTheme(): boolean {
+	if (typeof document === "undefined") {
+		return true
+	}
+	const classes = document.body.classList
+	return !classes.contains("vscode-light") && !classes.contains("vscode-high-contrast-light")
+}
 
-		// Links
-		linkColor: "#6cb6ff",
+function mermaidConfigForTheme(isDark: boolean): Parameters<typeof mermaid.initialize>[0] {
+	const palette = isDark ? MERMAID_THEME_DARK : MERMAID_THEME_LIGHT
+	return {
+		startOnLoad: false,
+		securityLevel: "loose",
+		theme: isDark ? "dark" : "default",
+		themeVariables: {
+			...palette,
+			fontSize: "16px",
+			fontFamily: "var(--vscode-font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif)",
 
-		// Borders and lines
-		compositeBackground: "#2d2d2d",
-		compositeBorder: "#888888",
-		titleColor: "#ffffff",
-	},
-})
+			// Additional styling
+			noteTextColor: palette.textColor,
+			noteBkgColor: palette.tertiaryColor,
+			noteBorderColor: palette.nodeBorder,
+
+			// Improve contrast for special elements
+			critBorderColor: isDark ? "#ff9580" : "#c5221f",
+			critBkgColor: isDark ? "#803d36" : "#f9e3e1",
+
+			// Task diagram specific
+			taskTextColor: palette.textColor,
+			taskTextOutsideColor: palette.textColor,
+			taskTextLightColor: palette.textColor,
+
+			// Numbers/sections
+			sectionBkgColor: palette.mainBkg,
+			sectionBkgColor2: palette.primaryColor,
+
+			// Alt sections in sequence diagrams
+			altBackground: palette.mainBkg,
+
+			// Links
+			linkColor: isDark ? "#6cb6ff" : "#006ab1",
+
+			// Borders and lines
+			compositeBackground: palette.mainBkg,
+			compositeBorder: palette.nodeBorder,
+			titleColor: palette.textColor,
+		},
+	}
+}
+
+mermaid.initialize(mermaidConfigForTheme(isVsCodeDarkTheme()))
 
 interface MermaidBlockProps {
 	code: string
@@ -83,6 +127,20 @@ interface MermaidBlockProps {
 export default function MermaidBlock({ code }: MermaidBlockProps) {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const [isLoading, setIsLoading] = useState(false)
+	const [isDark, setIsDark] = useState(isVsCodeDarkTheme)
+
+	// Watch <body> for VS Code theme-kind switches (vscode-dark / vscode-light / ...)
+	useEffect(() => {
+		const observer = new MutationObserver(() => setIsDark(isVsCodeDarkTheme()))
+		observer.observe(document.body, { attributes: true, attributeFilter: ["class"] })
+		return () => observer.disconnect()
+	}, [])
+
+	// Re-initialize mermaid with the matching palette and schedule a re-render
+	useEffect(() => {
+		mermaid.initialize(mermaidConfigForTheme(isDark))
+		setIsLoading(true)
+	}, [isDark])
 
 	// 1) Whenever `code` changes, mark that we need to re-render a new chart
 	useEffect(() => {
@@ -118,7 +176,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 				})
 		},
 		500, // Delay 500ms
-		[code], // Dependencies for scheduling
+		[code, isDark], // Dependencies for scheduling
 	)
 
 	/**
@@ -157,7 +215,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 			{isLoading && <LoadingMessage>Generating mermaid diagram...</LoadingMessage>}
 			<ButtonContainer>
 				<StyledVSCodeButton aria-label="Copy Code" onClick={handleCopyCode} title="Copy Code">
-					<span className="codicon codicon-copy"></span>
+					<span className="codicon codicon-copy" />
 				</StyledVSCodeButton>
 			</ButtonContainer>
 			<SvgContainer $isLoading={isLoading} onClick={handleClick} ref={containerRef} />
@@ -166,7 +224,6 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 }
 
 async function svgToPng(svgEl: SVGElement): Promise<string> {
-	console.log("svgToPng function called")
 	// Clone the SVG to avoid modifying the original
 	const svgClone = svgEl.cloneNode(true) as SVGElement
 
@@ -207,8 +264,8 @@ async function svgToPng(svgEl: SVGElement): Promise<string> {
 				return reject("Canvas context not available")
 			}
 
-			// Fill background with Mermaid's dark theme background color
-			ctx.fillStyle = MERMAID_THEME.background
+			// Fill background with the current theme's background color
+			ctx.fillStyle = isVsCodeDarkTheme() ? MERMAID_THEME_DARK.background : MERMAID_THEME_LIGHT.background
 			ctx.fillRect(0, 0, canvas.width, canvas.height)
 
 			ctx.imageSmoothingEnabled = true

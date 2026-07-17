@@ -4,10 +4,10 @@ import React, { useState } from "react"
 import { PlatformType } from "@/config/platform.config"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { usePlatform } from "@/context/PlatformContext"
+import { t } from "@/i18n"
 import { StateServiceClient } from "../../../services/grpc-client"
 import Section from "../Section"
 import { updateSetting } from "../utils/settingsHandlers"
-import { t } from "@/i18n"
 
 interface TerminalSettingsSectionProps {
 	renderSectionHeader: (tabId: string) => JSX.Element | null
@@ -107,7 +107,7 @@ const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ rende
 								</VSCodeOption>
 							))}
 						</VSCodeDropdown>
-						<p className="text-xs text-(--vscode-descriptionForeground) mt-1">
+						<p className="text-xs text-description mt-1">
 							Select the default terminal LingInk will use. 'Default' uses your VSCode global setting.
 						</p>
 					</div>
@@ -126,7 +126,7 @@ const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ rende
 							</div>
 							{inputError && <div className="text-(--vscode-errorForeground) text-xs mt-1">{inputError}</div>}
 						</div>
-						<p className="text-xs text-(--vscode-descriptionForeground)">
+						<p className="text-xs text-description">
 							Set how long LingInk waits for shell integration to activate before executing commands. Increase this
 							value if you experience terminal connection timeouts.
 						</p>
@@ -140,9 +140,9 @@ const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ rende
 								Enable aggressive terminal reuse
 							</VSCodeCheckbox>
 						</div>
-						<p className="text-xs text-(--vscode-descriptionForeground)">
-							When enabled, LingInk will reuse existing terminal windows that aren't in the current working directory.
-							Disable this if you experience issues with task lockout after a terminal command.
+						<p className="text-xs text-description">
+							When enabled, LingInk will reuse existing terminal windows that aren't in the current working
+							directory. Disable this if you experience issues with task lockout after a terminal command.
 						</p>
 					</div>
 					{isVsCodePlatform && (
@@ -163,7 +163,7 @@ const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ rende
 							</p>
 						</div>
 					)}
-					<div className="mt-5 p-3 bg-(--vscode-textBlockQuote-background) rounded border border-(--vscode-textBlockQuote-border)">
+					<div className="mt-5 p-3 bg-quote rounded border border-(--vscode-textBlockQuote-border)">
 						<p className="text-[13px] m-0">
 							<strong>Having terminal issues?</strong> Check our{" "}
 							<a

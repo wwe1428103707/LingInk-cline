@@ -5,8 +5,8 @@ import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mc
 import { useEffect, useState } from "react"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { McpServiceClient } from "@/services/grpc-client"
 import { t } from "@/i18n"
+import { McpServiceClient } from "@/services/grpc-client"
 import ViewHeader from "../../common/ViewHeader"
 import AddRemoteServerForm from "./tabs/add-server/AddRemoteServerForm"
 import ConfigureServersView from "./tabs/installed/ConfigureServersView"
@@ -68,11 +68,11 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 					}}>
 					{showRemoteServers && (
 						<TabButton isActive={activeTab === "addRemote"} onClick={() => handleTabChange("addRemote")}>
-							Remote Servers
+							{t("mcp.tabs.remoteServers", "Remote Servers")}
 						</TabButton>
 					)}
 					<TabButton isActive={activeTab === "configure"} onClick={() => handleTabChange("configure")}>
-						Configure
+						{t("mcp.tabs.configure", "Configure")}
 					</TabButton>
 				</div>
 
@@ -91,20 +91,21 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 const StyledTabButton = styled.button.withConfig({
 	shouldForwardProp: (prop) => !["isActive"].includes(prop),
 })<{ isActive: boolean; disabled?: boolean }>`
-	background: none;
+	background: ${(props) => (props.isActive ? "var(--vscode-list-activeSelectionBackground)" : "none")};
 	border: none;
 	border-bottom: 2px solid ${(props) => (props.isActive ? "var(--vscode-foreground)" : "transparent")};
-	color: ${(props) => (props.isActive ? "var(--vscode-foreground)" : "var(--vscode-descriptionForeground)")};
+	color: var(--vscode-foreground);
 	padding: 8px 16px;
 	cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
 	font-size: 13px;
 	margin-bottom: -1px;
 	font-family: inherit;
-	opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+	opacity: ${(props) => (props.disabled ? 0.6 : props.isActive ? 1 : 0.7)};
 	pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
 
 	&:hover {
-		color: ${(props) => (props.disabled ? "var(--vscode-descriptionForeground)" : "var(--vscode-foreground)")};
+		background: ${(props) => (props.disabled ? "none" : "var(--vscode-list-hoverBackground)")};
+		opacity: ${(props) => (props.disabled ? 0.6 : 1)};
 	}
 `
 

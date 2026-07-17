@@ -20,7 +20,7 @@ const DebugSection = ({ onResetState, renderSectionHeader }: DebugSectionProps) 
 				<Button onClick={() => onResetState(true)} variant="error">
 					Reset Global State
 				</Button>
-				<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
+				<p className="text-xs mt-[5px] text-description">
 					This will reset all global state and secret storage in the extension.
 				</p>
 			</Section>

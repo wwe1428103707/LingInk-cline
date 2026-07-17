@@ -3,13 +3,13 @@ import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { t } from "@/i18n"
 import { StateServiceClient } from "@/services/grpc-client"
 import { TabButton } from "../../mcp/configuration/McpConfigurationView"
 import ApiOptions from "../ApiOptions"
 import Section from "../Section"
 import { syncModeConfigurations } from "../utils/providerUtils"
 import { useApiConfigurationHandlers } from "../utils/useApiConfigurationHandlers"
-import { t } from "@/i18n"
 
 interface ApiConfigurationSectionProps {
 	renderSectionHeader?: (tabId: string) => JSX.Element | null
@@ -27,43 +27,43 @@ const ApiConfigurationSection = ({ renderSectionHeader, initialModelTab }: ApiCo
 				{/* Tabs container */}
 				{planActSeparateModelsSetting ? (
 					<div className="rounded-md mb-5">
-					<div className="flex gap-px mb-[10px] -mt-2 border-0 border-b border-solid border-(--vscode-panel-border)">
-						<TabButton
-							disabled={currentTab === "plan"}
-							isActive={currentTab === "plan"}
-							onClick={() => setCurrentTab("plan")}
-							style={{
-								opacity: 1,
-								cursor: "pointer",
-							}}>
-							{t("apiConfig.planMode", "Plan Mode")}
-						</TabButton>
-						<TabButton
-							disabled={currentTab === "act"}
-							isActive={currentTab === "act"}
-							onClick={() => setCurrentTab("act")}
-							style={{
-								opacity: 1,
-								cursor: "pointer",
-							}}>
-							{t("apiConfig.actMode", "Act Mode")}
-						</TabButton>
-						<TabButton
-							disabled={currentTab === "academic"}
-							isActive={currentTab === "academic"}
-							onClick={() => setCurrentTab("academic")}
-							style={{
-								opacity: 1,
-								cursor: "pointer",
-							}}>
-							{t("apiConfig.academicMode", "Academic")}
-						</TabButton>
-					</div>
+						<div className="flex gap-px mb-[10px] -mt-2 border-0 border-b border-solid border-(--vscode-panel-border)">
+							<TabButton
+								disabled={currentTab === "plan"}
+								isActive={currentTab === "plan"}
+								onClick={() => setCurrentTab("plan")}
+								style={{
+									opacity: 1,
+									cursor: "pointer",
+								}}>
+								{t("apiConfig.planMode", "Plan Mode")}
+							</TabButton>
+							<TabButton
+								disabled={currentTab === "act"}
+								isActive={currentTab === "act"}
+								onClick={() => setCurrentTab("act")}
+								style={{
+									opacity: 1,
+									cursor: "pointer",
+								}}>
+								{t("apiConfig.actMode", "Act Mode")}
+							</TabButton>
+							<TabButton
+								disabled={currentTab === "academic"}
+								isActive={currentTab === "academic"}
+								onClick={() => setCurrentTab("academic")}
+								style={{
+									opacity: 1,
+									cursor: "pointer",
+								}}>
+								{t("apiConfig.academicMode", "Academic")}
+							</TabButton>
+						</div>
 
-					{/* Content container */}
-					<div className="-mb-3">
-						<ApiOptions currentMode={currentTab} initialModelTab={initialModelTab} showModelOptions={true} />
-					</div>
+						{/* Content container */}
+						<div className="-mb-3">
+							<ApiOptions currentMode={currentTab} initialModelTab={initialModelTab} showModelOptions={true} />
+						</div>
 					</div>
 				) : (
 					<ApiOptions currentMode={mode} initialModelTab={initialModelTab} showModelOptions={true} />
@@ -89,10 +89,13 @@ const ApiConfigurationSection = ({ renderSectionHeader, initialModelTab }: ApiCo
 								console.error("Failed to update separate models setting:", error)
 							}
 						}}>
-					{t("apiConfig.planActSeparateModels", "Use different models for Plan, Act and Academic modes")}
+						{t("apiConfig.planActSeparateModels", "Use different models for Plan, Act and Academic modes")}
 					</VSCodeCheckbox>
-					<p className="text-xs mt-[5px] text-(--vscode-descriptionForeground)">
-						{t("apiConfig.planActSeparateModels.desc", "Switching between Plan, Act, and Academic modes will persist the API and model used in the previous mode. This can help you use a stronger reasoning model for planning and a lighter model for polishing or formatting.")}
+					<p className="text-xs mt-[5px] text-description">
+						{t(
+							"apiConfig.planActSeparateModels.desc",
+							"Switching between Plan, Act, and Academic modes will persist the API and model used in the previous mode. This can help you use a stronger reasoning model for planning and a lighter model for polishing or formatting.",
+						)}
 					</p>
 				</div>
 			</Section>

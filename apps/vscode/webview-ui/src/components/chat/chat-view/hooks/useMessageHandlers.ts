@@ -62,7 +62,6 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 			}
 
 			if (hasContent) {
-				console.log("[ChatView] handleSendMessage - Sending message:", messageToSend)
 				let messageSent = false
 				const clearSentMessageState = () => {
 					setInputValue("")

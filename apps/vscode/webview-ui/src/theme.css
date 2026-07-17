@@ -1,9 +1,25 @@
 /* Editor theme mapping */
 @theme {
-	--color-cline: #9663f1;
+	/* LingInk brand gold (replaces the old Cline purple #9663f1) */
+	--color-brand: #d49a31;
+	--color-brand-foreground: #1d1707;
+	/* Legacy aliases so existing `cline` variant classes keep resolving */
+	--color-cline: var(--color-brand);
+	--color-cline-foreground: var(--color-brand-foreground);
+	--color-fg-cline: var(--color-brand);
+	/* Solid action colors — fixed mid-tone values that keep white text legible on both light and dark themes */
+	--color-success-solid: #176f2c;
+	--color-success-solid-hover: #197f31;
+	--color-success-solid-active: #156528;
+	--color-danger-solid: #c42b2b;
+	--color-danger-solid-hover: #a82424;
+	--color-danger-solid-active: #8f1f1f;
+	/* Modal scrim base — pair with an opacity modifier (bg-overlay/50) */
+	--color-overlay: #000;
 	--color-background: var(--vscode-sideBar-background);
 	--color-border: var(--vscode-focusBorder);
 	--color-border-panel: var(--vscode-panel-border);
+	--color-focus: var(--vscode-focusBorder);
 	--color-foreground: var(--vscode-foreground);
 	--color-shadow: var(--vscode-widget-shadow);
 	--color-code: var(--vscode-editor-background);
@@ -64,11 +80,10 @@
 	--color-toolbar-hover: var(--vscode-toolbar-hoverBackground);
 	--color-diff-added: var(--vscode-diffEditor-insertedTextBackground);
 	--color-diff-removed: var(--vscode-diffEditor-removedTextBackground);
-	--color-error: var(--vscode-errorForeground);
-	--color-error-icon: var(--vscode-problemsErrorIcon-foreground);
-	--color-failed-icon: var(--vscode-testing-iconFailed);
 	--color-error: var(--vscode-errorForeground, #c42b2b);
 	--color-error-icon: var(--vscode-problemsErrorIcon-foreground, #c42b2b);
+	--color-failed-icon: var(--vscode-testing-iconFailed);
+	--color-passed-icon: var(--vscode-testing-iconPassed);
 	--color-description: var(--vscode-descriptionForeground);
 	--color-success: var(--vscode-charts-green);
 	--color-warning: var(--vscode-charts-yellow);
@@ -164,7 +179,6 @@
 	--color-primary-foreground: var(--primary-foreground);
 	--color-secondary: var(--secondary);
 	--color-secondary-foreground: var(--secondary-foreground);
-	--color-muted: color-mix(in srgb, var(--vscode-toolbar-hoverBackground) 65%, transparent);
 	--color-muted-foreground: var(--muted-foreground);
 	--color-accent: var(--accent);
 	--color-accent-foreground: var(--accent-foreground);
@@ -194,71 +208,42 @@
 
 :root {
 	--radius: 0.625rem;
-	--background: oklch(1 0 0);
-	--foreground: oklch(0.145 0 0);
-	--card: oklch(1 0 0);
-	--card-foreground: oklch(0.145 0 0);
-	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.145 0 0);
-	--primary: oklch(0.205 0 0);
-	--primary-foreground: oklch(0.985 0 0);
-	--secondary: oklch(0.97 0 0);
-	--secondary-foreground: oklch(0.205 0 0);
-	--muted: oklch(0.97 0 0);
-	--muted-foreground: oklch(0.556 0 0);
-	--accent: oklch(0.97 0 0);
-	--accent-foreground: oklch(0.205 0 0);
-	--destructive: oklch(0.577 0.245 27.325);
-	--border: oklch(0.922 0 0);
-	--input: oklch(0.922 0 0);
-	--ring: oklch(0.708 0 0);
-	--chart-1: oklch(0.646 0.222 41.116);
-	--chart-2: oklch(0.6 0.118 184.704);
-	--chart-3: oklch(0.398 0.07 227.392);
-	--chart-4: oklch(0.828 0.189 84.429);
-	--chart-5: oklch(0.769 0.188 70.08);
-	--sidebar: oklch(0.985 0 0);
-	--sidebar-foreground: oklch(0.145 0 0);
-	--sidebar-primary: oklch(0.205 0 0);
-	--sidebar-primary-foreground: oklch(0.985 0 0);
-	--sidebar-accent: oklch(0.97 0 0);
-	--sidebar-accent-foreground: oklch(0.205 0 0);
-	--sidebar-border: oklch(0.922 0 0);
-	--sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-	--background: oklch(0.145 0 0);
-	--foreground: oklch(0.985 0 0);
-	--card: oklch(0.205 0 0);
-	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.205 0 0);
-	--popover-foreground: oklch(0.985 0 0);
-	--primary: oklch(0.922 0 0);
-	--primary-foreground: oklch(0.205 0 0);
-	--secondary: oklch(0.269 0 0);
-	--secondary-foreground: oklch(0.985 0 0);
-	--muted: oklch(0.269 0 0);
-	--muted-foreground: oklch(0.708 0 0);
-	--accent: oklch(0.269 0 0);
-	--accent-foreground: oklch(0.985 0 0);
-	--destructive: oklch(0.704 0.191 22.216);
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: oklch(0.556 0 0);
-	--chart-1: oklch(0.488 0.243 264.376);
-	--chart-2: oklch(0.696 0.17 162.48);
-	--chart-3: oklch(0.769 0.188 70.08);
-	--chart-4: oklch(0.627 0.265 303.9);
-	--chart-5: oklch(0.645 0.246 16.439);
-	--sidebar: oklch(0.205 0 0);
-	--sidebar-foreground: oklch(0.985 0 0);
-	--sidebar-primary: oklch(0.488 0.243 264.376);
-	--sidebar-primary-foreground: oklch(0.985 0 0);
-	--sidebar-accent: oklch(0.269 0 0);
-	--sidebar-accent-foreground: oklch(0.985 0 0);
-	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: oklch(0.556 0 0);
+	/*
+	 * shadcn design tokens mapped onto VS Code theme variables.
+	 * The app never toggles a `.dark` class — VS Code sets `vscode-dark` / `vscode-light`
+	 * on <body> and updates these variables, so shadcn primitives now follow the active theme.
+	 */
+	--background: var(--vscode-sideBar-background);
+	--foreground: var(--vscode-foreground);
+	--card: var(--vscode-editor-background);
+	--card-foreground: var(--vscode-editor-foreground, var(--vscode-foreground));
+	--popover: var(--vscode-menu-background, var(--vscode-editorWidget-background));
+	--popover-foreground: var(--vscode-menu-foreground, var(--vscode-foreground));
+	--primary: var(--vscode-button-background);
+	--primary-foreground: var(--vscode-button-foreground);
+	--secondary: var(--vscode-button-secondaryBackground);
+	--secondary-foreground: var(--vscode-button-secondaryForeground);
+	--muted: color-mix(in srgb, var(--vscode-foreground) 10%, transparent);
+	--muted-foreground: var(--vscode-descriptionForeground);
+	--accent: var(--vscode-list-hoverBackground);
+	--accent-foreground: var(--vscode-foreground);
+	--destructive: var(--vscode-errorForeground, #c42b2b);
+	--border: var(--vscode-panel-border, var(--vscode-editorWidget-border, #424242));
+	--input: var(--vscode-input-border, var(--vscode-panel-border, #424242));
+	--ring: var(--vscode-focusBorder);
+	--chart-1: var(--vscode-charts-blue, #3794ff);
+	--chart-2: var(--vscode-charts-green, #89d185);
+	--chart-3: var(--vscode-charts-yellow, #e5c07b);
+	--chart-4: var(--vscode-charts-red, #f14c4c);
+	--chart-5: var(--vscode-charts-purple, #b180d7);
+	--sidebar: var(--vscode-sideBar-background);
+	--sidebar-foreground: var(--vscode-sideBar-foreground, var(--vscode-foreground));
+	--sidebar-primary: var(--vscode-button-background);
+	--sidebar-primary-foreground: var(--vscode-button-foreground);
+	--sidebar-accent: var(--vscode-list-hoverBackground);
+	--sidebar-accent-foreground: var(--vscode-sideBar-foreground, var(--vscode-foreground));
+	--sidebar-border: var(--vscode-sideBar-border, var(--vscode-panel-border, #424242));
+	--sidebar-ring: var(--vscode-focusBorder);
 }
 
 @layer utilities {

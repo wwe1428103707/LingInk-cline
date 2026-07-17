@@ -122,7 +122,11 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 			handleModeFieldsChange(
 				{
 					modelId: { plan: "planModeApiModelId", act: "actModeApiModelId", academic: "academicModeApiModelId" },
-					deploymentId: { plan: "planModeSapAiCoreDeploymentId", act: "actModeSapAiCoreDeploymentId", academic: "academicModeSapAiCoreDeploymentId" },
+					deploymentId: {
+						plan: "planModeSapAiCoreDeploymentId",
+						act: "actModeSapAiCoreDeploymentId",
+						academic: "academicModeSapAiCoreDeploymentId",
+					},
 				},
 				{ modelId, deploymentId },
 				currentMode,
@@ -142,9 +146,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<span className="font-medium">AI Core Client Id</span>
 			</DebouncedTextField>
 			{apiConfiguration?.sapAiCoreClientId && (
-				<p className="text-xs text-(--vscode-descriptionForeground)">
-					Client Id is set. To change it, please re-enter the value.
-				</p>
+				<p className="text-xs text-description">Client Id is set. To change it, please re-enter the value.</p>
 			)}
 
 			<DebouncedTextField
@@ -156,9 +158,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<span className="font-medium">AI Core Client Secret</span>
 			</DebouncedTextField>
 			{apiConfiguration?.sapAiCoreClientSecret && (
-				<p className="text-xs text-(--vscode-descriptionForeground)">
-					Client Secret is set. To change it, please re-enter the value.
-				</p>
+				<p className="text-xs text-description">Client Secret is set. To change it, please re-enter the value.</p>
 			)}
 
 			<DebouncedTextField
@@ -185,7 +185,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<span className="font-medium">AI Core Resource Group</span>
 			</DebouncedTextField>
 
-			<p className="text-xs mt-1.5 text-(--vscode-descriptionForeground)">
+			<p className="text-xs mt-1.5 text-description">
 				These credentials are stored locally and only used to make API requests from this extension.
 				<VSCodeLink
 					className="inline"
@@ -205,7 +205,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 						<span className="font-medium">Orchestration Mode</span>
 					</div>
 
-					<p className="text-xs text-(--vscode-descriptionForeground)">
+					<p className="text-xs text-description">
 						When enabled, provides access to all available models without requiring individual deployments.
 						<br />
 						<br />
@@ -218,7 +218,7 @@ export const SapAiCoreProvider = ({ showModelOptions, isPopup, currentMode }: Sa
 				<>
 					<div className="flex flex-col gap-1.5">
 						{isLoadingModels ? (
-							<div className="text-xs text-(--vscode-descriptionForeground)">Loading models...</div>
+							<div className="text-xs text-description">Loading models...</div>
 						) : modelError ? (
 							<div className="text-xs text-(--vscode-errorForeground)">
 								{modelError}

@@ -3,8 +3,8 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React from "react"
 import VSCodeButtonLink from "@/components/common/VSCodeButtonLink"
 import { useClineAuth } from "@/context/ClineAuthContext"
-import { TaskServiceClient } from "@/services/grpc-client"
 import { t } from "@/i18n"
+import { TaskServiceClient } from "@/services/grpc-client"
 
 interface EntitlementErrorProps {
 	message?: string
@@ -12,7 +12,6 @@ interface EntitlementErrorProps {
 
 // Relative (no leading slash) so it appends to path-prefixed app URLs (e.g. self-hosted/proxy) instead of resetting to origin.
 const CLINE_PASS_SUBSCRIBE_PATH = "dashboard/subscription"
-
 
 function buildSubscribeUrl(appBaseUrl?: string): string | undefined {
 	if (!appBaseUrl) {
@@ -36,17 +35,13 @@ const EntitlementError: React.FC<EntitlementErrorProps> = ({ message }) => {
 	const backendDetail = message && message !== HEADLINE ? message : undefined
 
 	return (
-		<div className="p-2 border-none rounded-md mb-2 bg-(--vscode-textBlockQuote-background)">
+		<div className="p-2 border-none rounded-md mb-2 bg-quote">
 			<div className="mb-3">
 				<div className="text-error mb-2">{HEADLINE}</div>
-				<div className="text-(--vscode-descriptionForeground) text-xs">
+				<div className="text-description text-xs">
 					Subscribe to LingInk Pass to use this model, then retry your request.
 				</div>
-				{backendDetail && (
-					<div className="text-(--vscode-descriptionForeground) text-xs mt-1 opacity-80 wrap-anywhere">
-						{backendDetail}
-					</div>
-				)}
+				{backendDetail && <div className="text-description text-xs mt-1 opacity-80 wrap-anywhere">{backendDetail}</div>}
 			</div>
 
 			{subscribeUrl && (

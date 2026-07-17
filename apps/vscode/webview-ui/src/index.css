@@ -20,7 +20,7 @@
 		@apply bg-background text-foreground;
 	}
 	p {
-		@apply my-0 py-0 text-inherit leading-5 block line-clamp-3;
+		@apply my-0 py-0 text-inherit leading-5 block;
 		margin-block-start: 1em;
 		margin-block-end: 1em;
 		margin-inline-start: 0px;

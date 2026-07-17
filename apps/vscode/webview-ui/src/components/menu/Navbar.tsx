@@ -8,8 +8,7 @@ import { useExtensionState } from "../../context/ExtensionStateContext"
 
 export const Navbar = () => {
 	const { t } = useTranslation()
-	const { navigateToHistory, navigateToSettings, navigateToMarketplace, navigateToChat } =
-		useExtensionState()
+	const { navigateToHistory, navigateToSettings, navigateToMarketplace, navigateToChat } = useExtensionState()
 
 	const SETTINGS_TABS = useMemo(
 		() => [
@@ -68,7 +67,7 @@ export const Navbar = () => {
 							onClick={() => tab.navigate()}
 							size="icon"
 							variant="icon">
-							<tab.icon className="stroke-1 [svg]:size-4" size={18} />
+							<tab.icon className="stroke-1" size={18} />
 						</Button>
 					</TooltipTrigger>
 				</Tooltip>
