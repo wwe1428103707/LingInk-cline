@@ -1,6 +1,6 @@
 # 灵砚内置学术研究 Skills
 
-本目录包含 灵砚（LingInk）预装的 **Academic Research Skills (ARS)** v3.13.0，提供完整的学术研究流水线能力。
+本目录包含 灵砚（LingInk）预装的 **Academic Research Skills (ARS)** v3.17.0，提供完整的学术研究流水线能力。
 
 > 原始项目：https://github.com/Imbad0202/academic-research-skills (CC-BY-NC-4.0)
 
@@ -11,7 +11,7 @@
 | `deep-research` | v2.11.0 | 通用深度研究 Agent 团队 | 13 | 8 |
 | `academic-paper` | v3.2.0 | 学术论文写作流水线 | 12 | 11 |
 | `academic-paper-reviewer` | v1.10.0 | 多视角同行评审模拟 | 7 | 6 |
-| `academic-pipeline` | v3.13.0 | 全流程编排器（研究→写作→评审→修订→定稿） | 5 | 1 |
+| `academic-pipeline` | v3.17.0 | 全流程编排器（研究→写作→评审→修订→定稿） | 5 | 1 |
 
 ## 目录结构
 
@@ -29,6 +29,7 @@
 ├── shared/                  ← 跨 skill 共享的参考、合约、模板
 ├── scripts/                 ← Python 脚本（API 客户端、工具等）
 ├── commands/                ← Claude Code 斜杠命令定义（参考用）
+├── hooks/                   ← PreToolUse guard 钩子
 ├── _plugin-manifest.json    ← 插件元数据
 └── _routing-guide.md        ← 路由规则参考
 ```
@@ -43,5 +44,5 @@ Skills 中的文件引用已适配为相对路径：
 
 ## 来源
 
-所有内容出自 [academic-research-skills v3.13.0](https://github.com/Imbad0202/academic-research-skills)
+所有内容出自 [academic-research-skills v3.17.0](https://github.com/Imbad0202/academic-research-skills)
 作者：Cheng-I Wu, License: CC-BY-NC-4.0

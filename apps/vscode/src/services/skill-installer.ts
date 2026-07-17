@@ -469,6 +469,35 @@ async function collectAgentConfigFiles(src: string, skipNames: string[]): Promis
 }
 
 /**
+ * The four ARS skill directories that must be installed into the workspace.
+ */
+const ARS_SKILL_NAMES = ["deep-research", "academic-paper", "academic-paper-reviewer", "academic-pipeline"]
+
+/**
+ * Top-level support directories that must also be copied from a release.
+ */
+const ARS_SUPPORT_DIRS = ["shared", "scripts", "commands", "agents", "hooks"]
+
+/**
+ * Top-level files and directories in an extracted release that should never be
+ * copied into the workspace skills directory.
+ */
+const ARS_RELEASE_SKIP_NAMES = new Set([
+	"node_modules",
+	".git",
+	".github",
+	".claude",
+	".claude-plugin",
+	"docs",
+	"evals",
+	"examples",
+	"tests",
+	"audits",
+	"tools",
+	"skills",
+])
+
+/**
  * Locate the directory inside an extracted release that contains the ARS
  * skills. The upstream repo may place skills at the repo root or under a
  * `skills/` subdirectory.
@@ -478,9 +507,7 @@ async function findExtractedSkillsRoot(extractedRoot: string): Promise<string> {
 	for (const candidate of candidates) {
 		try {
 			const entries = await fs.readdir(candidate)
-			const hasSkill = entries.some((name) =>
-				["deep-research", "academic-paper", "academic-paper-reviewer", "academic-pipeline"].includes(name),
-			)
+			const hasSkill = entries.some((name) => ARS_SKILL_NAMES.includes(name))
 			if (hasSkill) {
 				return candidate
 			}
@@ -552,26 +579,41 @@ export async function downloadAndInstallUpdate(workspaceRoot: string): Promise<s
 				`No academic-research-skills-* directory found under ${tmpDir} after extraction`,
 			)
 		}
-		const sourceDir = await findExtractedSkillsRoot(path.join(tmpDir, extractedDir))
+		const extractedRoot = path.join(tmpDir, extractedDir)
+		const skillsSourceDir = await findExtractedSkillsRoot(extractedRoot)
 
 		// 6. Copy into workspace skills directory.
 		const dstDir = path.join(workspaceRoot, ".clinerules", "skills")
 		await fs.mkdir(dstDir, { recursive: true })
 
-		const result = await copyRecursive(sourceDir, dstDir, [
-			"node_modules",
-			".git",
-			".github",
-			".claude",
-			".claude-plugin",
-			"skills",
-		])
+		let copied = 0
+		let skipped = 0
 
-		if (result.copied === 0) {
+		// 6a. Copy the four skill directories.
+		const skillResult = await copyRecursive(skillsSourceDir, dstDir, Array.from(ARS_RELEASE_SKIP_NAMES))
+		copied += skillResult.copied
+		skipped += skillResult.skipped
+
+		// 6b. Copy shared support directories from the release root.
+		for (const dirName of ARS_SUPPORT_DIRS) {
+			const srcPath = path.join(extractedRoot, dirName)
+			const dstPath = path.join(dstDir, dirName)
+			try {
+				await fs.access(srcPath)
+				await fs.mkdir(dstPath, { recursive: true })
+				const sub = await copyRecursive(srcPath, dstPath, Array.from(ARS_RELEASE_SKIP_NAMES))
+				copied += sub.copied
+				skipped += sub.skipped
+			} catch {
+				// Support directory absent in this release — skip.
+			}
+		}
+
+		if (copied === 0) {
 			throw new ARSUpdateError(
 				"更新过程中没有复制任何文件，请检查 release 内容",
 				"install",
-				`Copy from ${sourceDir} to ${dstDir} produced zero files`,
+				`Copy from ${extractedRoot} to ${dstDir} produced zero files`,
 			)
 		}
 
@@ -593,7 +635,7 @@ export async function downloadAndInstallUpdate(workspaceRoot: string): Promise<s
 			"utf-8",
 		)
 
-		Logger.log(`[SkillInstaller] Updated ARS skills to ${tag} (${result.copied} copied, ${result.skipped} skipped)`)
+		Logger.log(`[SkillInstaller] Updated ARS skills to ${tag} (${copied} copied, ${skipped} skipped)`)
 
 		// 8. Cleanup temp.
 		await fs.rm(tmpDir, { recursive: true, force: true })

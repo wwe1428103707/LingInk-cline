@@ -162,6 +162,60 @@ describe("skill-installer ARS updates", () => {
 			;(await areSkillsInstalled(workspaceRoot)).should.be.true()
 		})
 	})
+
+	it("installs skills from the release's skills/ subdirectory while still copying root support dirs", async () => {
+		const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "lingink-workspace-"))
+		tempDirs.push(workspaceRoot)
+
+		const tarball = await buildTestTarballWithSkillsSubdir("9.9.10")
+		const releaseBody = JSON.stringify({
+			tag_name: "v9.9.10",
+			html_url: "https://github.com/Imbad0202/academic-research-skills/releases/tag/v9.9.10",
+			body: "Release notes",
+		})
+
+		const fetchStub = sandbox.stub().callsFake(async (url: string | URL | Request) => {
+			const urlString = String(url)
+			if (urlString.includes("api.github.com")) {
+				return {
+					ok: true,
+					text: async () => releaseBody,
+					json: async () => JSON.parse(releaseBody),
+				}
+			}
+			return {
+				ok: true,
+				headers: { get: () => String(tarball.length) },
+				arrayBuffer: async () => tarball.buffer.slice(tarball.byteOffset, tarball.byteOffset + tarball.byteLength),
+			}
+		})
+
+		await mockFetchForTesting(fetchStub as unknown as FetchFunction, async () => {
+			const dstDir = await downloadAndInstallUpdate(workspaceRoot)
+
+			// Skills come from skills/ subdirectory.
+			await fs.access(path.join(dstDir, "deep-research", "SKILL.md"))
+			await fs.access(path.join(dstDir, "academic-paper", "SKILL.md"))
+			await fs.access(path.join(dstDir, "academic-paper-reviewer", "SKILL.md"))
+			await fs.access(path.join(dstDir, "academic-pipeline", "SKILL.md"))
+			// Support dirs come from the release root.
+			await fs.access(path.join(dstDir, "shared", "handoff_schemas.md"))
+			await fs.access(path.join(dstDir, "scripts", "check_citations.py"))
+			await fs.access(path.join(dstDir, "commands", "review.md"))
+			await fs.access(path.join(dstDir, "agents", "orchestrator.md"))
+			await fs.access(path.join(dstDir, "hooks", "pre_tool_use.md"))
+			// Repository metadata should not leak into the workspace.
+			await fs
+				.access(path.join(dstDir, "README.md"))
+				.then(() => {
+					throw new Error("release root metadata should not be copied into workspace skills")
+				})
+				.catch((error) => {
+					expectErrorCode(error, "ENOENT")
+				})
+			;(await areSkillsInstalled(workspaceRoot)).should.be.true()
+		})
+	})
 })
 
 async function writeSkill(skillDir: string, name: string): Promise<void> {
@@ -184,6 +238,52 @@ async function buildTestTarball(version: string): Promise<Buffer> {
 		`---\nname: deep-research\ndescription: test\n---\n\n# Deep Research\n\nTest.`,
 	)
 	await fs.writeFile(path.join(repoRoot, "shared", "handoff_schemas.md"), "# Handoff schemas\n")
+
+	const tarballPath = path.join(tmpDir, "release.tar.gz")
+	await tar.create(
+		{
+			gzip: true,
+			file: tarballPath,
+			cwd: tmpDir,
+		},
+		[repoName],
+	)
+
+	const buffer = Buffer.from(await fs.readFile(tarballPath))
+	await fs.rm(tmpDir, { recursive: true, force: true })
+	return buffer
+}
+
+async function buildTestTarballWithSkillsSubdir(version: string): Promise<Buffer> {
+	const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "lingink-tarball-"))
+	const repoName = `academic-research-skills-${version}`
+	const repoRoot = path.join(tmpDir, repoName)
+
+	// v3.17.0 layout: skills live under skills/, support dirs at repo root.
+	const skillsDir = path.join(repoRoot, "skills")
+	for (const skillName of ["deep-research", "academic-paper", "academic-paper-reviewer", "academic-pipeline"]) {
+		const skillPath = path.join(skillsDir, skillName)
+		await fs.mkdir(skillPath, { recursive: true })
+		await fs.writeFile(
+			path.join(skillPath, "SKILL.md"),
+			`---\nname: ${skillName}\ndescription: test\n---\n\n# ${skillName}\n\nTest.`,
+		)
+	}
+
+	for (const dirName of ["shared", "scripts", "commands", "agents", "hooks"]) {
+		const dirPath = path.join(repoRoot, dirName)
+		await fs.mkdir(dirPath, { recursive: true })
+		await fs.writeFile(path.join(dirPath, `${dirName === "shared" ? "handoff_schemas" : "stub"}.md`), `# ${dirName}\n`)
+	}
+	// Use distinct filenames for support dirs so the test can verify each one.
+	await fs.writeFile(path.join(repoRoot, "scripts", "check_citations.py"), "# check citations\n")
+	await fs.writeFile(path.join(repoRoot, "commands", "review.md"), "# review\n")
+	await fs.writeFile(path.join(repoRoot, "agents", "orchestrator.md"), "# orchestrator\n")
+	await fs.writeFile(path.join(repoRoot, "hooks", "pre_tool_use.md"), "# pre tool use\n")
+
+	// Repository metadata that must not be copied into the workspace.
+	await fs.writeFile(path.join(repoRoot, "README.md"), "# ARS\n")
+	await fs.writeFile(path.join(repoRoot, "CHANGELOG.md"), "# Changelog\n")
 
 	const tarballPath = path.join(tmpDir, "release.tar.gz")
 	await tar.create(

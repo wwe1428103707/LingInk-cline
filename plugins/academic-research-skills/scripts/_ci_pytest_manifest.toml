@@ -147,6 +147,10 @@ id = "v3.10-184-eval-harness-workflow"
 path = "scripts/test_eval_harness_workflow.py"
 
 [[pytest]]
+id = "184-render-eval-comment"
+path = "scripts/test_render_eval_comment.py"
+
+[[pytest]]
 id = "v3.10-134-write-scope-guard"
 path = "scripts/test_ars_write_scope_guard.py"
 
@@ -175,6 +179,14 @@ path = "scripts/test_verification_gate.py"
 [[pytest]]
 id = "v3.10-182-arxiv-client"
 path = "scripts/test_arxiv_client.py"
+
+[[pytest]]
+id = "511-transport-fixture-citation-gate"
+path = "scripts/test_transport_fixture_citation_gate.py"
+
+[[pytest]]
+id = "511-degradation-registry"
+path = "scripts/test_check_degradation_registry.py"
 
 [[pytest]]
 id = "v3.10-182-verification-cache"
@@ -251,3 +263,39 @@ path = "scripts/test_ars_apply_revision_patch.py"
 [[pytest]]
 id = "390-revision-patch-discipline-lint"
 path = "scripts/test_check_390_revision_patch_discipline.py"
+
+[[pytest]]
+id = "release-gate-changelog-covers-merges"
+path = "scripts/test_check_changelog_covers_merges.py"
+
+[[pytest]]
+id = "v3.9.4-temporal-verification"
+path = "scripts/test_check_v3_9_4_temporal_verification.py"
+
+[[pytest]]
+id = "491-setup-cross-model-parity"
+path = "scripts/test_check_setup_cross_model_parity.py"
+
+[[pytest]]
+id = "517-model-tiering-classification"
+path = "scripts/test_check_model_tiering.py"
+
+[[pytest]]
+id = "524-tools-allowlist-lock"
+path = "scripts/test_check_tools_allowlist.py"
+
+[[pytest]]
+id = "510-panel-synthesis-checker"
+path = "scripts/test_check_panel_synthesis.py"
+
+[[pytest]]
+id = "528-pipeline-boundary-semantics"
+path = "scripts/test_check_pipeline_boundary_semantics.py"
+
+[[pytest]]
+id = "527-handoff-envelope-fixtures"
+path = "scripts/test_cross_model_handoff.py"
+
+[[pytest]]
+id = "527-handoff-contract-lint"
+path = "scripts/test_check_cross_model_handoff_contract.py"
