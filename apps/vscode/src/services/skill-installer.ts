@@ -2,6 +2,7 @@ import type { Dirent } from "node:fs"
 import * as fsSync from "node:fs"
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
+import * as tar from "tar"
 import * as vscode from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
 import { fetch } from "@/shared/net"
@@ -34,6 +35,34 @@ const GITHUB_RELEASES_URL = `https://github.com/${ARS_GITHUB_REPO}/releases`
  * Message shown when bundled academic skills are not installed.
  */
 const INSTALL_PROMPT_MSG = "灵砚内置学术技能包未在当前工作区完整安装。是否立即安装？"
+
+/**
+ * Human-readable base message for network/update check failures.
+ */
+const UPDATE_CHECK_ERROR = "无法获取最新版本信息，请检查网络连接或代理设置"
+
+/**
+ * Structured error carrying both a user-facing message and technical detail.
+ */
+class ARSUpdateError extends Error {
+	constructor(
+		message: string,
+		public readonly step: "check" | "download" | "extract" | "install" | "unknown",
+		public readonly detail?: string,
+	) {
+		super(message)
+		this.name = "ARSUpdateError"
+	}
+}
+
+interface ReleaseInfo {
+	tag: string
+	version: string
+	releaseUrl: string
+	downloadUrl: string
+	releaseNotes?: string
+	publishedAt?: string
+}
 
 export interface UpdateCheckResult {
 	hasUpdate: boolean
@@ -74,33 +103,125 @@ async function getInstalledVersion(workspaceRoot: string): Promise<string | null
 }
 
 /**
- * Fetch the latest release version from GitHub API.
+ * Retry a function with exponential backoff for transient failures.
  */
-const UPDATE_CHECK_ERROR = "无法获取最新版本信息，请检查网络连接或代理设置"
+async function withRetry<T>(label: string, fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
+	let lastError: unknown
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		try {
+			return await fn()
+		} catch (error) {
+			lastError = error
+			const msg = error instanceof Error ? error.message : String(error)
+			Logger.warn(`[SkillInstaller] ${label} failed (attempt ${attempt}/${maxAttempts}): ${msg}`)
+			if (attempt < maxAttempts) {
+				// Exponential backoff: 500ms, 1000ms, ...
+				await new Promise((resolve) => setTimeout(resolve, 500 * attempt))
+			}
+		}
+	}
+	throw lastError
+}
 
-async function fetchLatestRelease(): Promise<{ tag_name: string; html_url: string; body?: string; error?: string }> {
-	try {
+/**
+ * Build a helpful, localized message from a GitHub HTTP error.
+ */
+function githubHttpErrorMessage(status: number, statusText: string, body?: string): string {
+	if (status === 403) {
+		return `${UPDATE_CHECK_ERROR}（HTTP 403，可能是 GitHub API 速率限制；可尝试配置代理或稍后重试）`
+	}
+	if (status === 404) {
+		return `${UPDATE_CHECK_ERROR}（HTTP 404，release 不存在或仓库已迁移）`
+	}
+	const detail = body ? `，响应：${body.slice(0, 200)}` : ""
+	return `${UPDATE_CHECK_ERROR}（HTTP ${status} ${statusText}${detail}）`
+}
+
+/**
+ * Fetch the latest release metadata from the GitHub API.
+ */
+async function fetchLatestReleaseInfo(): Promise<ReleaseInfo> {
+	const release = await withRetry("Fetch ARS release metadata", async () => {
 		const response = await fetch(GITHUB_API_LATEST_RELEASE, {
 			headers: {
 				Accept: "application/vnd.github.v3+json",
 				"User-Agent": "LingInk-VSCode-Extension",
 			},
 		})
+
+		const text = await response.text()
 		if (!response.ok) {
-			return { tag_name: "", html_url: "", error: `${UPDATE_CHECK_ERROR} (HTTP ${response.status})` }
+			throw new ARSUpdateError(
+				githubHttpErrorMessage(response.status, response.statusText, text),
+				"check",
+				`GitHub API ${GITHUB_API_LATEST_RELEASE} returned HTTP ${response.status}: ${text.slice(0, 500)}`,
+			)
 		}
-		const data = await response.json()
-		return {
-			tag_name: data.tag_name ?? "",
-			html_url: data.html_url ?? "",
-			body: data.body ?? undefined,
+
+		try {
+			return JSON.parse(text)
+		} catch (parseError) {
+			throw new ARSUpdateError(
+				`${UPDATE_CHECK_ERROR}（无法解析 GitHub 响应）`,
+				"check",
+				`JSON parse failed for ${GITHUB_API_LATEST_RELEASE}: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+			)
 		}
-	} catch (error) {
-		const errorMsg = error instanceof Error ? error.message : String(error)
-		const errorStack = error instanceof Error ? error.stack : undefined
-		Logger.warn(`[SkillInstaller] Failed to fetch latest ARS release: ${errorMsg}`, errorStack || "")
-		return { tag_name: "", html_url: "", error: UPDATE_CHECK_ERROR }
+	})
+
+	const tag = release.tag_name ?? ""
+	if (!tag) {
+		throw new ARSUpdateError(
+			`${UPDATE_CHECK_ERROR}（GitHub 响应缺少 tag_name）`,
+			"check",
+			`Response from ${GITHUB_API_LATEST_RELEASE} contained no tag_name`,
+		)
 	}
+
+	// Prefer the source tarball asset if listed; otherwise fall back to the
+	// well-known GitHub archive URL.
+	const sourceAsset = release.assets?.find(
+		(asset: { content_type?: string; name?: string }) =>
+			asset.content_type === "application/gzip" || asset.name?.endsWith(".tar.gz"),
+	)
+	const downloadUrl =
+		sourceAsset?.browser_download_url ?? `https://github.com/${ARS_GITHUB_REPO}/archive/refs/tags/${tag}.tar.gz`
+
+	return {
+		tag,
+		version: tag.replace(/^v/, ""),
+		releaseUrl: release.html_url ?? GITHUB_RELEASES_URL,
+		downloadUrl,
+		releaseNotes: release.body ?? undefined,
+		publishedAt: release.published_at ?? undefined,
+	}
+}
+
+/**
+ * Download the release tarball to a buffer with retry and detailed diagnostics.
+ */
+async function downloadReleaseTarball(url: string): Promise<Buffer> {
+	return withRetry("Download ARS release tarball", async () => {
+		const response = await fetch(url)
+		if (!response.ok) {
+			throw new ARSUpdateError(
+				`下载失败：HTTP ${response.status} ${response.statusText}`,
+				"download",
+				`GET ${url} returned HTTP ${response.status}`,
+			)
+		}
+
+		const contentLength = response.headers.get("content-length")
+		const arrayBuffer = await response.arrayBuffer()
+		const buffer = Buffer.from(arrayBuffer)
+		Logger.log(
+			`[SkillInstaller] Downloaded ${buffer.length} bytes${contentLength ? ` (expected ${contentLength})` : ""} from ${url}`,
+		)
+		if (buffer.length === 0) {
+			throw new ARSUpdateError("下载失败：release 压缩包为空", "download", `GET ${url} returned empty body`)
+		}
+		return buffer
+	})
 }
 
 /**
@@ -110,27 +231,29 @@ export async function checkForARSUpdate(workspaceRoot: string): Promise<UpdateCh
 	// Use installed version if available, fall back to bundled (static in VSIX).
 	const installedVersion = await getInstalledVersion(workspaceRoot)
 	const currentVersion = installedVersion ?? getBundledVersion()
-	const latestInfo = await fetchLatestRelease()
 
-	if (!latestInfo || !latestInfo.tag_name) {
+	try {
+		const release = await fetchLatestReleaseInfo()
+		const hasUpdate = compareVersions(release.version, currentVersion) > 0
+
+		return {
+			hasUpdate,
+			currentVersion,
+			latestVersion: release.version,
+			releaseUrl: release.releaseUrl,
+			releaseNotes: release.releaseNotes,
+		}
+	} catch (error) {
+		const userMsg = error instanceof ARSUpdateError ? error.message : UPDATE_CHECK_ERROR
+		const detail = error instanceof ARSUpdateError ? error.detail : error instanceof Error ? error.message : String(error)
+		Logger.error(`[SkillInstaller] Update check failed: ${detail}`)
 		return {
 			hasUpdate: false,
 			currentVersion,
 			latestVersion: "unknown",
 			releaseUrl: GITHUB_RELEASES_URL,
-			error: latestInfo?.error ?? UPDATE_CHECK_ERROR,
+			error: userMsg,
 		}
-	}
-
-	const latestTag = latestInfo.tag_name.replace(/^v/, "")
-	const hasUpdate = compareVersions(latestTag, currentVersion) > 0
-
-	return {
-		hasUpdate,
-		currentVersion,
-		latestVersion: latestTag,
-		releaseUrl: latestInfo.html_url,
-		releaseNotes: latestInfo.body,
 	}
 }
 
@@ -346,66 +469,113 @@ async function collectAgentConfigFiles(src: string, skipNames: string[]): Promis
 }
 
 /**
+ * Locate the directory inside an extracted release that contains the ARS
+ * skills. The upstream repo may place skills at the repo root or under a
+ * `skills/` subdirectory.
+ */
+async function findExtractedSkillsRoot(extractedRoot: string): Promise<string> {
+	const candidates = [path.join(extractedRoot, "skills"), extractedRoot]
+	for (const candidate of candidates) {
+		try {
+			const entries = await fs.readdir(candidate)
+			const hasSkill = entries.some((name) =>
+				["deep-research", "academic-paper", "academic-paper-reviewer", "academic-pipeline"].includes(name),
+			)
+			if (hasSkill) {
+				return candidate
+			}
+		} catch {
+			// Candidate doesn't exist or isn't readable — try the next one.
+		}
+	}
+	throw new ARSUpdateError(
+		"解压后的 release 中未找到 ARS skills 目录",
+		"extract",
+		`Neither ${path.join(extractedRoot, "skills")} nor ${extractedRoot} contains expected skill directories`,
+	)
+}
+
+/**
  * Download and install the latest ARS release from GitHub.
  */
 export async function downloadAndInstallUpdate(workspaceRoot: string): Promise<string> {
-	// Get latest release info
-	const latestInfo = await fetchLatestRelease()
-	if (!latestInfo || !latestInfo.tag_name) {
-		throw new Error(latestInfo?.error ?? UPDATE_CHECK_ERROR)
-	}
-
-	const tag = latestInfo.tag_name
-	const downloadUrl = `https://github.com/${ARS_GITHUB_REPO}/archive/refs/tags/${tag}.tar.gz`
-
-	Logger.log(`[SkillInstaller] Downloading ARS update ${tag} from ${downloadUrl}`)
-
-	// Download the tarball using fetch
-	const response = await fetch(downloadUrl)
-	if (!response.ok) {
-		throw new Error(`下载失败: HTTP ${response.status}`)
-	}
-
-	const buffer = Buffer.from(await response.arrayBuffer())
-
-	// Extract to a temp directory using tar + gzip (Node.js built-in zlib)
-	const { execSync } = await import("node:child_process")
 	const tmpDir = path.join(workspaceRoot, ".clinerules", ".ars-update-tmp")
 
 	try {
-		// Clean any previous temp
+		// 1. Resolve release metadata.
+		let release: ReleaseInfo
+		try {
+			release = await fetchLatestReleaseInfo()
+		} catch (error) {
+			const msg = error instanceof ARSUpdateError ? error.message : UPDATE_CHECK_ERROR
+			const detail = error instanceof ARSUpdateError ? error.detail : error instanceof Error ? error.message : String(error)
+			Logger.error(`[SkillInstaller] Failed to resolve release metadata: ${detail}`)
+			throw new ARSUpdateError(msg, "check", detail)
+		}
+
+		const tag = release.tag
+		Logger.log(`[SkillInstaller] Installing ARS update ${tag} from ${release.downloadUrl}`)
+
+		// 2. Download tarball.
+		const buffer = await downloadReleaseTarball(release.downloadUrl)
+
+		// 3. Prepare temp directory.
 		await fs.rm(tmpDir, { recursive: true, force: true })
 		await fs.mkdir(tmpDir, { recursive: true })
 
-		// Write tarball to temp
+		// 4. Extract using the tar package (cross-platform, no shell).
 		const tarballPath = path.join(tmpDir, "release.tar.gz")
 		await fs.writeFile(tarballPath, buffer)
-
-		// Extract using tar (available on all platforms via git-bash or system)
-		execSync(`tar -xzf "${tarballPath}" -C "${tmpDir}"`, { stdio: "pipe" })
-
-		// The extracted dir name is typically academic-research-skills-{tag}
-		const extractedName = `academic-research-skills-${tag.replace(/^v/, "")}`
-		const extractedPath = path.join(tmpDir, extractedName)
-		const skillsPath = path.join(extractedPath, "skills")
-
-		// Verify the extracted skills directory exists; if not, try the root
-		let sourceDir: string
 		try {
-			await fs.access(skillsPath)
-			sourceDir = skillsPath
-		} catch {
-			// Fallback: the whole repo might be the skills directory
-			sourceDir = extractedPath
+			await tar.x({
+				file: tarballPath,
+				cwd: tmpDir,
+			})
+		} catch (extractError) {
+			const detail = extractError instanceof Error ? extractError.message : String(extractError)
+			throw new ARSUpdateError(
+				"解压 release 压缩包失败，文件可能已损坏",
+				"extract",
+				`tar extract failed for ${tarballPath}: ${detail}`,
+			)
 		}
 
+		// 5. Locate the skills root inside the extracted archive.
+		const extractedEntries = await fs.readdir(tmpDir)
+		const extractedDir = extractedEntries.find(
+			(name) => name !== "release.tar.gz" && name.startsWith("academic-research-skills"),
+		)
+		if (!extractedDir) {
+			throw new ARSUpdateError(
+				"解压后未找到 release 目录",
+				"extract",
+				`No academic-research-skills-* directory found under ${tmpDir} after extraction`,
+			)
+		}
+		const sourceDir = await findExtractedSkillsRoot(path.join(tmpDir, extractedDir))
+
+		// 6. Copy into workspace skills directory.
 		const dstDir = path.join(workspaceRoot, ".clinerules", "skills")
 		await fs.mkdir(dstDir, { recursive: true })
 
-		// Copy the updated ARS files without removing other bundled skills.
-		const result = await copyRecursive(sourceDir, dstDir, ["node_modules", ".git", ".github"])
+		const result = await copyRecursive(sourceDir, dstDir, [
+			"node_modules",
+			".git",
+			".github",
+			".claude",
+			".claude-plugin",
+			"skills",
+		])
 
-		// Write marker with updated version
+		if (result.copied === 0) {
+			throw new ARSUpdateError(
+				"更新过程中没有复制任何文件，请检查 release 内容",
+				"install",
+				`Copy from ${sourceDir} to ${dstDir} produced zero files`,
+			)
+		}
+
+		// 7. Write installation marker.
 		const markerPath = path.join(dstDir, INSTALL_MARKER)
 		await fs.writeFile(
 			markerPath,
@@ -413,8 +583,9 @@ export async function downloadAndInstallUpdate(workspaceRoot: string): Promise<s
 				{
 					installedAt: new Date().toISOString(),
 					source: "lingink-ars",
-					version: tag.replace(/^v/, ""),
+					version: release.version,
 					updatedFrom: "github",
+					releaseUrl: release.releaseUrl,
 				},
 				null,
 				2,
@@ -422,16 +593,22 @@ export async function downloadAndInstallUpdate(workspaceRoot: string): Promise<s
 			"utf-8",
 		)
 
-		Logger.log(`[SkillInstaller] Updated ARS skills to ${tag} (${result.copied} files)`)
+		Logger.log(`[SkillInstaller] Updated ARS skills to ${tag} (${result.copied} copied, ${result.skipped} skipped)`)
 
-		// Cleanup temp
+		// 8. Cleanup temp.
 		await fs.rm(tmpDir, { recursive: true, force: true })
 
 		return dstDir
 	} catch (error) {
-		// Cleanup on failure
+		// Best-effort cleanup on failure.
 		await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {})
-		throw error
+
+		if (error instanceof ARSUpdateError) {
+			throw error
+		}
+		const detail = error instanceof Error ? error.message : String(error)
+		Logger.error(`[SkillInstaller] Unexpected error during ARS update: ${detail}`)
+		throw new ARSUpdateError(`升级失败：${detail}`, "unknown", detail)
 	}
 }
 

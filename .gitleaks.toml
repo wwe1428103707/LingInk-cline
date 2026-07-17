@@ -2,3 +2,13 @@ title = "Cline SDK secret scanning"
 
 [extend]
 useDefault = true
+
+[allowlist]
+paths = [
+	# Bundled Academic Research Skills test fixtures contain synthetic citation
+	# keys (e.g. "vaswani2017-arxiv-v1") that gitleaks flags as generic API keys.
+	# These are third-party fixtures shipped under CC-BY-NC-4.0 and are not secrets.
+	'''apps/vscode/bundled-skills/lingink-ars/scripts/test_version_records_schema\.py''',
+	'''apps/vscode/bundled-skills/lingink-ars/scripts/adapters/examples/zotero/input_fixture/export\.json''',
+	'''apps/vscode/bundled-skills/lingink-ars/scripts/fixtures/check_evals_gold_set/clean/tuples/002-valid-arxiv-test\.json''',
+]
