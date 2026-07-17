@@ -25,6 +25,9 @@ export interface IEditingSession {
 
 	startCollecting(): void
 
+	/** Resume collecting after reviewing — pending edits stay in the session */
+	resumeCollecting(): void
+
 	/** Queue a text replacement edit — writes to disk + keeps backup */
 	queueEdit(filePath: string, relPath: string, oldText: string, newText: string): Promise<void>
 
@@ -79,6 +82,18 @@ export class EditingSession implements IEditingSession {
 	startCollecting(): void {
 		this._setState("collecting")
 		Logger.log(`[EditingSession ${this.sessionId}] Started collecting edits`)
+	}
+
+	/**
+	 * Resume collecting after a reviewing phase. Used when the agent starts a new
+	 * turn while the user has not finished reviewing the previous turn's edits —
+	 * the pending edits stay in the session (VS Code chat editing semantics)
+	 * instead of being silently dropped.
+	 */
+	resumeCollecting(): void {
+		this._assertState("reviewing")
+		this._setState("collecting")
+		Logger.log(`[EditingSession ${this.sessionId}] Resumed collecting edits`)
 	}
 
 	async queueEdit(filePath: string, relPath: string, oldText: string, newText: string): Promise<void> {
@@ -136,7 +151,12 @@ export class EditingSession implements IEditingSession {
 	}
 
 	getEntry(filePath: string): IModifiedFileEntry | undefined {
-		return this._entries.find((e) => e.filePath === filePath)
+		// Prefer the still-pending entry; resolved entries with the same path are
+		// kept only as history of earlier review rounds.
+		return (
+			this._entries.find((e) => e.filePath === filePath && e.state === ModifiedFileEntryState.Modified) ??
+			this._entries.find((e) => e.filePath === filePath)
+		)
 	}
 
 	countByState(): Record<ModifiedFileEntryState, number> {
@@ -154,19 +174,24 @@ export class EditingSession implements IEditingSession {
 	}
 
 	private async _getOrCreateEntry(filePath: string, relPath: string): Promise<ModifiedFileEntry> {
-		const existing = this._entries.find((e) => e.filePath === filePath)
+		// Only a still-pending entry can take more edits. An entry that was already
+		// accepted/rejected belongs to a finished review round — a new edit to the
+		// same file starts a fresh entry with a fresh original snapshot.
+		const existing = this._entries.find((e) => e.filePath === filePath && e.state === ModifiedFileEntryState.Modified)
 		if (existing) {
 			return existing
 		}
 
 		let originalContent = ""
+		let isNewFile = false
 		try {
 			originalContent = await fs.readFile(filePath, "utf-8")
 		} catch {
 			// New file — content is empty
+			isNewFile = true
 		}
 
-		const entry = new ModifiedFileEntry(generateEntryId(), filePath, relPath, originalContent)
+		const entry = new ModifiedFileEntry(generateEntryId(), filePath, relPath, originalContent, isNewFile)
 		this._entries.push(entry)
 		return entry
 	}

@@ -1,3 +1,4 @@
+import * as diff from "diff"
 import * as vscode from "vscode"
 import { getNonce } from "@/core/webview/getNonce"
 import type { EditReviewHunk, EditReviewState } from "@/shared/ExtensionMessage"
@@ -19,7 +20,11 @@ interface DiffPart {
 	removed?: boolean
 }
 
-const MAX_DIFF_TOKENS = 900
+/**
+ * Above this combined size, intra-hunk highlighting is skipped and the hunk is
+ * shown as plain before/after text (jsdiff stays fast far below this).
+ */
+const MAX_DIFF_CHARS = 200_000
 
 export class EditReviewWebviewPanel implements vscode.Disposable {
 	private panel: vscode.WebviewPanel | undefined
@@ -354,7 +359,7 @@ function renderFile(file: EditReviewState["files"][number]): string {
 }
 
 function renderHunk(hunk: EditReviewHunk): string {
-	const parts = diffWords(hunk.oldText, hunk.newText)
+	const parts = diffHunkText(hunk.oldText, hunk.newText)
 	return `<article class="hunk">
 		<div class="hunk-actions">
 			<button data-action="acceptHunk" data-hunk-id="${escapeAttr(hunk.hunkId)}">保留</button>
@@ -387,67 +392,27 @@ function renderDiffParts(parts: DiffPart[], side: "old" | "new"): string {
 		.join("")
 }
 
-function diffWords(oldText: string, newText: string): DiffPart[] {
-	const oldTokens = tokenize(oldText)
-	const newTokens = tokenize(newText)
-
-	if (oldTokens.length + newTokens.length > MAX_DIFF_TOKENS) {
+/**
+ * Character-level diff of a hunk's before/after text.
+ *
+ * Uses jsdiff's Myers implementation — the same algorithm family as the
+ * built-in diff editor — instead of a hand-rolled LCS. Character granularity
+ * handles Chinese text correctly (the old word tokenizer capped out at 900
+ * tokens, which a single CJK paragraph already exceeded, and fell back to
+ * showing two undifferentiated blocks).
+ */
+function diffHunkText(oldText: string, newText: string): DiffPart[] {
+	if (oldText.length + newText.length > MAX_DIFF_CHARS) {
 		return [
 			{ value: oldText, removed: true },
 			{ value: newText, added: true },
 		]
 	}
-
-	const dp = Array.from({ length: oldTokens.length + 1 }, () => Array(newTokens.length + 1).fill(0) as number[])
-	for (let i = oldTokens.length - 1; i >= 0; i--) {
-		for (let j = newTokens.length - 1; j >= 0; j--) {
-			dp[i][j] = oldTokens[i] === newTokens[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1])
-		}
-	}
-
-	const parts: DiffPart[] = []
-	let i = 0
-	let j = 0
-	while (i < oldTokens.length && j < newTokens.length) {
-		if (oldTokens[i] === newTokens[j]) {
-			parts.push({ value: oldTokens[i] })
-			i++
-			j++
-		} else if (dp[i + 1][j] >= dp[i][j + 1]) {
-			parts.push({ value: oldTokens[i], removed: true })
-			i++
-		} else {
-			parts.push({ value: newTokens[j], added: true })
-			j++
-		}
-	}
-	while (i < oldTokens.length) {
-		parts.push({ value: oldTokens[i], removed: true })
-		i++
-	}
-	while (j < newTokens.length) {
-		parts.push({ value: newTokens[j], added: true })
-		j++
-	}
-
-	return mergeAdjacent(parts)
-}
-
-function tokenize(text: string): string[] {
-	return text.match(/\s+|[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)*|[^\sA-Za-z0-9]/g) ?? [text]
-}
-
-function mergeAdjacent(parts: DiffPart[]): DiffPart[] {
-	const merged: DiffPart[] = []
-	for (const part of parts) {
-		const previous = merged.at(-1)
-		if (previous && previous.added === part.added && previous.removed === part.removed) {
-			previous.value += part.value
-		} else {
-			merged.push({ ...part })
-		}
-	}
-	return merged
+	return diff.diffChars(oldText, newText).map((part) => ({
+		value: part.value,
+		added: part.added,
+		removed: part.removed,
+	}))
 }
 
 function escapeHtml(value: string): string {

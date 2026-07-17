@@ -274,6 +274,24 @@
 				"command": "cline.generateReviewResponse",
 				"title": "%command.cline.generateReviewResponse%",
 				"category": "LingInk"
+			},
+			{
+				"command": "cline.reviewChanges",
+				"title": "%command.cline.reviewChanges%",
+				"category": "LingInk",
+				"icon": "$(diff)"
+			},
+			{
+				"command": "cline.acceptReviewedFile",
+				"title": "%command.cline.acceptReviewedFile%",
+				"category": "LingInk",
+				"icon": "$(check)"
+			},
+			{
+				"command": "cline.rejectReviewedFile",
+				"title": "%command.cline.rejectReviewedFile%",
+				"category": "LingInk",
+				"icon": "$(discard)"
 			}
 		],
 		"keybindings": [
@@ -324,6 +342,18 @@
 					"command": "cline.settingsButtonClicked",
 					"group": "navigation@6",
 					"when": "view == claude-dev.SidebarProvider || view == claude-dev.SecondarySidebarProvider"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "cline.acceptReviewedFile",
+					"group": "navigation@1",
+					"when": "lingink.editReviewFileActive"
+				},
+				{
+					"command": "cline.rejectReviewedFile",
+					"group": "navigation@2",
+					"when": "lingink.editReviewFileActive"
 				}
 			],
 			"editor/context": [

@@ -485,12 +485,19 @@ function sdkToolToClineSayTool(toolName: string, input?: unknown): ClineSayTool 
 				getStringField(parsedInput, "content")
 			const patch = getStringField(parsedInput, "patch") ?? getStringField(parsedInput, "diff")
 			const oldText = getStringField(parsedInput, "old_text") ?? getStringField(parsedInput, "old_str")
-			const isEdit = toolName === "replace_in_file" || !!oldText
+			// insert_line edits modify an existing file even though they carry no
+			// old_text — they must not be mislabeled as file creation.
+			const isInsertion = oldText == null && parsedInput?.insert_line != null
+			const isEdit = toolName === "replace_in_file" || !!oldText || isInsertion
 
 			// When the SDK provides both old and new text, build a search/replace
 			// diff in the format DiffEditRow expects. ChatRow passes `content` to
 			// DiffEditRow's `patch` prop, so the formatted diff must go into `content`.
-			const diffContent = oldText && newText ? `------- SEARCH\n${oldText}\n=======\n${newText}\n+++++++ REPLACE` : newText
+			// Pure insertions use an empty SEARCH block (pure-addition diff).
+			const diffContent =
+				(oldText || isInsertion) && newText
+					? `------- SEARCH\n${oldText ?? ""}\n=======\n${newText}\n+++++++ REPLACE`
+					: newText
 
 			return {
 				tool: isEdit ? "editedExistingFile" : "newFileCreated",

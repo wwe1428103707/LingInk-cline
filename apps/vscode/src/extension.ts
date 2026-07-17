@@ -612,6 +612,12 @@ ${ctx.cellJson || "{}"}
 		vscode.commands.registerCommand(commands.ReviewChanges, () => {
 			EditingSessionService.getInstance().showReview()
 		}),
+		vscode.commands.registerCommand(commands.AcceptReviewedFile, () => {
+			EditingSessionService.getInstance().acceptActiveFile()
+		}),
+		vscode.commands.registerCommand(commands.RejectReviewedFile, () => {
+			EditingSessionService.getInstance().rejectActiveFile()
+		}),
 	)
 
 	// Listen for secrets changes (cross-window login/logout sync).

@@ -5,10 +5,14 @@
  * Three-state lifecycle: Modified → Accepted | Rejected.
  *
  * Edits are written to the real file immediately so the agent's read_file
- * tool works correctly. On reject(), the original content is restored.
- * On accept(), the modified content is kept and original backup is cleaned up.
+ * tool works correctly. On reject(), the original content is restored from the
+ * in-memory snapshot (files created by the agent are deleted again, matching
+ * VS Code chat editing semantics). On accept(), the modified content is kept
+ * and the original backup is cleaned up.
  */
 
+import { createHash } from "node:crypto"
+import * as os from "node:os"
 import * as fs from "fs/promises"
 import * as path from "path"
 import type { Event } from "vscode"
@@ -70,14 +74,22 @@ export interface IModifiedFileEntry {
 }
 
 /**
- * Backup directory name inside the workspace for original file backups.
+ * Backup storage for original file contents.
+ *
+ * Backups live under the Cline data directory — NOT inside the workspace —
+ * so they survive checkpoint restores (`git reset --hard` + `git clean -fd`
+ * deletes untracked workspace directories) and never show up in the user's
+ * git status. They are a crash-recovery aid only; runtime restore uses the
+ * in-memory original snapshot.
  */
-const BACKUP_DIR_NAME = ".lingink-backup"
+function backupDirPath(): string {
+	const clineDir = process.env.CLINE_DIR || path.join(os.homedir(), ".cline")
+	return path.join(clineDir, "data", "edit-backups")
+}
 
 function backupPath(filePath: string): string {
-	const dir = path.dirname(filePath)
-	const base = path.basename(filePath)
-	return path.join(dir, BACKUP_DIR_NAME, base)
+	const hash = createHash("sha256").update(filePath).digest("hex").slice(0, 16)
+	return path.join(backupDirPath(), `${hash}-${path.basename(filePath)}`)
 }
 
 export class ModifiedFileEntry implements IModifiedFileEntry {
@@ -99,6 +111,8 @@ export class ModifiedFileEntry implements IModifiedFileEntry {
 		readonly filePath: string,
 		readonly relPath: string,
 		originalContent: string,
+		/** True when the file did not exist before the agent edited it. */
+		readonly isNewFile: boolean = false,
 	) {
 		this._originalContent = originalContent
 		this._modifiedContent = originalContent
@@ -124,18 +138,28 @@ export class ModifiedFileEntry implements IModifiedFileEntry {
 		if (this._disposed || this._state !== ModifiedFileEntryState.Modified) {
 			return
 		}
-		await this._ensureBackup()
+		if (oldText.length === 0) {
+			throw new Error(`Parameter \`old_text\` must not be empty when editing ${this.relPath}`)
+		}
+		if (oldText === newText) {
+			// No-op edit — record nothing so the review only shows real changes.
+			return
+		}
 
 		const startOffset = this._modifiedContent.indexOf(oldText)
-		if (startOffset === -1 && oldText !== newText) {
+		if (startOffset === -1) {
 			throw new Error(`Could not find text to replace in ${this.relPath}`)
 		}
+		if (this._modifiedContent.indexOf(oldText, startOffset + oldText.length) !== -1) {
+			throw new Error(
+				`Found multiple occurrences of the text to replace in ${this.relPath}; provide more surrounding context`,
+			)
+		}
+
+		await this._ensureBackup()
+
 		const nextContent =
-			startOffset === -1
-				? this._modifiedContent
-				: this._modifiedContent.slice(0, startOffset) +
-					newText +
-					this._modifiedContent.slice(startOffset + oldText.length)
+			this._modifiedContent.slice(0, startOffset) + newText + this._modifiedContent.slice(startOffset + oldText.length)
 		this._modifiedContent = nextContent
 		this._hunks.push({
 			hunkId: generateHunkId(),
@@ -180,17 +204,23 @@ export class ModifiedFileEntry implements IModifiedFileEntry {
 		if (this._disposed || this._state !== ModifiedFileEntryState.Modified) {
 			return
 		}
-		// Restore original content
-		if (this._backupWritten) {
-			const bkPath = backupPath(this.filePath)
-			try {
-				const backupContent = await fs.readFile(bkPath, "utf-8")
-				await fs.writeFile(this.filePath, backupContent, "utf-8")
-				await this._cleanupBackup()
-			} catch (error) {
-				Logger.error(`[ModifiedFileEntry] Failed to restore backup for ${this.relPath}:`, error)
+		// Restore original content. The in-memory snapshot is the source of truth;
+		// the on-disk backup is only a crash-recovery fallback.
+		try {
+			if (this.isNewFile) {
+				// The file was created by the agent — undoing removes it entirely,
+				// matching VS Code chat editing semantics.
+				await fs.rm(this.filePath, { force: true })
+			} else {
+				await fs.writeFile(this.filePath, this._originalContent, "utf-8")
 			}
+		} catch (error) {
+			Logger.error(`[ModifiedFileEntry] Failed to restore original content for ${this.relPath}:`, error)
+			// Stay in Modified state so the review UI does not claim a revert
+			// that never happened, and let the user retry.
+			throw error
 		}
+		await this._cleanupBackup()
 		this._modifiedContent = this._originalContent
 		this._hunks = this._hunks.map((hunk) =>
 			hunk.state === ModifiedFileHunkState.Modified ? { ...hunk, state: ModifiedFileHunkState.Rejected } : hunk,
@@ -292,7 +322,11 @@ export class ModifiedFileEntry implements IModifiedFileEntry {
 		}
 		// If still modified and not accepted/rejected, restore original
 		if (this._state === ModifiedFileEntryState.Modified) {
-			await this.reject()
+			try {
+				await this.reject()
+			} catch (error) {
+				Logger.error(`[ModifiedFileEntry] Failed to revert ${this.relPath} on dispose:`, error)
+			}
 		}
 		this._disposed = true
 		this._onDidDispose.fire()

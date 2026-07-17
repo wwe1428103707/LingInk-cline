@@ -22,16 +22,29 @@ const assertDefined = <T>(value: T | undefined): T => {
 
 describe("ModifiedFileEntry", () => {
 	let testDir: string
+	let clineDir: string
+	let savedClineDir: string | undefined
 	let entry: ModifiedFileEntry
 
 	beforeEach(async () => {
 		testDir = await fs.mkdtemp(path.join(os.tmpdir(), "lingink-edit-test-"))
+		// Backups live under CLINE_DIR — point it at a temp dir so tests never
+		// touch the real home directory.
+		savedClineDir = process.env.CLINE_DIR
+		clineDir = await fs.mkdtemp(path.join(os.tmpdir(), "lingink-cline-dir-"))
+		process.env.CLINE_DIR = clineDir
 		entry = new ModifiedFileEntry(generateEntryId(), path.join(testDir, "test.ts"), "test.ts", "line1\nline2\nline3\n")
 	})
 
 	afterEach(async () => {
 		await entry.dispose()
+		if (savedClineDir === undefined) {
+			delete process.env.CLINE_DIR
+		} else {
+			process.env.CLINE_DIR = savedClineDir
+		}
 		await fs.rm(testDir, { recursive: true, force: true })
+		await fs.rm(clineDir, { recursive: true, force: true })
 	})
 
 	it("starts in Modified state", () => {
@@ -144,20 +157,66 @@ describe("ModifiedFileEntry", () => {
 		const content = await fs.readFile(path.join(testDir, "test.ts"), "utf-8")
 		expect(content).toBe("line1\nline2\nline3\n")
 	})
+
+	it("throws when the text to replace occurs multiple times", async () => {
+		const dupEntry = new ModifiedFileEntry(generateEntryId(), path.join(testDir, "multi.ts"), "multi.ts", "foo and foo")
+		try {
+			await expect(dupEntry.applyEdit("foo", "bar")).rejects.toThrow(/multiple occurrences/)
+		} finally {
+			await dupEntry.dispose()
+		}
+	})
+
+	it("throws on empty oldText", async () => {
+		await expect(entry.applyEdit("", "anything")).rejects.toThrow(/must not be empty/)
+	})
+
+	it("records no hunk for a no-op edit", async () => {
+		await entry.applyEdit("line2", "line2")
+		expect(entry.hunks).toHaveLength(0)
+		expect(entry.modifiedContent).toBe("line1\nline2\nline3\n")
+	})
+
+	it("reject deletes a file created by the agent", async () => {
+		const newFilePath = path.join(testDir, "created.md")
+		const newEntry = new ModifiedFileEntry(generateEntryId(), newFilePath, "created.md", "", true)
+		try {
+			await newEntry.replaceContent("brand new")
+			expect(await fs.readFile(newFilePath, "utf-8")).toBe("brand new")
+
+			await newEntry.reject()
+
+			expect(newEntry.state).toBe(ModifiedFileEntryState.Rejected)
+			await expect(fs.access(newFilePath)).rejects.toThrow()
+		} finally {
+			await newEntry.dispose()
+		}
+	})
 })
 
 describe("EditingSession", () => {
 	let session: EditingSession
 	let testDir: string
+	let clineDir: string
+	let savedClineDir: string | undefined
 
 	beforeEach(async () => {
 		testDir = await fs.mkdtemp(path.join(os.tmpdir(), "lingink-session-test-"))
+		savedClineDir = process.env.CLINE_DIR
+		clineDir = await fs.mkdtemp(path.join(os.tmpdir(), "lingink-cline-dir-"))
+		process.env.CLINE_DIR = clineDir
 		session = new EditingSession("test-session-1")
 	})
 
 	afterEach(async () => {
 		await session.reset()
+		if (savedClineDir === undefined) {
+			delete process.env.CLINE_DIR
+		} else {
+			process.env.CLINE_DIR = savedClineDir
+		}
 		await fs.rm(testDir, { recursive: true, force: true })
+		await fs.rm(clineDir, { recursive: true, force: true })
 	})
 
 	const createFile = async (name: string, content = "old\nfoo\nbar\n") => {
@@ -288,5 +347,59 @@ describe("EditingSession", () => {
 		await session.reset()
 		expect(session.state).toBe("idle")
 		expect(session.entries).toHaveLength(0)
+	})
+
+	it("resumes collecting after reviewing without dropping pending edits", async () => {
+		const filePath = await createFile("test.ts")
+		session.startCollecting()
+		await session.queueEdit(filePath, "test.ts", "old", "new")
+		session.finishCollecting()
+		expect(session.state).toBe("reviewing")
+
+		session.resumeCollecting()
+		expect(session.state).toBe("collecting")
+
+		await session.queueEdit(filePath, "test.ts", "foo", "baz")
+		session.finishCollecting()
+
+		expect(session.entries).toHaveLength(1)
+		const entry = session.getEntry(filePath)
+		expect(assertDefined(entry).hunks).toHaveLength(2)
+		expect(session.countByState().modified).toBe(1)
+	})
+
+	it("creates a fresh entry when an accepted file is edited again", async () => {
+		const aPath = await createFile("a.ts")
+		const bPath = await createFile("b.ts")
+		session.startCollecting()
+		await session.queueEdit(aPath, "a.ts", "old", "new")
+		await session.queueEdit(bPath, "b.ts", "old", "new")
+		session.finishCollecting()
+		await session.accept(aPath)
+
+		session.resumeCollecting()
+		await session.queueEdit(aPath, "a.ts", "new", "brand")
+
+		expect(session.entries).toHaveLength(3)
+		const entry = session.getEntry(aPath)
+		expect(assertDefined(entry).state).toBe(ModifiedFileEntryState.Modified)
+		expect(assertDefined(entry).originalContent).toBe("new\nfoo\nbar\n")
+	})
+
+	it("getEntry prefers the pending entry over resolved history", async () => {
+		const aPath = await createFile("a.ts")
+		const bPath = await createFile("b.ts")
+		session.startCollecting()
+		await session.queueEdit(aPath, "a.ts", "old", "new")
+		await session.queueEdit(bPath, "b.ts", "old", "new")
+		session.finishCollecting()
+		await session.accept(aPath)
+
+		// Only the resolved entry exists — still returned as history.
+		expect(assertDefined(session.getEntry(aPath)).state).toBe(ModifiedFileEntryState.Accepted)
+
+		session.resumeCollecting()
+		await session.queueEdit(aPath, "a.ts", "new", "brand")
+		expect(assertDefined(session.getEntry(aPath)).state).toBe(ModifiedFileEntryState.Modified)
 	})
 })
