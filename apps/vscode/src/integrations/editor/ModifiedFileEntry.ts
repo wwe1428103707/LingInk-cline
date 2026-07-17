@@ -18,6 +18,7 @@ import * as path from "path"
 import type { Event } from "vscode"
 import { EventEmitter } from "vscode"
 import { Logger } from "@/shared/services/Logger"
+import type { EditReviewEntrySnapshot } from "./editReviewPersistence"
 
 export enum ModifiedFileEntryState {
 	Modified = "modified",
@@ -332,6 +333,46 @@ export class ModifiedFileEntry implements IModifiedFileEntry {
 		this._onDidDispose.fire()
 		this._onDidChangeState.dispose()
 		this._onDidDispose.dispose()
+	}
+
+	/**
+	 * Serialize the pending state for persistence. Only pending hunks are kept —
+	 * resolved hunks are history the restore path does not need.
+	 */
+	toSnapshot(): EditReviewEntrySnapshot {
+		return {
+			filePath: this.filePath,
+			relPath: this.relPath,
+			originalContent: this._originalContent,
+			modifiedContent: this._modifiedContent,
+			isNewFile: this.isNewFile,
+			hunks: this._hunks
+				.filter((hunk) => hunk.state === ModifiedFileHunkState.Modified)
+				.map((hunk) => ({ oldText: hunk.oldText, newText: hunk.newText, startOffset: hunk.startOffset })),
+		}
+	}
+
+	/** Rebuild a pending entry from a persisted snapshot (fresh ids, Modified state). */
+	static fromSnapshot(snapshot: EditReviewEntrySnapshot): ModifiedFileEntry {
+		const entry = new ModifiedFileEntry(
+			generateEntryId(),
+			snapshot.filePath,
+			snapshot.relPath,
+			snapshot.originalContent,
+			snapshot.isNewFile,
+		)
+		entry._modifiedContent = snapshot.modifiedContent
+		entry._hunks = snapshot.hunks.map((hunk) => ({
+			hunkId: generateHunkId(),
+			filePath: snapshot.filePath,
+			relPath: snapshot.relPath,
+			oldText: hunk.oldText,
+			newText: hunk.newText,
+			startOffset: hunk.startOffset,
+			state: ModifiedFileHunkState.Modified,
+			createdAt: Date.now(),
+		}))
+		return entry
 	}
 }
 

@@ -10,6 +10,13 @@ import * as os from "os"
 import * as path from "path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { EditingSession } from "../EditingSession"
+import {
+	clearEditReviewState,
+	editReviewStatePath,
+	loadEditReviewState,
+	type PersistedEditReviewState,
+	saveEditReviewState,
+} from "../editReviewPersistence"
 import { generateEntryId, ModifiedFileEntry, ModifiedFileEntryState } from "../ModifiedFileEntry"
 
 const assertDefined = <T>(value: T | undefined): T => {
@@ -191,6 +198,37 @@ describe("ModifiedFileEntry", () => {
 		} finally {
 			await newEntry.dispose()
 		}
+	})
+
+	it("snapshot round-trip preserves content, hunks and isNewFile", async () => {
+		await entry.applyEdit("line2", "modified")
+		const snapshot = entry.toSnapshot()
+		expect(snapshot.originalContent).toBe("line1\nline2\nline3\n")
+		expect(snapshot.modifiedContent).toBe("line1\nmodified\nline3\n")
+		expect(snapshot.isNewFile).toBe(false)
+		expect(snapshot.hunks).toHaveLength(1)
+
+		const restored = ModifiedFileEntry.fromSnapshot(snapshot)
+		try {
+			expect(restored.state).toBe(ModifiedFileEntryState.Modified)
+			expect(restored.originalContent).toBe(snapshot.originalContent)
+			expect(restored.modifiedContent).toBe(snapshot.modifiedContent)
+			expect(restored.isNewFile).toBe(false)
+			expect(restored.hunks).toHaveLength(1)
+			expect(restored.hunks[0]?.oldText).toBe("line2")
+			expect(restored.hunks[0]?.newText).toBe("modified")
+		} finally {
+			await restored.dispose()
+		}
+	})
+
+	it("snapshot only includes pending hunks", async () => {
+		await entry.applyEdit("line1", "l1")
+		await entry.applyEdit("line2", "l2")
+		await entry.acceptHunk(assertDefined(entry.hunks[0]).hunkId)
+		const snapshot = entry.toSnapshot()
+		expect(snapshot.hunks).toHaveLength(1)
+		expect(snapshot.hunks[0]?.oldText).toBe("line2")
 	})
 })
 
@@ -401,5 +439,101 @@ describe("EditingSession", () => {
 		session.resumeCollecting()
 		await session.queueEdit(aPath, "a.ts", "new", "brand")
 		expect(assertDefined(session.getEntry(aPath)).state).toBe(ModifiedFileEntryState.Modified)
+	})
+
+	it("restoreEntries rebuilds a reviewing session from snapshots", async () => {
+		const filePath = await createFile("test.ts")
+		session.startCollecting()
+		await session.queueEdit(filePath, "test.ts", "old", "new")
+		const snapshots = session.snapshotEntries()
+		expect(snapshots).toHaveLength(1)
+
+		const restored = new EditingSession("restored-session")
+		try {
+			expect(restored.restoreEntries(snapshots)).toBe(1)
+			expect(restored.state).toBe("reviewing")
+
+			const entry = assertDefined(restored.getEntry(filePath))
+			expect(entry.originalContent).toBe("old\nfoo\nbar\n")
+			expect(entry.modifiedContent).toBe("new\nfoo\nbar\n")
+			expect(entry.hunks).toHaveLength(1)
+
+			// The restored entry can still be rejected.
+			await restored.reject()
+			expect(await fs.readFile(filePath, "utf-8")).toBe("old\nfoo\nbar\n")
+		} finally {
+			await restored.reset()
+		}
+	})
+
+	it("snapshotEntries returns nothing once all entries are resolved", async () => {
+		const filePath = await createFile("test.ts")
+		session.startCollecting()
+		await session.queueEdit(filePath, "test.ts", "old", "new")
+		session.finishCollecting()
+		await session.accept()
+		expect(session.snapshotEntries()).toHaveLength(0)
+	})
+})
+
+describe("editReviewPersistence", () => {
+	let clineDir: string
+	let savedClineDir: string | undefined
+	const cwd = path.join(os.tmpdir(), "lingink-persist-cwd")
+
+	beforeEach(async () => {
+		savedClineDir = process.env.CLINE_DIR
+		clineDir = await fs.mkdtemp(path.join(os.tmpdir(), "lingink-cline-dir-"))
+		process.env.CLINE_DIR = clineDir
+	})
+
+	afterEach(async () => {
+		if (savedClineDir === undefined) {
+			delete process.env.CLINE_DIR
+		} else {
+			process.env.CLINE_DIR = savedClineDir
+		}
+		await fs.rm(clineDir, { recursive: true, force: true })
+	})
+
+	const sampleState = (): PersistedEditReviewState => ({
+		version: 1,
+		cwd,
+		sessionId: "session-1",
+		savedAt: Date.now(),
+		entries: [
+			{
+				filePath: path.join(cwd, "doc.md"),
+				relPath: "doc.md",
+				originalContent: "原文",
+				modifiedContent: "修改后",
+				isNewFile: false,
+				hunks: [{ oldText: "原文", newText: "修改后", startOffset: 0 }],
+			},
+		],
+	})
+
+	it("saves and loads state round-trip", async () => {
+		const state = sampleState()
+		await saveEditReviewState(state)
+		expect(await loadEditReviewState(cwd)).toEqual(state)
+	})
+
+	it("returns undefined when no state file exists", async () => {
+		expect(await loadEditReviewState(cwd)).toBeUndefined()
+	})
+
+	it("returns undefined and removes a corrupt state file", async () => {
+		const statePath = editReviewStatePath(cwd)
+		await fs.mkdir(path.dirname(statePath), { recursive: true })
+		await fs.writeFile(statePath, "{not valid json", "utf-8")
+		expect(await loadEditReviewState(cwd)).toBeUndefined()
+		await expect(fs.access(statePath)).rejects.toThrow()
+	})
+
+	it("clear removes the state file", async () => {
+		await saveEditReviewState(sampleState())
+		await clearEditReviewState(cwd)
+		expect(await loadEditReviewState(cwd)).toBeUndefined()
 	})
 })

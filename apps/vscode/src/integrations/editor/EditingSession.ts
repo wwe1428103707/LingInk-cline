@@ -14,6 +14,7 @@ import * as fs from "fs/promises"
 import type { Event } from "vscode"
 import { EventEmitter } from "vscode"
 import { Logger } from "@/shared/services/Logger"
+import type { EditReviewEntrySnapshot } from "./editReviewPersistence"
 import { generateEntryId, type IModifiedFileEntry, ModifiedFileEntry, ModifiedFileEntryState } from "./ModifiedFileEntry"
 
 export type EditingSessionState = "idle" | "collecting" | "reviewing" | "completed"
@@ -165,6 +166,27 @@ export class EditingSession implements IEditingSession {
 			[ModifiedFileEntryState.Accepted]: this._entries.filter((e) => e.state === ModifiedFileEntryState.Accepted).length,
 			[ModifiedFileEntryState.Rejected]: this._entries.filter((e) => e.state === ModifiedFileEntryState.Rejected).length,
 		}
+	}
+
+	/** Snapshot all still-pending entries for persistence. */
+	snapshotEntries(): EditReviewEntrySnapshot[] {
+		return this._entries.filter((e) => e.state === ModifiedFileEntryState.Modified).map((e) => e.toSnapshot())
+	}
+
+	/**
+	 * Restore pending entries from persisted snapshots into an idle session,
+	 * moving it straight to reviewing. Returns the number of restored entries.
+	 */
+	restoreEntries(snapshots: EditReviewEntrySnapshot[]): number {
+		this._assertState("idle")
+		for (const snapshot of snapshots) {
+			this._entries.push(ModifiedFileEntry.fromSnapshot(snapshot))
+		}
+		if (this._entries.length > 0) {
+			this._setState("reviewing")
+			this._onDidChangeEntries.fire()
+		}
+		return this._entries.length
 	}
 
 	async reset(): Promise<void> {

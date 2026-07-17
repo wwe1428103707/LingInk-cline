@@ -239,6 +239,16 @@ export const zhCN: Record<string, string> = {
 	"chat.diff.accept": "接受",
 	"chat.diff.reject": "拒绝",
 
+	"editReview.title": "待审阅的修改",
+	"editReview.collecting": "正在收集修改…",
+	"editReview.acceptAll": "全部保留",
+	"editReview.rejectAll": "全部撤销",
+	"editReview.file.diff": "差异",
+	"editReview.file.accept": "保留",
+	"editReview.file.reject": "撤销",
+	"editReview.collapse": "收起",
+	"editReview.expand": "展开",
+
 	"chat.tool.autoApprove.on": "此操作已自动批准",
 	"chat.tool.autoApprove.off": "需要您批准此操作",
 

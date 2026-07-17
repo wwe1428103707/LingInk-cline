@@ -32,6 +32,7 @@ import {
 	useScrollBehavior,
 	WelcomeSection,
 } from "./chat-view"
+import EditReviewCard from "./EditReviewCard"
 
 interface ChatViewProps {
 	isHidden: boolean
@@ -433,6 +434,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					task={task}
 				/>
 				<QueuedPrompts items={queuedPrompts} />
+				<EditReviewCard />
 				<InputSection
 					chatState={chatState}
 					messageHandlers={messageHandlers}

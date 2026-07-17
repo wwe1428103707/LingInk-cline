@@ -44,6 +44,9 @@ const ClineCommands = {
 	ReviewChanges: prefix + ".reviewChanges",
 	AcceptReviewedFile: prefix + ".acceptReviewedFile",
 	RejectReviewedFile: prefix + ".rejectReviewedFile",
+	AcceptReviewedHunk: prefix + ".acceptReviewedHunk",
+	RejectReviewedHunk: prefix + ".rejectReviewedHunk",
+	OpenReviewDiff: prefix + ".openReviewDiff",
 }
 
 /**

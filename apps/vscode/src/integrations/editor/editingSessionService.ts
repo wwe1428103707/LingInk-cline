@@ -11,6 +11,8 @@
  *   own diff engine and always reflects the real changes on disk.
  * - A session survives across agent turns while it still has un-reviewed
  *   edits, mirroring how chat editing keeps pending changes in one session.
+ * - Pending reviews are persisted under the Cline data directory and restored
+ *   on the next activation, like chatEditingSessionStorage.
  */
 
 import * as diff from "diff"
@@ -22,6 +24,13 @@ import type { EditReviewState } from "@/shared/ExtensionMessage"
 import { Logger } from "@/shared/services/Logger"
 import { EditingSession, type IEditingSession } from "./EditingSession"
 import { EditReviewWebviewPanel } from "./EditReviewWebviewPanel"
+import {
+	clearEditReviewState,
+	type EditReviewEntrySnapshot,
+	loadEditReviewState,
+	type PersistedEditReviewState,
+	saveEditReviewState,
+} from "./editReviewPersistence"
 import { type IModifiedFileEntry, ModifiedFileEntryState, ModifiedFileHunkState } from "./ModifiedFileEntry"
 
 export interface EditInput {
@@ -52,6 +61,10 @@ export class EditingSessionService implements Disposable {
 	private readonly _onDidChangeSession = new EventEmitter<IEditingSession | undefined>()
 	readonly onDidChangeSession: Event<IEditingSession | undefined> = this._onDidChangeSession.event
 
+	/** Fires whenever the set of pending review entries may have changed. */
+	private readonly _onDidChangeReviewState = new EventEmitter<void>()
+	readonly onDidChangeReviewState: Event<void> = this._onDidChangeReviewState.event
+
 	private _currentSession: EditingSession | undefined
 	private _sessionDisposables: Disposable[] = []
 	private readonly _disposables: Disposable[] = []
@@ -66,6 +79,10 @@ export class EditingSessionService implements Disposable {
 		openDiff: (filePath) => this.openDiff(filePath),
 	})
 	private _sessionCounter = 0
+	/** Workspace cwd of the most recent edit/restore — keys the persisted state file. */
+	private _lastCwd: string | undefined
+	/** Serializes state-file writes so out-of-order completions cannot clobber newer state. */
+	private _persistQueue: Promise<void> = Promise.resolve()
 
 	static getInstance(): EditingSessionService {
 		if (!EditingSessionService._instance) {
@@ -107,6 +124,7 @@ export class EditingSessionService implements Disposable {
 			const isAbsolute = input.path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(input.path)
 			const filePath = isAbsolute ? input.path : path.resolve(cwd, input.path)
 			const relPath = path.relative(cwd, filePath).replace(/\\/g, "/")
+			this._lastCwd = cwd
 
 			if (!this._currentSession || this._currentSession.state === "idle" || this._currentSession.state === "completed") {
 				this.createSession()
@@ -137,6 +155,8 @@ export class EditingSessionService implements Disposable {
 				throw new Error("Parameter `old_text` is required when editing an existing file without `insert_line`")
 			}
 
+			this._queuePersistReviewState()
+			this._onDidChangeReviewState.fire()
 			Logger.log(`[EditingSessionService] Queued edit for ${relPath}`)
 			return `已为 ${relPath} 加入编辑审阅。修改将在审阅后决定是否保留。`
 		}
@@ -147,6 +167,8 @@ export class EditingSessionService implements Disposable {
 		if (session?.state === "collecting") {
 			session.finishCollecting()
 			this._updateReviewContext()
+			this._queuePersistReviewState()
+			this._onDidChangeReviewState.fire()
 			this.openReviewPanel()
 		}
 	}
@@ -231,20 +253,75 @@ export class EditingSessionService implements Disposable {
 		await this._afterHunksResolved(hunkId)
 	}
 
-	/** Accept pending edits for the file shown in the active editor (editor/title command path). */
-	async acceptActiveFile(): Promise<void> {
-		const entry = this._getActiveReviewedEntry()
-		if (entry) {
-			await this.accept(entry.filePath)
+	/** Accept pending edits for the given file, or the file shown in the active editor. */
+	async acceptActiveFile(filePath?: string): Promise<void> {
+		const target = filePath ?? this._getActiveReviewedEntry()?.filePath
+		if (target) {
+			await this.accept(target)
 		}
 	}
 
-	/** Reject pending edits for the file shown in the active editor (editor/title command path). */
-	async rejectActiveFile(): Promise<void> {
-		const entry = this._getActiveReviewedEntry()
-		if (entry) {
-			await this.reject(entry.filePath)
+	/** Reject pending edits for the given file, or the file shown in the active editor. */
+	async rejectActiveFile(filePath?: string): Promise<void> {
+		const target = filePath ?? this._getActiveReviewedEntry()?.filePath
+		if (target) {
+			await this.reject(target)
 		}
+	}
+
+	/** The still-pending entry for a file, used by the decoration/CodeLens controller. */
+	getPendingEntryForFile(filePath: string): IModifiedFileEntry | undefined {
+		const entry = this._currentSession?.getEntry(filePath)
+		return entry?.state === ModifiedFileEntryState.Modified ? entry : undefined
+	}
+
+	/**
+	 * Restore a pending review persisted by a previous window/session for this
+	 * workspace. Entries whose file no longer matches the persisted modified
+	 * content (user edited or reverted externally) are dropped.
+	 */
+	async restorePersistedSession(cwd: string): Promise<void> {
+		this._lastCwd = cwd
+		if (this._currentSession && this._currentSession.entries.length > 0) {
+			return
+		}
+		const state = await loadEditReviewState(cwd)
+		if (!state || state.entries.length === 0) {
+			return
+		}
+
+		const valid: EditReviewEntrySnapshot[] = []
+		for (const entry of state.entries) {
+			try {
+				const diskContent = await fs.readFile(entry.filePath, "utf-8")
+				if (diskContent === entry.modifiedContent) {
+					valid.push(entry)
+				} else {
+					Logger.warn(`[EditingSessionService] Skipping restored review for ${entry.relPath}: file changed on disk`)
+				}
+			} catch {
+				Logger.warn(`[EditingSessionService] Skipping restored review for ${entry.relPath}: file missing`)
+			}
+		}
+		if (valid.length === 0) {
+			await clearEditReviewState(cwd)
+			return
+		}
+
+		this.createSession()
+		const restored = this._currentSession?.restoreEntries(valid) ?? 0
+		if (restored === 0) {
+			return
+		}
+		Logger.log(`[EditingSessionService] Restored ${restored} pending review file(s) from a previous session`)
+		this._updateReviewContext()
+		this._onDidChangeReviewState.fire()
+		const openLabel = "打开审阅"
+		void window.showInformationMessage(`检测到 ${restored} 个文件有未审阅的 LingInk 修改。`, openLabel).then((choice) => {
+			if (choice === openLabel) {
+				void this.showReview()
+			}
+		})
 	}
 
 	/**
@@ -287,6 +364,8 @@ export class EditingSessionService implements Disposable {
 			this._originalContentByPath.delete(filePath)
 		}
 		this._updateReviewContext()
+		this._queuePersistReviewState()
+		this._onDidChangeReviewState.fire()
 		this._reviewPanel.refresh()
 	}
 
@@ -298,7 +377,41 @@ export class EditingSessionService implements Disposable {
 			return
 		}
 		this._updateReviewContext()
+		this._queuePersistReviewState()
+		this._onDidChangeReviewState.fire()
 		this._reviewPanel.refresh()
+	}
+
+	/**
+	 * Persist the pending review (or clear the persisted file once nothing is
+	 * pending). Writes are serialized so a slower earlier write cannot clobber
+	 * newer state.
+	 */
+	private _queuePersistReviewState(): void {
+		const cwd = this._lastCwd
+		if (!cwd) {
+			return
+		}
+		const session = this._currentSession
+		const snapshots = session?.snapshotEntries() ?? []
+		this._persistQueue = this._persistQueue.then(async () => {
+			try {
+				if (!session || snapshots.length === 0) {
+					await clearEditReviewState(cwd)
+					return
+				}
+				const state: PersistedEditReviewState = {
+					version: 1,
+					cwd,
+					sessionId: session.sessionId,
+					savedAt: Date.now(),
+					entries: snapshots,
+				}
+				await saveEditReviewState(state)
+			} catch (error) {
+				Logger.error("[EditingSessionService] Failed to persist edit review state:", error)
+			}
+		})
 	}
 
 	private _registerReviewContentProvider(): void {
@@ -359,12 +472,12 @@ export class EditingSessionService implements Disposable {
 	}
 
 	dispose(): void {
-		if (this._currentSession) {
-			void this._currentSession
-				.reset()
-				.catch((error) => Logger.error("[EditingSessionService] Failed to reset session on dispose:", error))
-			this._currentSession = undefined
-		}
+		// Do NOT reset the session: pending edits stay on disk and the persisted
+		// review state lets the next activation restore the review (VS Code chat
+		// editing behaves the same way). The state file is already kept current
+		// by eager persistence after every mutation.
+		void this._persistQueue
+		this._currentSession = undefined
 		this._originalContentByPath.clear()
 		this._reviewPanel.dispose()
 		for (const disposable of this._sessionDisposables) {
@@ -375,6 +488,7 @@ export class EditingSessionService implements Disposable {
 			disposable.dispose()
 		}
 		this._onDidChangeSession.dispose()
+		this._onDidChangeReviewState.dispose()
 		void commands.executeCommand("setContext", REVIEW_FILE_CONTEXT_KEY, false)
 	}
 }

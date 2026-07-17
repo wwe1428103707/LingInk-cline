@@ -19,6 +19,7 @@ import path from "node:path"
 import type { ExtensionContext } from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
 import { vscodeHostBridgeClient } from "@/hosts/vscode/hostbridge/client/host-grpc-client"
+import { ReviewDecorationController } from "@/hosts/vscode/ReviewDecorationController"
 import { EditingSessionService } from "@/integrations/editor/editingSessionService"
 import { createStorageContext } from "@/shared/storage/storage-context"
 import { readTextFromClipboard, writeTextToClipboard } from "@/utils/env"
@@ -612,13 +613,37 @@ ${ctx.cellJson || "{}"}
 		vscode.commands.registerCommand(commands.ReviewChanges, () => {
 			EditingSessionService.getInstance().showReview()
 		}),
-		vscode.commands.registerCommand(commands.AcceptReviewedFile, () => {
-			EditingSessionService.getInstance().acceptActiveFile()
+		vscode.commands.registerCommand(commands.AcceptReviewedFile, (filePath?: string) => {
+			EditingSessionService.getInstance().acceptActiveFile(filePath)
 		}),
-		vscode.commands.registerCommand(commands.RejectReviewedFile, () => {
-			EditingSessionService.getInstance().rejectActiveFile()
+		vscode.commands.registerCommand(commands.RejectReviewedFile, (filePath?: string) => {
+			EditingSessionService.getInstance().rejectActiveFile(filePath)
+		}),
+		// Invoked from review CodeLenses — not exposed in the command palette.
+		vscode.commands.registerCommand(commands.AcceptReviewedHunk, (hunkId?: string) => {
+			if (hunkId) {
+				EditingSessionService.getInstance().acceptHunk(hunkId)
+			}
+		}),
+		vscode.commands.registerCommand(commands.RejectReviewedHunk, (hunkId?: string) => {
+			if (hunkId) {
+				EditingSessionService.getInstance().rejectHunk(hunkId)
+			}
+		}),
+		vscode.commands.registerCommand(commands.OpenReviewDiff, (filePath?: string) => {
+			if (filePath) {
+				EditingSessionService.getInstance().openDiff(filePath)
+			}
 		}),
 	)
+
+	// In-editor decorations + CodeLenses for files with pending reviewed edits.
+	context.subscriptions.push(new ReviewDecorationController(EditingSessionService.getInstance()))
+
+	// Restore any pending edit review persisted by a previous window/session.
+	for (const folder of vscode.workspace.workspaceFolders ?? []) {
+		void EditingSessionService.getInstance().restorePersistedSession(folder.uri.fsPath)
+	}
 
 	// Listen for secrets changes (cross-window login/logout sync).
 	// NOTE: Credentials now live in providers.json (single source of truth).
