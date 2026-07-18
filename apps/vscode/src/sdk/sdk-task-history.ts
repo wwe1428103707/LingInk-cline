@@ -292,6 +292,9 @@ export class SdkTaskHistory {
 	private findLegacyTask(taskId: string): { item: HistoryItem; dataDir?: string } | undefined {
 		return this.readAllLegacyTaskHistory().find(({ item }) => item.id === taskId)
 	}
+	async isLegacyTask(taskId: string): Promise<boolean> {
+		return this.findLegacyTask(taskId) !== undefined
+	}
 
 	private getActiveHistoryHost(): VscodeSessionHost | undefined {
 		const sdkHost = this.options.sessions.getActiveSession()?.sdkHost
