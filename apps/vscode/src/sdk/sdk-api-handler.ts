@@ -45,15 +45,29 @@ export function buildSdkProviderConfig(
 	mode: Mode,
 	options?: BuildApiHandlerOptions,
 ): ProviderConfig {
-	const providerId = (mode === "plan" ? configuration.planModeApiProvider : configuration.actModeApiProvider) ?? "cline"
+	const providerId =
+		(mode === "plan"
+			? configuration.planModeApiProvider
+			: mode === "academic"
+				? configuration.academicModeApiProvider
+				: configuration.actModeApiProvider) ?? "cline"
 
 	const apiKey = resolveApiKey(providerId, configuration)
 	const modelId = resolveModelId(providerId, mode, configuration)
 	const baseUrl = resolveBaseUrl(providerId, configuration)
 
 	const thinkingBudgetTokens =
-		mode === "plan" ? configuration.planModeThinkingBudgetTokens : configuration.actModeThinkingBudgetTokens
-	const reasoningEffort = mode === "plan" ? configuration.planModeReasoningEffort : configuration.actModeReasoningEffort
+		mode === "plan"
+			? configuration.planModeThinkingBudgetTokens
+			: mode === "academic"
+				? configuration.academicModeThinkingBudgetTokens
+				: configuration.actModeThinkingBudgetTokens
+	const reasoningEffort =
+		mode === "plan"
+			? configuration.planModeReasoningEffort
+			: mode === "academic"
+				? configuration.academicModeReasoningEffort
+				: configuration.actModeReasoningEffort
 
 	const vertexProviderConfig = providerId === "vertex" ? resolveVertexProviderConfig(configuration) : undefined
 

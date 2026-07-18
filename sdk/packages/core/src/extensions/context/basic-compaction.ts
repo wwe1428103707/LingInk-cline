@@ -7,8 +7,8 @@ import type {
 	CoreCompactionContext,
 	CoreCompactionResult,
 } from "../../types/config";
-import { buildBudgetProjection } from "./budget-projection";
 import {
+	DEFAULT_TARGET_RATIO,
 	type EstimateMessageTokens,
 	findFirstUserMessageIndex,
 	findLastAssistantIndex,
@@ -273,7 +273,6 @@ function trimCandidatesToBudget(
 	candidates: BasicCompactionCandidate[],
 	targetTokens: number,
 	totalTokens: number,
-	triggerTokens: number,
 	estimateMessageTokens: EstimateMessageTokens,
 ): number {
 	if (totalTokens <= targetTokens) {
@@ -312,10 +311,6 @@ function trimCandidatesToBudget(
 		(candidate) => candidate.isFirstUser,
 	);
 	if (firstUserIndex >= 0) {
-		const firstUser = candidates[firstUserIndex];
-		if (firstUser.estimatedTokens <= triggerTokens) {
-			return totalTokens;
-		}
 		while (totalTokens > targetTokens) {
 			const candidate = candidates[firstUserIndex];
 			const desiredTokens = Math.max(
@@ -372,8 +367,9 @@ export function runBasicCompaction(options: {
 	const totalTargetTokens = Math.max(
 		1,
 		Math.min(
-			options.context.budget.messages.targetTokens,
-			options.context.budget.messages.triggerTokens,
+			options.context.targetTokens ??
+				Math.floor(options.context.triggerTokens * DEFAULT_TARGET_RATIO),
+			options.context.maxInputTokens,
 		),
 	);
 	const { compactable, protectedTail } = splitLatestTurn(
@@ -435,7 +431,6 @@ export function runBasicCompaction(options: {
 		candidates,
 		targetTokens,
 		totalTokens,
-		options.context.budget.messages.triggerTokens,
 		options.estimateMessageTokens,
 	);
 
@@ -443,58 +438,21 @@ export function runBasicCompaction(options: {
 		...candidates.map((candidate) => candidate.message),
 		...protectedTail,
 	];
-	const budgeted = buildBudgetProjection({
-		messages: nextMessages,
-		targetTokens: totalTargetTokens,
-		policyIntent: "basic_compaction_projection",
-		estimateMessageTokens: options.estimateMessageTokens,
-	});
-	// This final projection owns the hard output budget. Unlike the earlier
-	// basic candidate passes, it can drop completed tool pairs after the latest
-	// typed prompt while preserving coherent tool closures.
-	if (budgeted.status === "failed") {
-		options.logger?.debug("Basic compaction returned best-effort projection", {
-			budgetWarnings: budgeted.warnings.map((warning) => warning.code),
-			projectedTokens: budgeted.estimatedTokens,
-			targetTokens: totalTargetTokens,
-			maxInputTokens: options.context.budget.request.maxInputTokens,
-		});
-	}
-	const resultMessages = budgeted.messages;
-
-	if (!haveMessagesChanged(options.context.messages, resultMessages)) {
+	if (!haveMessagesChanged(options.context.messages, nextMessages)) {
 		return undefined;
 	}
 
 	const beforeTokens = beforeCompactableTokens + protectedTailTokens;
-	const afterTokens = getTotalTokens(
-		resultMessages,
-		options.estimateMessageTokens,
-	);
-	const budgetActionCount = budgeted.actions.filter(
-		(action) =>
-			action.reason === "over_budget" || action.reason === "tool_pair_boundary",
-	).length;
+	const afterTokens = totalTokens + protectedTailTokens;
 	options.logger?.debug("Performed basic compaction", {
 		messagesBefore: options.context.messages.length,
-		messagesAfter: resultMessages.length,
-		messagesRemoved: options.context.messages.length - resultMessages.length,
+		messagesAfter: nextMessages.length,
+		messagesRemoved: options.context.messages.length - nextMessages.length,
 		tokensBefore: beforeTokens,
 		tokensAfter: afterTokens,
-		budgetStatus: budgeted.status,
-		budgetActions: budgetActionCount,
-		budgetWarnings: budgeted.warnings.map((warning) => warning.code),
 		targetTokens: totalTargetTokens,
-		maxInputTokens: options.context.budget.request.maxInputTokens,
+		maxInputTokens: options.context.maxInputTokens,
 	});
 
-	return {
-		messages: resultMessages,
-		budget: {
-			policyIntent: "basic_compaction_projection",
-			actionCount: budgetActionCount,
-			warningCount: budgeted.warnings.length,
-			liveTailHandling: budgeted.liveTailHandling,
-		},
-	};
+	return { messages: nextMessages };
 }

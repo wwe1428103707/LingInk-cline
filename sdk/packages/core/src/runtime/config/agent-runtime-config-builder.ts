@@ -144,9 +144,6 @@ export function buildModelOptions(
 	if (config.maxTokensPerTurn !== undefined) {
 		options.maxTokensPerTurn = config.maxTokensPerTurn;
 	}
-	if (config.temperature !== undefined) {
-		options.temperature = config.temperature;
-	}
 	if (config.apiTimeoutMs !== undefined) {
 		options.apiTimeoutMs = config.apiTimeoutMs;
 	}

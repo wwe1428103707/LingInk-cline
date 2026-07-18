@@ -128,19 +128,16 @@ export {
 	isPluginDisabledGlobally,
 	isTelemetryOptedOutGlobally,
 	isToolDisabledGlobally,
-	readCompactionStrategyGlobally,
 	readGlobalSettings,
 	resolveDisabledPluginPaths,
 	resolveDisabledToolNames,
 	setAutoUpdateEnabledGlobally,
-	setCompactionStrategyGlobally,
 	setDisabledPlugin,
 	setDisabledTools,
 	setTelemetryOptOutGlobally,
 	toggleDisabledTool,
 	writeGlobalSettings,
 } from "./services/global-settings";
-export type { GlobalCompactionStrategy } from "./services/global-settings";
 export type {
 	ListPluginToolsResult,
 	PluginToolSummary,

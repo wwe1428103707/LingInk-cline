@@ -193,13 +193,8 @@ export {
 	resolveReasoningBudgetFromRatio,
 	resolveReasoningEffortRatio,
 } from "./llms/reasoning-effort";
-export { serializeAbortReason } from "./llms/requests";
-export {
-	CHARS_PER_TOKEN,
-	estimateRequestInputTokens,
-	estimateTokens,
-	type TokenEstimatedRequest,
-} from "./llms/tokens";
+export { DEFAULT_REQUEST_HEADERS, serializeAbortReason } from "./llms/requests";
+export { CHARS_PER_TOKEN, estimateTokens } from "./llms/tokens";
 export type {
 	ToolApprovalRequest,
 	ToolApprovalResult,
@@ -218,18 +213,11 @@ export {
 	safeJsonParse,
 	safeJsonStringify,
 } from "./parse/json";
-export { decodeJwtPayload } from "./parse/jwt";
 export { type OmitUndefinedValues, omitUndefinedValues } from "./parse/object";
-export {
-	getDefaultShell,
-	getShellArgs,
-	getShellKind,
-	type ShellKind,
-} from "./parse/shell";
+export { getDefaultShell, getShellArgs } from "./parse/shell";
 export {
 	maskSecret,
 	sanitizeFileName,
-	stripUtf8Bom,
 	trimNonEmpty,
 	truncateSplit,
 	truncateStr,
@@ -237,25 +225,14 @@ export {
 export { formatHumanReadableDate, formatUptime } from "./parse/time";
 export { validateWithZod, zodToJsonSchema } from "./parse/zod";
 export type { ClineSystemPromptOptions } from "./prompt/cline";
+export { buildClineSystemPrompt } from "./prompt/cline";
 export {
-	buildClineSystemPrompt,
-	MODE_TAG_INSTRUCTIONS,
-	PLAN_MODE_INSTRUCTIONS,
-} from "./prompt/cline";
-export type {
-	ModeSwitchNotice,
-	ModeSwitchNoticeTracker,
-} from "./prompt/format";
-export {
-	createModeSwitchNoticeTracker,
 	formatDisplayUserInput,
 	formatFileContentBlock,
-	formatModeSwitchNotice,
 	formatUserCommandBlock,
 	formatUserInputBlock,
 	normalizeUserInput,
 	parseUserCommandEnvelope,
-	stripModeNotices,
 	xmlTagsRemoval,
 } from "./prompt/format";
 export { isClineProvider } from "./providers/utils";

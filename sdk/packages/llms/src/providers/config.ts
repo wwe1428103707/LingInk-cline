@@ -120,8 +120,6 @@ export interface TokenConfig {
 	maxInputTokens?: number;
 	/** Maximum output tokens (overrides model default) */
 	maxOutputTokens?: number;
-	/** Sampling temperature (overrides model default) */
-	temperature?: number;
 }
 
 /**

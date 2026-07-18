@@ -1,11 +1,11 @@
 import type { ApiConfiguration } from "@shared/api"
-import type { Mode } from "@shared/storage/types"
+import { type Mode, normalizeMode } from "@shared/storage/types"
 import type { StateManager } from "@/core/storage/StateManager"
 import { Logger } from "@/shared/services/Logger"
 import type { SdkMessageCoordinator } from "./sdk-message-coordinator"
+import type { SdkModeCoordinator } from "./sdk-mode-coordinator"
 import type { SdkSessionConfigBuilder } from "./sdk-session-config-builder"
 import type { SdkSessionLifecycle } from "./sdk-session-lifecycle"
-import type { SdkSessionRebuildScheduler } from "./sdk-session-rebuild-scheduler"
 import type { SdkSessionHost } from "./session-host"
 import type { TaskProxy } from "./task-proxy"
 import type { VscodeSessionHost } from "./vscode-session-host"
@@ -24,14 +24,20 @@ export interface SdkProviderChangeCoordinatorOptions {
 	loadInitialMessages: (sdkHost: SdkSessionHost, sessionId: string) => Promise<InitialMessages>
 	buildStartSessionInput: (config: SessionConfig, input: { cwd: string; mode: Mode }) => StartInput
 	postStateToWebview: () => Promise<void>
-	rebuilds: Pick<SdkSessionRebuildScheduler, "request">
 }
 
 function providerForMode(config: ApiConfiguration, mode: Mode): string | undefined {
-	return mode === "plan" ? config.planModeApiProvider : config.actModeApiProvider
+	return mode === "plan"
+		? config.planModeApiProvider
+		: mode === "academic"
+			? config.academicModeApiProvider
+			: config.actModeApiProvider
 }
 
 export class SdkProviderChangeCoordinator {
+	private restartPending = false
+	private restartInFlight: Promise<void> | undefined
+
 	constructor(private readonly options: SdkProviderChangeCoordinatorOptions) {}
 
 	handleApiConfigurationChanged(previous: ApiConfiguration, next: ApiConfiguration): void {
@@ -53,11 +59,80 @@ export class SdkProviderChangeCoordinator {
 			`[SdkController] Active provider changed for ${mode}: ${previousProvider ?? "none"} -> ${nextProvider ?? "none"}`,
 		)
 
-		this.options.rebuilds.request("provider", () => this.restartActiveSessionForProviderChange())
+		if (activeSession.isRunning) {
+			Logger.log("[SdkController] Session is mid-turn; deferring provider restart")
+			this.restartPending = true
+			return
+		}
+
+		this.restartActiveSessionForProviderChange().catch((error) => {
+			Logger.error("[SdkController] Failed to restart session after provider change:", error)
+		})
+	}
+
+	clearPendingRestart(): void {
+		this.restartPending = false
+	}
+
+	async handleTurnComplete(mode: Pick<SdkModeCoordinator, "hasPendingModeChange" | "applyPendingModeChange">): Promise<void> {
+		if (mode.hasPendingModeChange()) {
+			this.clearPendingRestart()
+			try {
+				await mode.applyPendingModeChange()
+			} catch (err) {
+				Logger.error("[SdkController] applyPendingModeChange failed:", err)
+			}
+			return
+		}
+
+		try {
+			await this.checkDeferredRestart()
+		} catch (err) {
+			Logger.error("[SdkController] Failed deferred provider restart:", err)
+		}
+	}
+
+	async checkDeferredRestart(): Promise<void> {
+		if (!this.restartPending) {
+			return
+		}
+		this.restartPending = false
+
+		const activeSession = this.options.sessions.getActiveSession()
+		if (!activeSession) {
+			Logger.log("[SdkController] Deferred provider restart: no active session, skipping")
+			return
+		}
+
+		if (activeSession.isRunning) {
+			Logger.log("[SdkController] Deferred provider restart: session is still running")
+			this.restartPending = true
+			return
+		}
+
+		await this.restartActiveSessionForProviderChange()
 	}
 
 	async restartActiveSessionForProviderChange(): Promise<void> {
-		await this.performRestartActiveSessionForProviderChange()
+		if (this.restartInFlight) {
+			this.restartPending = true
+			return this.restartInFlight
+		}
+
+		const operation = this.performRestartActiveSessionForProviderChange()
+		this.restartInFlight = operation.then(
+			() => undefined,
+			// restartInFlight is only a serialization gate. The caller awaits
+			// operation below, where restart failures are reported to the user.
+			() => undefined,
+		)
+
+		try {
+			await operation
+		} finally {
+			this.restartInFlight = undefined
+			await this.checkDeferredRestart()
+		}
 	}
 
 	private async performRestartActiveSessionForProviderChange(): Promise<void> {
@@ -79,7 +154,6 @@ export class SdkProviderChangeCoordinator {
 			const initialMessages = await this.options.loadInitialMessages(oldManager, oldSessionId)
 			const startInput = this.options.buildStartSessionInput(config, { cwd, mode })
 			const restartResult = await this.options.sessions.replaceActiveSession({
-				expectedSession: activeSession,
 				startInput,
 				...(initialMessages ? { initialMessages } : {}),
 				disposeReason: "providerChange",
@@ -120,6 +194,6 @@ export class SdkProviderChangeCoordinator {
 	}
 
 	private getCurrentMode(): Mode {
-		return this.options.stateManager.getGlobalSettingsKey("mode") === "plan" ? "plan" : "act"
+		return normalizeMode(this.options.stateManager.getGlobalSettingsKey("mode"))
 	}
 }

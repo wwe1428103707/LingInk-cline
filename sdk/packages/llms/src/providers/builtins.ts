@@ -24,8 +24,6 @@ import type {
 import {
 	ClineNotSubscribedError,
 	ClineOrgIndividualInferenceSubscriptionError,
-	ClinePassLimitError,
-	extractClinePassLimitMessage,
 	isClineNotSubscribedMessage,
 	isClineOrgIndividualInferenceSubscriptionMessage,
 } from "./errors";
@@ -53,15 +51,6 @@ const OPENROUTER_STICKY_SESSION_METADATA: GatewayProviderMetadata = {
 	},
 };
 
-/**
- * Context window requested from Ollama when neither the resolved model nor
- * the user's configuration supplies one. Matches the pre-SDK-migration
- * handler default; deliberately larger than Ollama's 4096 server default,
- * which cannot fit Cline's agentic prompts. Single source of truth — the
- * vendor, the VS Code session factory, and the settings UI all import this.
- */
-export const OLLAMA_DEFAULT_CONTEXT_WINDOW = 32768;
-
 export type ProviderFamily =
 	| "openai"
 	| "openai-compatible"
@@ -74,7 +63,6 @@ export type ProviderFamily =
 	| "openai-codex"
 	| "opencode"
 	| "dify"
-	| "ollama"
 	| "sap-ai-core";
 
 export interface BuiltinSpec {
@@ -483,7 +471,6 @@ function inferClient(spec: BuiltinSpec): ProviderClient {
 		case "openai-codex":
 		case "opencode":
 		case "dify":
-		case "ollama":
 		case "sap-ai-core":
 			return "ai-sdk-community";
 		default:
@@ -533,7 +520,7 @@ async function handleClineResponseError(
 	response: Response,
 	providerId: string,
 ): Promise<void> {
-	if (response.status < 400) {
+	if (response.status !== 403) {
 		return;
 	}
 
@@ -546,11 +533,6 @@ async function handleClineResponseError(
 		throw new ClineOrgIndividualInferenceSubscriptionError(providerId);
 	}
 
-	const clinePassLimitMessage = extractClinePassLimitMessage(body);
-	if (clinePassLimitMessage) {
-		throw new ClinePassLimitError(clinePassLimitMessage, providerId);
-	}
-
 	if (isClineNotSubscribedMessage(body)) {
 		throw new ClineNotSubscribedError(providerId);
 	}
@@ -558,7 +540,7 @@ async function handleClineResponseError(
 
 const cline = createClineLikeSpec({
 	id: "cline",
-	name: "Cline Usage-Billing",
+	name: "Cline",
 	popular: 1,
 	modelsFactory: buildClineModels,
 	defaultModelId: CLINE_DEFAULT_MODEL_ID,
@@ -883,22 +865,10 @@ const OPENAI_COMPATIBLE_SPECS: BuiltinSpec[] = [
 		description: "Xiaomi",
 		family: "openai-compatible",
 		capabilities: ["prompt-cache", "tools", "reasoning"],
-		defaultModelId: "mimo-v2.5",
+		defaultModelId: "mimo-v2-omni",
 		apiKeyEnv: ["XIAOMI_API_KEY"],
 		modelsProviderId: "xiaomi",
 		defaults: { baseUrl: "https://api.xiaomimimo.com/v1" },
-	},
-	{
-		id: "tencent-tokenhub",
-		name: "Tencent TokenHub",
-		description: "Tencent TokenHub AI models",
-		family: "openai-compatible",
-		capabilities: ["tools", "reasoning"],
-		defaultModelId: "hy3-preview",
-		apiKeyEnv: ["TENCENT_TOKENHUB_API_KEY"],
-		modelsProviderId: "tencent-tokenhub",
-		docsUrl: "https://cloud.tencent.com/document/product/1823/130050",
-		defaults: { baseUrl: "https://tokenhub.tencentmaas.com/v1" },
 	},
 	{
 		id: "kilo",
@@ -933,15 +903,11 @@ const OPENAI_COMPATIBLE_SPECS: BuiltinSpec[] = [
 		id: "ollama",
 		name: "Ollama",
 		description: "Ollama Cloud and local LLM hosting",
-		// Routed to the native Ollama API vendor (`vendors/ollama.ts`), not the
-		// OpenAI-compatible `/v1` endpoint: `/v1` ignores `options.num_ctx`, so
-		// models would always load with Ollama's 4096-token server default.
-		family: "ollama",
+		family: "openai-compatible",
 		popular: 25,
-		capabilities: ["tools"],
 		defaultModelId: "",
 		apiKeyEnv: ["OLLAMA_API_KEY"],
-		defaults: { baseUrl: "http://localhost:11434" },
+		defaults: { baseUrl: "http://localhost:11434/v1" },
 		modelsSourceUrl: "http://localhost:11434/api/tags",
 	},
 	{

@@ -11,7 +11,6 @@ import type {
 	RestoreResult,
 	SendSessionInput,
 	SessionAccumulatedUsage,
-	SessionCompactionState,
 	SessionHistoryRecord,
 	SessionPendingPrompt,
 	SessionRecord,
@@ -34,7 +33,6 @@ export interface SdkSessionHost {
 	listHistory(options?: ClineCoreListHistoryOptions): Promise<SessionHistoryRecord[]>
 	delete(sessionId: string): Promise<boolean>
 	readMessages(sessionId: string): Promise<SdkInitialMessages>
-	updateSessionCompactionState?(sessionId: string, state: SessionCompactionState): Promise<{ updated: boolean }>
 	restore(input: RestoreInput): Promise<RestoreResult>
 	update(
 		sessionId: string,

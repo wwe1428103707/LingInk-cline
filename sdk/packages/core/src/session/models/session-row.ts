@@ -73,7 +73,6 @@ export interface CreateRootSessionWithArtifactsInput {
 export interface RootSessionArtifacts {
 	manifestPath: string;
 	messagesPath: string;
-	compactionPath?: string;
 	manifest: SessionManifest;
 }
 

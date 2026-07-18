@@ -11,7 +11,6 @@ import { StateManager } from "@/core/storage/StateManager"
 import { HostProvider } from "@/hosts/host-provider"
 import { ExtensionRegistryInfo } from "@/registry"
 import { getDistinctId } from "@/services/logging/distinctId"
-import { getRolloutTelemetryMetadata } from "@/services/telemetry/rollout-metadata"
 import { Setting } from "@/shared/proto/index.host"
 import { Logger } from "@/shared/services/Logger"
 
@@ -44,7 +43,6 @@ export function createVscodeSdkTelemetryHandle(options: CreateVscodeSdkTelemetry
 					...options.metadata,
 				},
 			}),
-			commonProperties: getRolloutTelemetryMetadata(),
 			distinctId: getDistinctId() || undefined,
 		})
 
