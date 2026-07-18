@@ -90,3 +90,6 @@ apps/vscode/.clinerules/
 
 # Generated search index
 .codegraph/
+
+# Analysis data
+.analysis/

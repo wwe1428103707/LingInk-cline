@@ -1,5 +1,6 @@
 import { type Dirent, existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, extname, join } from "node:path";
+import { stripUtf8Bom } from "@cline/shared";
 import { resolveAgentConfigSearchPaths } from "@cline/shared/storage";
 import YAML from "yaml";
 import { z } from "zod";
@@ -40,6 +41,11 @@ function splitFrontmatter(content: string): {
 	frontmatter: string;
 	body: string;
 } {
+	// Strip a leading UTF-8 BOM (e.g. added by Windows Notepad's "UTF-8 with BOM" encoding),
+	// which Node's `utf-8` decoding does not strip on its own. Without this the frontmatter
+	// match below never matches a file that starts with "\uFEFF---" (see cline/cline#12151).
+	content = stripUtf8Bom(content);
+
 	const firstLineMatch = content.match(/^(---)[^\S\r\n]*(?:\r?\n|$)/);
 	if (!firstLineMatch) {
 		throw new Error("Missing YAML frontmatter block in agent config file.");
@@ -104,9 +110,9 @@ function normalizeAgentName(name: string): string {
 	return name.trim().toLowerCase();
 }
 
-function isAgentConfigFile(fileName: string): boolean {
+function isYamlFile(fileName: string): boolean {
 	const extension = extname(fileName).toLowerCase();
-	return extension === ".yml" || extension === ".yaml" || extension === ".md";
+	return extension === ".yml" || extension === ".yaml";
 }
 
 export function parseConfiguredAgentConfig(
@@ -168,7 +174,7 @@ export function loadConfiguredAgentConfigs(input: {
 		}
 
 		for (const entry of entries) {
-			if (!entry.isFile() || !isAgentConfigFile(entry.name)) {
+			if (!entry.isFile() || !isYamlFile(entry.name)) {
 				continue;
 			}
 
